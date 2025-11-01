@@ -274,13 +274,11 @@ const CTASection: React.FC = () => (
 // --- Footer ---
 
 const Footer: React.FC = () => (
-  <footer className="bg-[#1C212A] pt-16 pb-8 text-white">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-      <hr className="border-gray-400 my-8" />
-
+  <footer className="bg-[#1C212A] pt-8 pb-8 text-white ">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
+    <hr className="border-gray-400 my-8" />
       {/* Footer Content Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-12 pb-10">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-12 pb-10 ">
         {/* Column 1: Givr Info */}
         <div className="col-span-2 md:col-span-1">
           <h4 className="text-lg font-bold mb-4 text-white">Givr</h4>
@@ -308,9 +306,7 @@ const Footer: React.FC = () => (
             <li><a href="#contact" className="text-sm text-gray-400 hover:text-[#1877F2] transition">Contact</a></li>
           </ul>
         </div>
-
       </div>
-
       <hr className="border-gray-400 my-8" />
 
       {/* Copyright */}
