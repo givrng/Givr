@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "../components/landingPageComponents";
+import { Button } from "../components/ReuseableComponents";
 import type { BasicNatigationProps, SignInFormProps } from "../interface/interfaces";
 import backgroundImage from "../assets/sign-in-background.svg"
 import { GoogleIcon } from "../components/icons";
@@ -16,11 +16,11 @@ const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toFo
         e.preventDefault();
         setError('');
         setIsLoading(true);
-        
+
         // Simulate a sign-in attempt with dummy data/logic
         setTimeout(() => {
             if (email === 'johndoe@gmail.com' && password === 'xxxxxxxx') {
-                
+
                 console.log('Simulated Sign In Success:', { email, rememberMe });
                 onSignInAttempt(email, password);
             } else {
@@ -31,111 +31,111 @@ const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toFo
     };
 
     return (
-            <div className="w-full max-w-md bg-white p-8 sm:p-10 rounded-xl shadow-2xl border border-gray-100">
-                <div className="mb-8">
-                    <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Welcome Back!</h1>
-                    <p className="text-gray-600">We're glad to have you back, let's look up some projects you can contribute to.</p>
-                </div>
-
-                {error && (
-                    <div className="p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-5">
-                    {/* Email Input */}
-                    <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                            Email
-                        </label>
-                        <input
-                            type="email"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1877F2] focus:border-transparent outline-none transition duration-150"
-                            placeholder="johndoe@gmail.com"
-                        />
-                    </div>
-
-                    {/* Password Input */}
-                    <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1877F2] focus:border-transparent outline-none transition duration-150"
-                            placeholder="**********"
-                        />
-                    </div>
-
-                    {/* Checkbox and Forgot Password */}
-                    <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center">
-                            <input
-                                id="remember-me"
-                                type="checkbox"
-                                checked={rememberMe}
-                                onChange={(e) => setRememberMe(e.target.checked)}
-                                className="h-4 w-4 text-[#1877F2] border-gray-300 rounded focus:ring-[#1877F2]"
-                            />
-                            <label htmlFor="remember-me" className="ml-2 text-gray-600">
-                                Remember Me
-                            </label>
-                        </div>
-                        <Link className="font-medium text-[#1877F2] hover:underline hover:cursor-pointer" to={toForgotPassword ? toForgotPassword: "/"}>
-                            Forgot Password?
-                        </Link>
-                    </div>
-
-                    {/* Sign In Button */}
-                    <Button variant="primary"  className="w-full py-3" >
-                        {isLoading ? (
-                            <div className="flex items-center justify-center">
-                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Signing In...
-                            </div>
-                        ) : 'Sign In'}
-                    </Button>
-                </form>
-                
-                {/* Separator */}
-                <div className="my-6 flex items-center">
-                    <div className="flex-grow border-t border-gray-200"></div>
-                    <span className="flex-shrink mx-4 text-gray-500 text-sm">or</span>
-                    <div className="flex-grow border-t border-gray-200"></div>
-                </div>
-
-                {/* Continue with Google */}
-                <Button variant="secondary" className="w-full py-3 flex items-center justify-center space-x-2">
-                    <GoogleIcon />
-                    <span>Continue with Google</span>
-                </Button>
-
-                {/* Sign Up Link */}
-                <p className="mt-8 text-center text-sm text-gray-600">
-                    Don't have an account? 
-                    <Link  className="font-semibold text-[#1877F2] hover:underline ml-1" to={toSignUp? toSignUp:"/"}>
-                        Sign Up here
-                    </Link>
-                </p>
+        <div className="w-full max-w-md bg-white p-8 sm:p-10 rounded-xl shadow-2xl border border-gray-100">
+            <div className="mb-8">
+                <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Welcome Back!</h1>
+                <p className="text-gray-600">We're glad to have you back, let's look up some projects you can contribute to.</p>
             </div>
-        
+
+            {error && (
+                <div className="p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+                    {error}
+                </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Email Input */}
+                <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                        Email
+                    </label>
+                    <input
+                        type="email"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1877F2] focus:border-transparent outline-none transition duration-150"
+                        placeholder="johndoe@gmail.com"
+                    />
+                </div>
+
+                {/* Password Input */}
+                <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                        Password
+                    </label>
+                    <input
+                        type="password"
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1877F2] focus:border-transparent outline-none transition duration-150"
+                        placeholder="**********"
+                    />
+                </div>
+
+                {/* Checkbox and Forgot Password */}
+                <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center">
+                        <input
+                            id="remember-me"
+                            type="checkbox"
+                            checked={rememberMe}
+                            onChange={(e) => setRememberMe(e.target.checked)}
+                            className="h-4 w-4 text-[#1877F2] border-gray-300 rounded focus:ring-[#1877F2]"
+                        />
+                        <label htmlFor="remember-me" className="ml-2 text-gray-600">
+                            Remember Me
+                        </label>
+                    </div>
+                    <Link className="font-medium text-[#1877F2] hover:underline hover:cursor-pointer" to={toForgotPassword ? toForgotPassword : "/"}>
+                        Forgot Password?
+                    </Link>
+                </div>
+
+                {/* Sign In Button */}
+                <Button variant="primary" className="w-full py-3" >
+                    {isLoading ? (
+                        <div className="flex items-center justify-center">
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Signing In...
+                        </div>
+                    ) : 'Sign In'}
+                </Button>
+            </form>
+
+            {/* Separator */}
+            <div className="my-6 flex items-center">
+                <div className="flex-grow border-t border-gray-200"></div>
+                <span className="flex-shrink mx-4 text-gray-500 text-sm">or</span>
+                <div className="flex-grow border-t border-gray-200"></div>
+            </div>
+
+            {/* Continue with Google */}
+            <Button variant="secondary" className="w-full py-3 flex items-center justify-center space-x-2">
+                <GoogleIcon />
+                <span>Continue with Google</span>
+            </Button>
+
+            {/* Sign Up Link */}
+            <p className="mt-8 text-center text-sm text-gray-600">
+                Don't have an account?
+                <Link className="font-semibold text-[#1877F2] hover:underline ml-1" to={toSignUp ? toSignUp : "/"}>
+                    Sign Up here
+                </Link>
+            </p>
+        </div>
+
     );
 };
 
 
-export const SignInPage: React.FC<BasicNatigationProps> = function ({toSignUp, toForgotPassword}){
+export const SignInPage: React.FC<BasicNatigationProps> = function ({ toSignUp, toForgotPassword }) {
 
     return (
         <section className="flex items-center justify-center min-h-screen bg-none p-4 sm:p-6 lg:p-10 pt-20" style={{
@@ -143,7 +143,7 @@ export const SignInPage: React.FC<BasicNatigationProps> = function ({toSignUp, t
             backgroundSize: 'cover',
             backgroundPosition: 'center'
         }}>
-          <div className="grid lg:grid-cols-2 max-w-5xl">
+            <div className="grid lg:grid-cols-2 max-w-5xl">
                 <div className="hidden lg:flex flex-col justify-end p-12 text-white">
                     <div className="max-w-sm">
                         <h2 className="text-5xl font-extrabold leading-tight mb-4">
@@ -155,8 +155,8 @@ export const SignInPage: React.FC<BasicNatigationProps> = function ({toSignUp, t
                     </div>
                 </div>
 
-                 <SignInForm toForgotPassword={toForgotPassword} toSignUp={toSignUp} onSignInAttempt={()=>{}}/>
-          </div>
+                <SignInForm toForgotPassword={toForgotPassword} toSignUp={toSignUp} onSignInAttempt={() => { }} />
+            </div>
         </section>
     )
 }

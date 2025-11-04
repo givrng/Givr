@@ -118,3 +118,29 @@ export const Card: React.FC<{children: React.ReactNode}> = ({ children }) => (
     {children}
   </div>
 );
+
+export const MetricCard: React.FC = ()=>{
+
+  return (
+    <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm">
+    
+    <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-normal text-gray-700">Hours Logged</h2>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" 
+             fill="none" 
+             viewBox="0 0 24 24" 
+             stroke-width="1.5" 
+             stroke="currentColor" 
+             className="w-6 h-6 text-blue-600">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+    </div>
+
+    <div className="flex flex-col">
+        <span className="text-6xl font-extrabold text-blue-600 leading-none">124</span>
+        <span className="text-sm font-medium text-gray-500 mt-2">+12 hours this month</span>
+    </div>
+</div>
+  )
+}

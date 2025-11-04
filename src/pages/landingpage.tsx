@@ -2,7 +2,7 @@ import React from 'react';
 
 import heroImage from "../assets/hero-image.svg"
 import { BulletIcon, DigitalCertificate, FileXIcon, GivrLogoIcon, GreenCheck, LockIcon, SearchTimeIcon, ShieldIcon, StarIcon, UsersIcon, VerifiedIcon, YelloBadge } from '../components/icons';
-import { Button, FeatureCard, NavLink, PlatformCategory } from '../components/landingPageComponents';
+import { Button, FeatureCard, NavLink, PlatformCategory } from '../components/ReuseableComponents';
 import type { FeatureCardProps, BasicNatigationProps } from '../interface/interfaces'
 
 // --- Section Components ---
