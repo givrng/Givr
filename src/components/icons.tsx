@@ -14,7 +14,7 @@ import googleIcon from "../assets/icons/google.svg"
 // Simplified Icon for Verified/Checkmark Logo
 
 
-export const GivrLogoIcon = (): React.JSX.Element => <img src={givrLogo} alt="Givr Logo" />
+export const GivrLogoIcon:React.FC<{className?:string}> = ({className = "h-6 w-auto max-w-full"}): React.JSX.Element => <img src={givrLogo} alt="Givr Logo" className={className}/>
 
 export const CheckmarkLogoIcon: React.FC<{ className?: string, color?: string }> = ({ className = "w-7 h-7" }) => (
   <img src={blueVerifiedIcon} alt="Verified Check mark Logo" className={className} />

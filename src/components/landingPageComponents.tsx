@@ -1,6 +1,5 @@
 import type { ButtonProps, FeatureCardProps, NavLinkProps } from "../interface/interfaces"
 
-
 // --- Reusable Components ---
 
 export const Button: React.FC<ButtonProps> = ({ children, variant, className = '', onClick }) => {
@@ -103,11 +102,11 @@ export const PlatformCategory: React.FC<FeatureCardProps> = ({ color, descriptio
         <ol className='space-y-4'>
           {description.map((text, index) => <li key={index} className='flex gap-2 text-left'>
             <span className={`flex items-center justify-center w-6 h-6 rounded-full ${listBgColor} text-white text-sm font-medium`}>{index + 1}</span>
-            <span className='text-gray-700 w-90'>{text}</span>
+            <span className='text-gray-700 w-full'>{text}</span>
           </li>)}
         </ol>
 
-        <Button variant={color == 'blue' ? 'primary' : 'green'} className='w-90 mt-8 py-3'>{cta}</Button>
+        <Button variant={color == 'blue' ? 'primary' : 'green'} className='w-full mt-8 py-3'>{cta}</Button>
       </div>
     )
   }

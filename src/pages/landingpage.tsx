@@ -7,12 +7,12 @@ import type { FeatureCardProps, BasicNatigationProps } from '../interface/interf
 
 // --- Section Components ---
 
-const Header: React.FC<BasicNatigationProps> = ({onBackToSignIn, onBackToSignUp}) => (
+const Header: React.FC<BasicNatigationProps> = ({ onBackToSignIn, onBackToSignUp }) => (
   // Fixed header with slightly off-white background
   <header className="fixed top-0 left-0 right-0 z-50 bg-[#F7FAFC] backdrop-blur-sm border-b border-gray-100">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
       <div className="flex items-center space-x-1 font-semibold text-xl text-gray-800">
-        <GivrLogoIcon />
+        <GivrLogoIcon className='w-20 h-auto max-w-full' />
       </div>
 
       {/* Navigation Links */}
@@ -23,7 +23,7 @@ const Header: React.FC<BasicNatigationProps> = ({onBackToSignIn, onBackToSignUp}
       </nav>
 
       {/* Action Buttons: Sign In (Primary), Sign Up (Outline) */}
-      <div className="flex space-x-3">
+      <div className="flex space-x-2">
         <Button variant="primary" className="text-sm px-4 py-2 shadow-none" onClick={onBackToSignIn}>Sign In</Button>
         <Button variant="outline" className="text-sm px-4 py-2 shadow-none" onClick={onBackToSignUp}>Sign Up</Button>
       </div>
@@ -177,8 +177,10 @@ const MoreInfoSection: React.FC = () => {
       </p>
 
       {/* Feature Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-        {platformCategories.map((category, index) => <PlatformCategory key={index} color={category.color} description={category.description} title={category.title} cta={category.cta} />)}
+      <div className="max-w-5xl mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {platformCategories.map((category, index) => <PlatformCategory key={index} color={category.color} description={category.description} title={category.title} cta={category.cta} />)}
+        </div>
       </div>
     </div>
   </section>)
@@ -219,7 +221,7 @@ const CredibilitySection: React.FC = () => {
           We make <span className="text-[#1877F2]">credibility visible</span> and <br className="hidden sm:inline" />
           <span className="text-green-600">impact measurable</span>
         </h2>
-        <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-16">
+        <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-8">
           Built-in trust and recognition systems that reward genuine contribution
         </p>
 
@@ -319,7 +321,7 @@ const Footer: React.FC = () => (
 
 // --- Main Application Component ---
 
-export default function LandingPage(navigation:BasicNatigationProps) {
+export default function LandingPage(navigation: BasicNatigationProps) {
   return (
     <div className="min-h-screen font-[Inter] antialiased">
       {/* Load Inter Font - assumed to be available or loaded via global CSS */}
