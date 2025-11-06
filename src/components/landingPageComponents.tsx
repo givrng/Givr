@@ -1,15 +1,17 @@
 import type { ButtonProps, FeatureCardProps, NavLinkProps } from "../interface/interfaces"
 
-// --- Reusable Components ---
 
+// --- Reusable Components ---
 export const Button: React.FC<ButtonProps> = ({ children, variant, className = '', onClick }) => {
+
+
   // Adjusted base classes for a cleaner look matching the image
   const baseClasses = 'px-6 py-3 font-semibold rounded-lg transition duration-200 whitespace-nowrap';
 
   let variantClasses = '';
   switch (variant) {
     case 'primary':
-      variantClasses = 'bg-[#1877F2] text-white hover:bg-[#156cd4] shadow-md';
+      variantClasses = 'bg-[#1877F2] text-white hover:bg-[#156cd4] shadow-md  ';
       break;
     case 'secondary':
       // The "Post a project" button in the image is secondary: white background, light border, text-gray
@@ -30,6 +32,8 @@ export const Button: React.FC<ButtonProps> = ({ children, variant, className = '
     <button className={`${baseClasses} ${variantClasses} ${className}`} onClick={onClick}>
       {children}
     </button>
+
+  
   );
 };
 

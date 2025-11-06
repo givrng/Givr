@@ -1,5 +1,3 @@
-import type { NavigateFunction } from "react-router-dom";
-
 export interface NavLinkProps {
   label: string;
   href: string;
@@ -10,6 +8,7 @@ export interface ButtonProps {
   variant: 'primary' | 'secondary' | 'outline'| 'green';
   onClick?: () => void;
   className?: string;
+  href?: string;
 }
 
 export interface FeatureCardProps {
@@ -38,8 +37,10 @@ export interface SignInFormProps extends BasicNatigationProps {
 }
 
 export interface BasicNatigationProps{
-  onBackToSignUp?: ()=> void ,
-  onBackToSignIn?: ()=> void,
-  toForgotPassword?:string,
-  toSignUp?:string
+  onToSignUp?: ()=> void;
+  onToSignIn?: ()=> void
+  onToInterest?:(userId:string)=>void;
+  toForgotPassword?:string;
+  toSignUp?:string;
+  toVolunteerDetails?:string;
 }

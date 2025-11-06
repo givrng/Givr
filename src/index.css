@@ -69,6 +69,24 @@ button:focus-visible {
 
 @import "tailwindcss";
 
-*, ::before, ::after {
-  box-sizing: border-box;
+:root {
+  --primary-color: #1A73E8;
+  --ui-border-color: #C3C6D4;
+}
+
+@layer components{
+   .form {
+    @apply space-y-4  mx-auto p-6  border border-gray-300 rounded-2xl shadow-md md:w-2xl w-full bg-white;
+  }
+}
+
+@layer utilities {
+  .border-ui {
+    border: 1px solid var(--ui-border-color);
+  }
+
+  .shadow-ui{
+    box-shadow: 0px 52px 15px 0px
+              #33333300;
+  }
 }

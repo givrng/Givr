@@ -5,9 +5,10 @@ import { BulletIcon, DigitalCertificate, FileXIcon, GivrLogoIcon, GreenCheck, Lo
 import { Button, FeatureCard, NavLink, PlatformCategory } from '../components/landingPageComponents';
 import type { FeatureCardProps, BasicNatigationProps } from '../interface/interfaces'
 
+
 // --- Section Components ---
 
-const Header: React.FC<BasicNatigationProps> = ({ onBackToSignIn, onBackToSignUp }) => (
+const Header: React.FC<BasicNatigationProps> = ({ onToSignIn, onToSignUp }) => (
   // Fixed header with slightly off-white background
   <header className="fixed top-0 left-0 right-0 z-50 bg-[#F7FAFC] backdrop-blur-sm border-b border-gray-100">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
@@ -24,8 +25,8 @@ const Header: React.FC<BasicNatigationProps> = ({ onBackToSignIn, onBackToSignUp
 
       {/* Action Buttons: Sign In (Primary), Sign Up (Outline) */}
       <div className="flex space-x-2">
-        <Button variant="primary" className="text-sm px-4 py-2 shadow-none" onClick={onBackToSignIn}>Sign In</Button>
-        <Button variant="outline" className="text-sm px-4 py-2 shadow-none" onClick={onBackToSignUp}>Sign Up</Button>
+        <Button variant="primary" className="text-sm px-4 py-2 shadow-none" onClick={onToSignIn}>Sign In</Button>
+        <Button variant="outline" className="text-sm px-4 py-2 shadow-none" onClick={onToSignUp}>Sign Up</Button>
       </div>
     </div>
   </header>
@@ -326,8 +327,8 @@ export default function LandingPage(navigation: BasicNatigationProps) {
     <div className="min-h-screen font-[Inter] antialiased">
       {/* Load Inter Font - assumed to be available or loaded via global CSS */}
       <style>{`
-        body { 
-            font-family: 'Poppins', sans-serif; 
+        body {
+            font-family: 'Poppins', sans-serif;
             background-color: #F7FAFC; /* Match the subtle background color from the image */
         }
       `}</style>
