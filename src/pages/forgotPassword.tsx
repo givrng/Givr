@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 export const ForgotPasswordForm: React.FC<BasicNatigationProps> = ({toSignUp}) => {
   const [email, setEmail] = useState('');
-  const [onSent, setOnSent] = useState(false);
+  const [onSent, _] = useState(false);
 
   return (
     <div className="bg-[#F3FAFA] w-screen h-screen flex items-center justify-center">   

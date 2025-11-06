@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+
 import type { BasicNatigationProps } from "../../interface/interfaces";
 import { Button } from "../landingPageComponents";
 import { useState } from "react";
@@ -10,8 +10,8 @@ type interestprops = {
 
 const PickInterests: React.FC<BasicNatigationProps> = ({onToSignIn}) => {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const location = useLocation();
-  const {volunteerId} = location.state
+  // const location = useLocation();
+  // const {volunteerId} = location.state
   const interestCategories: interestprops[] = [
     {
       title: "Creative & Media",
