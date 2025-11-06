@@ -1,4 +1,6 @@
-import type { ButtonProps, FeatureCardProps, NavLinkProps } from "../interface/interfaces"
+import type { ReactNode } from "react";
+import type { ButtonProps, FeatureCardProps, MetricComponentProps, MetricProps, NavLinkProps, ProjectComponentProps } from "../interface/interfaces"
+import { ArrowIcon, CalendarIcon, ClockIcon, GroupIcon, LocationIcon } from "./icons";
 
 // --- Reusable Components ---
 
@@ -119,28 +121,112 @@ export const Card: React.FC<{children: React.ReactNode}> = ({ children }) => (
   </div>
 );
 
-export const MetricCard: React.FC = ()=>{
 
+export const MetricCard: React.FC<MetricComponentProps> = ({title, context, icon, value, className = "w-full "})=>{
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm">
+    <div className={`bg-white p-6 rounded-xl shadow-lg max-w-sm ${className}`}>
     
     <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-normal text-gray-700">Hours Logged</h2>
-        
-        <svg xmlns="http://www.w3.org/2000/svg" 
-             fill="none" 
-             viewBox="0 0 24 24" 
-             stroke-width="1.5" 
-             stroke="currentColor" 
-             className="w-6 h-6 text-blue-600">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-        </svg>
+        <h2 className="text-sm font-bold text-gray-700">{title? title: "Hours Logged"}</h2>
+        {icon? icon: <ClockIcon/>}
     </div>
 
     <div className="flex flex-col">
-        <span className="text-6xl font-extrabold text-blue-600 leading-none">124</span>
-        <span className="text-sm font-medium text-gray-500 mt-2">+12 hours this month</span>
+        <span className="text-2xl font-extrabold text-blue-600 leading-none">{value?value:"124"}</span>
+        <span className="text-sm font-medium text-gray-500 mt-2">{context? context: "+12 hours this month"}</span>
     </div>
 </div>
   )
 }
+
+
+export const Banner:React.FC<{className?:string; onClick?:()=>void; title:string; content:string}> = ({title, content, onClick})=>(
+  <button
+  onClick={onClick}
+   className="p-3 transition duration-300 ease-in-out cursor-pointer w-full max-w-lg">
+    
+    <div className="flex justify-between items-center gap-x-2">
+        <div className="flex flex-col">
+            <h3 className="text-sm font-semibold leading-tight">{title}</h3>
+            <p className="text-xs font-normal opacity-90 mt-1">{content}</p>
+        </div>
+        <ArrowIcon className="w-6 h-6 text-black"/>
+    </div>
+</button>
+)
+
+export const InfoCell:React.FC<{icon:ReactNode, info:string}> = ({icon, info})=>(
+  <div className="flex items-center text-sm text-gray-600">
+    {icon}
+    <span>{info}</span>
+  </div>
+
+)
+
+export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization, categories, attendanceHours, location, maxApplicants, startDate,status, totalApplicants, superVolunteer})=>(
+  <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full">
+    
+    <div className="flex justify-between items-start mb-4">
+        <div className="flex flex-col">
+            <h3 className="text-xl font-bold text-gray-800">{title?title: "Community Health Screening"}</h3>
+            <p className="text-sm font-medium text-gray-500">{organization? organization: "Abuja Health Initiative"}</p>
+        </div>
+       
+        <span className={`${status=="Verified"? "bg-green-600": "bg-red-600 "} text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider`}>
+            {status? status: "Verified"}
+        </span>
+    </div>
+
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-6 py-4 border-y border-gray-200">
+        <InfoCell icon={<CalendarIcon/>} info={startDate? startDate: "Jan 20, 2025"}/>
+        <InfoCell icon={<ClockIcon color="#676879" className="w-6 w-6"/>} info={attendanceHours? attendanceHours: "9:00 AM - 3:00 PM"}/>
+        <InfoCell icon={<LocationIcon/>} info={location? location: "Wuse District, Abuja"}/>
+        <InfoCell icon={<GroupIcon/>} info={`${totalApplicants?totalApplicants: 15 }/${maxApplicants?maxApplicants: 20}` }/>
+    </div>
+    
+    <div className="flex justify-between items-end pt-4">
+        
+        <div className="flex flex-col space-y-3">
+            <div className="flex space-x-2">
+            
+                {categories? categories.map((category, i)=>(<span key= {i} className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{category}</span>)): <>
+                <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">Healthcare</span>
+                <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">Community Outreach</span>
+                </>}
+            </div>
+            
+            {superVolunteer&& (<p className="text-sm font-normal text-gray-600">Super Volunteer: <span className="font-medium text-gray-800">{superVolunteer}</span></p>)}
+        </div>
+        
+        <Button variant="primary">Apply Now</Button>
+    </div>
+</div>
+)
+ {/*Highlights only active button, used for navigation, allowing user toggle*/}
+export const RadioButton: React.FC<{children: React.ReactNode;  value?:string; activeSyle?:string; inActiveStyle?:string; active?: boolean; onClick?: (event:React.MouseEvent<HTMLButtonElement>) => void;}> = ({ children, active, onClick, activeSyle, inActiveStyle, value}) => {
+  let activeStyle_ = activeSyle;
+  let notActiveStyle = inActiveStyle;
+
+  if(!activeSyle)  
+    activeStyle_ = "bg-white rounded-xl w-full text-black shadow-md rounded-t-lg py-2"
+  if(!inActiveStyle)
+    notActiveStyle = "bg-[#E7E9EF] rounded-xl w-full text-gray-600 hover:bg-gray-300 py-2"
+
+  return (
+        <button
+        onClick={onClick}
+        className={`font-semibold text-sm  px-4 relative z-10 transition-all 
+            ${active 
+            ? activeStyle_ 
+            : notActiveStyle}`}
+        value={value}
+        >
+        {children}
+        </button>
+    );
+};
+// // Runtime validation function using regex
+// function isValidAttendanceHours(hours: string): hours is AttendanceHours {
+//     const regex = /^(1[0-2]|[1-9])(Am|Pm) - (1[0-2]|[1-9])(Am|Pm)$/;
+//     return regex.test(hours);
+// }
