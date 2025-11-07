@@ -1,12 +1,15 @@
-import {  BriefcaseIcon, ClockIcon, GivrRoundLogo, ShieldIcon, StarIcon } from "../components/icons"
+import {  BriefcaseIcon, ClockIcon, ShieldIcon, StarIcon } from "../components/icons"
 import React, { useState } from "react";
 import UserDashboardInformation from "../components/userDashBoardInfo";
 import Dashboard from "../components/dashboard";
 import rawProjects from "../data/projects.json" assert {type: 'json'}
 import type { MetricProps, ProjectProps } from "../interface/interfaces";
+import { FindOpportunity } from "../components/findOpportunities";
 
 export const DashboardPage = ()=>{
-    const [active, setActive] = useState("Dashboard");
+    type NavTypes = "Dashboard" | "Find Opportunities"| "My Volunteering"| "Profile & Achievements";
+    const [active, setActive] = useState<NavTypes>("Dashboard");
+    
     const buttons = new Map<string, string>()
     buttons.set("Dashboard", "Dashboard")
     buttons.set("Find Opportunities", "Find Opportunities")
@@ -16,7 +19,7 @@ export const DashboardPage = ()=>{
     const projects = rawProjects as ProjectProps[]
     const activateNavButton = (event: React.MouseEvent<HTMLButtonElement>)=>{
         let selectButtonValue = buttons.get(event.currentTarget.textContent);
-        setActive(selectButtonValue? selectButtonValue: "Dashboard")
+        setActive(selectButtonValue? selectButtonValue as NavTypes: "Dashboard")
     }
 
     const metrics: MetricProps[] = [
@@ -49,9 +52,11 @@ export const DashboardPage = ()=>{
 
     return <>
     <main className="">
+        
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <UserDashboardInformation activeButton={active} buttons={[...buttons.keys()]} onClick={activateNavButton} username="Daniel"/>
-        <Dashboard projects={projects} />
+            <UserDashboardInformation activeButton={active} buttons={[...buttons.keys()]} onClick={activateNavButton} username="Daniel"/>
+            {active=="Dashboard" &&<Dashboard projects={projects} metrics={metrics}/>}
+            {active=="Find Opportunities" && <FindOpportunity projects={projects}/>}
         </div>
     </main>
     </>

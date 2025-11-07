@@ -9,32 +9,36 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, projects})=>{
             {
                 title: "Hours Logged",
                 context: "",
-                icon: <ClockIcon/>,
+                icon: <ClockIcon className="w-6 h-6"/>,
                 value:"",
-                
+                color: "#1A73E8"
             },
              {
                 title: "Projects completed",
                 context: "",
                 icon: <BriefcaseIcon/>,
-                value:""
+                value:"",
+                color: "#34A853"
             },
              {
                 title: "Badges Earned",
                 context: "",
                 icon: <ShieldIcon fill="none" color="#FBBC05" />,
-                value:""
+                value:"",
+                color: "#FBBC05"
             },
              {
                 title: "Rating",
                 context: "",
                 icon: <StarIcon color="#237238" fill="none"/>,
-                value:""
+                value:"",
+                color: "#34A853"
             }
         ]
     )
  useEffect(() => {
     if (metrics && metrics.length > 0) {
+        
       setMetrics((prev) =>
         prev.map((defaultMetric) => {
           const match = metrics.find((m) => m.title === defaultMetric.title);
@@ -73,12 +77,12 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, projects})=>{
                 <p className="text-xl font-bold text-gray-800">Quick Actions</p>
                 <div className="flex gap-x-2">
                     {Array.from(quickActions.entries()).map((entry, index)=>{
-                    const notActiveStyle = "text-grey-600 shadow-md rounded-xl hover:bg-blue-700 w-full"
+                    const notActiveStyle = "text-grey-600 shadow-md rounded-xl hover:bg-blue-700 hover:text-white w-full"
                     const title = entry[0]
                     const content = entry[1]
                     console.log(title)  
                     return <RadioButton active={active == title} value={title} key={title} 
-                        activeSyle="bg-blue-600 w-full rounded-xl" inActiveStyle={notActiveStyle}
+                        activeSyle="bg-blue-600 w-full text-white rounded-xl" inActiveStyle={notActiveStyle}
                         onClick={activateQuickAction}>
                             <Banner title={title} content={content} key={index}/>
                         </RadioButton>
@@ -93,7 +97,7 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, projects})=>{
                     Recommended for you
                 </p>
                 <span className="text-sm font-medium text-gray-500">Based on your skills and location</span>
-                {projects.map((project, index)=> <ProjectCard {...project} key={index}/>)}
+                {projects.map((project, index)=> <ProjectCard {...project} key={index} />)}
             </div>
         </div>
     </>

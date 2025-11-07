@@ -7,10 +7,9 @@ export interface NavLinkProps {
 
 export interface ButtonProps {
   children: React.ReactNode;
-  variant: 'primary' | 'secondary' | 'outline'| 'green';
+  variant: 'primary' | 'secondary' | 'outline'| 'green'|'disabled'|'void';
   onClick?: () => void;
   className?: string;
-  href?: string;
 }
 
 export interface FeatureCardProps {
@@ -19,6 +18,7 @@ export interface FeatureCardProps {
   icon?: React.ReactNode;
   color: 'red' | 'green' | 'yellow' | 'blue' | 'lock';
   cta?:string
+  action?:()=>void
 }
 
 export interface Cards {
@@ -45,6 +45,7 @@ export interface BasicNatigationProps{
   toForgotPassword?:string;
   toSignUp?:string;
   toVolunteerDetails?:string;
+  
 }
 
 export interface MetricProps{
@@ -71,13 +72,25 @@ export interface ProjectProps{
   maxApplicants: number;
   categories: Array<string>;
   superVolunteer?:string;
-
 }
 
 export interface ProjectComponentProps extends ProjectProps{
   className?:string
+  viewDetails?:boolean
+  applied?:boolean
 }
 
+export interface OrganizationProps{
+  name: string;
+  description:string;
+  location:string;
+  categories:Array<string>;
+  status: "Verified" | "Unverified";
+  numOfActiveProjects:number;
+}
+export interface OrganizationComponentProps extends OrganizationProps{
+  hasVolunteered?:boolean
+}
 export interface DashboardProps{
   metrics?: MetricProps[];
   projects: ProjectProps[];

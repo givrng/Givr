@@ -33,7 +33,7 @@ const Header: React.FC<BasicNatigationProps> = ({ onToSignIn, onToSignUp }) => (
 );
 
 // HeroSection rewritten to match the provided structure and image styling
-const HeroSection: React.FC = () => (
+const HeroSection: React.FC<BasicNatigationProps> = ({onToSignUp}) => (
   <section className="pt-32 pb-16 bg-[#F7FAFC] min-h-[85vh] flex items-center">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
       {/* Left Content Column */}
@@ -49,7 +49,7 @@ const HeroSection: React.FC = () => (
         {/* Call to action Buttons */}
         <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
           {/* Sign up as a volunteer (Primary Button) */}
-          <Button variant="primary" className="text-base">Sign up as a volunteer</Button>
+          <Button variant="primary" className="text-base" onClick={onToSignUp}>Sign up as a volunteer</Button>
           {/* Post a project (Secondary/Outline Button) */}
           <Button variant="secondary" className="text-base">Post a project</Button>
         </div>
@@ -140,7 +140,7 @@ const ProblemSection: React.FC = () => {
   );
 };
 
-const MoreInfoSection: React.FC = () => {
+const MoreInfoSection: React.FC<BasicNatigationProps> = ({onToSignUp}) => {
 
   const platformCategories: Array<FeatureCardProps> = [
     {
@@ -152,7 +152,8 @@ const MoreInfoSection: React.FC = () => {
         "Complete service and earn digital certificates"
       ],
       color: 'blue',
-      cta: "Sign up as a volunteer"
+      cta: "Sign up as a volunteer",
+      action: onToSignUp
     },
     {
       title: "For Organization",
@@ -180,7 +181,7 @@ const MoreInfoSection: React.FC = () => {
       {/* Feature Cards Grid */}
       <div className="max-w-5xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {platformCategories.map((category, index) => <PlatformCategory key={index} color={category.color} description={category.description} title={category.title} cta={category.cta} />)}
+          {platformCategories.map((category, index) => <PlatformCategory key={index} {...category}/>)}
         </div>
       </div>
     </div>
@@ -242,7 +243,7 @@ const CredibilitySection: React.FC = () => {
 
 // --- New CTA Section ---
 
-const CTASection: React.FC = () => (
+const CTASection: React.FC<BasicNatigationProps> = ({onToSignUp}) => (
   <section className="bg-[#1C212A] py-8 text-center">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-white">
@@ -254,7 +255,7 @@ const CTASection: React.FC = () => (
 
       {/* CTA Buttons */}
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center mb-8">
-        <Button variant="primary" className="text-base shadow-lg">Sign up as a volunteer</Button>
+        <Button variant="primary" className="text-base shadow-lg" onClick={onToSignUp}>Sign up as a volunteer</Button>
         <Button variant="secondary" className="text-base shadow-lg">Post a project</Button>
       </div>
 
@@ -335,11 +336,11 @@ export default function LandingPage(navigation: BasicNatigationProps) {
 
       <Header {...navigation} />
       <main>
-        <HeroSection />
+        <HeroSection onToSignUp={navigation.onToSignUp}/>
         <ProblemSection />
-        <MoreInfoSection />
+        <MoreInfoSection onToSignUp={navigation.onToSignUp}/>
         <CredibilitySection />
-        <CTASection />
+        <CTASection onToSignUp={navigation.onToSignUp}/>
         <Footer />
       </main>
 

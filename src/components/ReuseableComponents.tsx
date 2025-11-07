@@ -1,13 +1,17 @@
-import type { ReactNode } from "react";
-import type { ButtonProps, FeatureCardProps, MetricComponentProps, MetricProps, NavLinkProps, ProjectComponentProps } from "../interface/interfaces"
+import { useState, type ReactNode} from "react";
+import type { ButtonProps, FeatureCardProps, MetricComponentProps, NavLinkProps, OrganizationComponentProps, OrganizationProps, ProjectComponentProps } from "../interface/interfaces"
 import { ArrowIcon, CalendarIcon, ClockIcon, GroupIcon, LocationIcon } from "./icons";
+import { useConfirmAsk } from "./hooks/useConfirm";
+import { useAlert } from "./hooks/useAlert";
+import { useModal } from "./hooks/useModal";
+
 
 // --- Reusable Components ---
 
 export const Button: React.FC<ButtonProps> = ({ children, variant, className = '', onClick }) => {
   // Adjusted base classes for a cleaner look matching the image
   const baseClasses = 'px-6 py-3 font-semibold rounded-lg transition duration-200 whitespace-nowrap';
-
+  let disabled = false
   let variantClasses = '';
   switch (variant) {
     case 'primary':
@@ -19,17 +23,24 @@ export const Button: React.FC<ButtonProps> = ({ children, variant, className = '
       break;
     case 'outline':
       // Used for the Sign Up button in the header
-      variantClasses = 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50';
+      variantClasses = 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-200';
       break;
     case 'green':
       variantClasses = 'bg-[#34A853] text-white hover:bg-green-700'
       break;
+    case "disabled":
+      variantClasses = 'bg-[#DAF0FF] text-gray-500'
+      disabled=true
+      break
+    case 'void':
+      variantClasses= ''
+      break
     default:
       variantClasses = 'bg-[#34A853] text-white hover:bg-[#156cd4] shadow-md';
   }
 
   return (
-    <button className={`${baseClasses} ${variantClasses} ${className}`} onClick={onClick}>
+    <button className={`${baseClasses} ${variantClasses} ${className}`} onClick={onClick} disabled={disabled}>
       {children}
     </button>
   );
@@ -89,7 +100,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, ic
 };
 
 
-export const PlatformCategory: React.FC<FeatureCardProps> = ({ color, description, title, cta }) => {
+export const PlatformCategory: React.FC<FeatureCardProps> = ({ color, description, title, cta, action }) => {
 
   let listBgColor = "bg-[#1A73E8]";
   if (color == 'green') {
@@ -108,7 +119,7 @@ export const PlatformCategory: React.FC<FeatureCardProps> = ({ color, descriptio
           </li>)}
         </ol>
 
-        <Button variant={color == 'blue' ? 'primary' : 'green'} className='w-full mt-8 py-3'>{cta}</Button>
+        <Button variant={color == 'blue' ? 'primary' : 'green'} className='w-full mt-8 py-3' onClick={action}>{cta}</Button>
       </div>
     )
   }
@@ -122,7 +133,7 @@ export const Card: React.FC<{children: React.ReactNode}> = ({ children }) => (
 );
 
 
-export const MetricCard: React.FC<MetricComponentProps> = ({title, context, icon, value, className = "w-full "})=>{
+export const MetricCard: React.FC<MetricComponentProps> = ({title, context, icon, value, className = "w-full ", color})=>{
   return (
     <div className={`bg-white p-6 rounded-xl shadow-lg max-w-sm ${className}`}>
     
@@ -132,7 +143,7 @@ export const MetricCard: React.FC<MetricComponentProps> = ({title, context, icon
     </div>
 
     <div className="flex flex-col">
-        <span className="text-2xl font-extrabold text-blue-600 leading-none">{value?value:"124"}</span>
+        <span className={`text-2xl font-extrabold text-[${color}] leading-none`}>{value?value:"124"}</span>
         <span className="text-sm font-medium text-gray-500 mt-2">{context? context: "+12 hours this month"}</span>
     </div>
 </div>
@@ -150,7 +161,7 @@ export const Banner:React.FC<{className?:string; onClick?:()=>void; title:string
             <h3 className="text-sm font-semibold leading-tight">{title}</h3>
             <p className="text-xs font-normal opacity-90 mt-1">{content}</p>
         </div>
-        <ArrowIcon className="w-6 h-6 text-black"/>
+        <ArrowIcon className="w-6 h-6"/>
     </div>
 </button>
 )
@@ -163,9 +174,95 @@ export const InfoCell:React.FC<{icon:ReactNode, info:string}> = ({icon, info})=>
 
 )
 
-export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization, categories, attendanceHours, location, maxApplicants, startDate,status, totalApplicants, superVolunteer})=>(
-  <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full">
+const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, description, location, numOfActiveProjects, categories, status, hasVolunteered=false})=>{
+  const {confirmAsk, ConfirmDialog} = useConfirmAsk()
+  const {alertMessage, AlertDialog} = useAlert()
+
+
+  const handleApplication = async ()=>{
+    const ok = hasVolunteered? await confirmAsk({
+      question: "Are you sure you want to cancel your application for this particular project?",
+      trueAnswer: "Proceed",
+      falseAnswer: "Cancel"
+    }): await await confirmAsk({
+      question: "Are you sure you want to apply for this particular project?",
+      trueAnswer: "Apply",
+      falseAnswer: "Cancel"
+    })
+
+    if(ok){
+      let message =hasVolunteered?`Your application to ${name} has been cancelled`:`Your application to ${name} has been submitted`
+      await alertMessage(message)
+    }
+  }
+
+  return <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full max-w-2xl">
     
+    <div className="flex justify-between items-start mb-4">
+        <div className="flex flex-col pr-4"> 
+            <h3 className="text-xl font-bold text-gray-900 mb-1">{name}</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+                {description}
+            </p>
+        </div>
+        <div className="flex-shrink-0 flex space-x-2"> 
+            <span className="bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                Applied
+            </span>
+            <span className={`${status=="Verified"?"bg-green-600": "bg-red-600"} text-white text-xs font-semibold px-3 py-1 rounded-full`}>
+               {status}
+            </span>
+        </div>
+    </div>
+
+    <div className="text-sm text-gray-700 space-y-2 mb-4">
+        <p>
+            <span className="font-semibold text-blue-600">Adress: </span> 
+            {location}
+        </p>
+        <p>
+            <span className="font-semibold text-blue-600">Active Projects: </span> 
+            {numOfActiveProjects}
+        </p>
+    </div>
+
+    <div className="flex justify-between items-end">
+        <div className="flex space-x-2">
+            {categories.map((category)=><span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{category}</span>)}
+        </div>
+        
+        {hasVolunteered?<Button variant="outline" onClick={handleApplication} > Cancel Application</Button>: null}
+    </div>
+    <ConfirmDialog/>
+    <AlertDialog/>
+</div>
+}
+
+export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization, categories, attendanceHours, location, maxApplicants, startDate,status, totalApplicants, superVolunteer, viewDetails=false, applied=false})=>{
+
+  const [displayForm, setDisplayForm] = useState(false)
+  const {modal, DisplayModal} = useModal()
+
+
+  // Makes request to backend to get organization information 
+  const handleView = ()=>{
+    // Make the fetch requiest 
+    const response: OrganizationProps = {
+      name: "The first NGO",
+      description: "A first time NGO to the building and improvement on First Class First timers",
+      categories: [
+        "Healthcare", "Community Outreach"
+      ],
+      location: "Plot 1, Ademola adetokunbo road, Wuse, Abuja",
+      numOfActiveProjects: 2,
+      status: "Verified"
+    }
+    modal(<OrganizationCard {...response} hasVolunteered={false}/>)
+
+  }
+
+
+  return <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full">
     <div className="flex justify-between items-start mb-4">
         <div className="flex flex-col">
             <h3 className="text-xl font-bold text-gray-800">{title?title: "Community Health Screening"}</h3>
@@ -197,11 +294,20 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization
             
             {superVolunteer&& (<p className="text-sm font-normal text-gray-600">Super Volunteer: <span className="font-medium text-gray-800">{superVolunteer}</span></p>)}
         </div>
-        
-        <Button variant="primary">Apply Now</Button>
+        <div className="flex gap-x-2">
+          {viewDetails && <Button variant="outline" onClick={handleView}>View details</Button>}
+          {!applied?(<Button variant="primary" onClick={()=>setDisplayForm(true)}>Apply Now</Button>): <Button variant="disabled">Applied</Button>}
+        </div>
     </div>
+
+    {/* Volunteer can views details of an organization after applying, therefore, application form should not be shown */}
+    {(displayForm && (!viewDetails || !applied))&& <ApplicationForm organization={organization} onCancel={()=>setDisplayForm(false)}/>}
+    <DisplayModal/>
+    
 </div>
-)
+}
+
+
  {/*Highlights only active button, used for navigation, allowing user toggle*/}
 export const RadioButton: React.FC<{children: React.ReactNode;  value?:string; activeSyle?:string; inActiveStyle?:string; active?: boolean; onClick?: (event:React.MouseEvent<HTMLButtonElement>) => void;}> = ({ children, active, onClick, activeSyle, inActiveStyle, value}) => {
   let activeStyle_ = activeSyle;
@@ -225,6 +331,61 @@ export const RadioButton: React.FC<{children: React.ReactNode;  value?:string; a
         </button>
     );
 };
+
+export const ApplicationForm:React.FC<{onCancel:()=>void, organization:string}> = ({onCancel, organization})=>{
+
+  interface ApplicationFields {
+    reason: string;
+    availability:string
+  }
+  const [applicationForm, setApplicationForm] = useState<ApplicationFields>({
+    reason: "",
+    availability: ""
+  })
+
+  let {confirmAsk, ConfirmDialog}= useConfirmAsk()
+  let {alertMessage, AlertDialog} = useAlert()
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>)=>{
+    e.preventDefault()
+    // Prompt the volunteer to confirm their application
+    const ok = await confirmAsk({
+      question: "Are you sure you want to apply for this particular project?",
+      trueAnswer: "Apply",
+      falseAnswer: "Cancel"
+    })
+    if(ok){
+      let message = `Thank you for Applying! ${organization} will reach out to you if you fit the selection criteria`
+      await alertMessage(message)
+    }
+
+    onCancel()
+  }
+
+ 
+  return <>
+    <div className="bg-white p-8 rounded-xl mt-2 shadow-2xl w-full max-full">
+      {/* <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-6 leading-tight">Appply for {project}</h2> */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        
+        <label htmlFor="reason" className="block text-base font-semibold text-gray-700 mb-2">Why do you want to volunteer for this project?</label>
+        
+        <textarea name="reason" rows={5}  value={applicationForm["reason"]} onChange={(e)=>setApplicationForm({...applicationForm, reason:e.currentTarget.value })} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 resize-y text-gray-800" required></textarea>
+        <label htmlFor="availability" className="block text-base font-semibold text-gray-700 mb-2">Confirm you availability</label>
+        <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800" type="text" name="availability" placeholder="e.g available all day" value={applicationForm.availability} onChange={e=>setApplicationForm({...applicationForm, availability: e.currentTarget.value})} required/>
+        
+        <div className="flex justify-between pt-2 space-x-4">
+          <Button variant="primary" className="w-full">Submit application</Button>
+           <Button variant="outline"  className="w-full" onClick={onCancel}>Cancel</Button>
+        </div>
+      </form>
+      <ConfirmDialog/>
+      <AlertDialog/>
+    </div>
+  </>
+}
+
+
 // // Runtime validation function using regex
 // function isValidAttendanceHours(hours: string): hours is AttendanceHours {
 //     const regex = /^(1[0-2]|[1-9])(Am|Pm) - (1[0-2]|[1-9])(Am|Pm)$/;

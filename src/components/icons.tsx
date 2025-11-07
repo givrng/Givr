@@ -9,7 +9,6 @@ import blueVerifiedIcon from "../assets/icons/blue-tick-badge.svg"
 import roundCert from "../assets/icons/round-cert.svg"
 import bulletPointIcon from "../assets/icons/radiobox-marked.svg"
 import googleIcon from "../assets/icons/google.svg"
-import arrowIcon from "../assets/icons/arrow.svg"
 // Simplified Icon for Verified/Checkmark Logo
 
 export const GivrLogoIcon:React.FC<{className?:string}> = ({className = "h-6 w-auto max-w-full"}): React.JSX.Element => <img src={givrLogo} alt="Givr Logo" className={className}/>
@@ -93,8 +92,15 @@ export const LockIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-
 export const GoogleIcon: React.FC <{className?:string}> = ({className= "w-6 h-6"})=>(
   <img src={googleIcon} alt="Google Logo Icon" className={className}/>
 )
-export const ArrowIcon:React.FC<{className?:string}>= ({className= "w-8 h-8"})=>(
-  <img src={arrowIcon} alt="Arrow Icon" className={className}></img>
+export const ArrowIcon:React.FC<{className?:string, color?:string}>= ({className= "w-8 h-8", color= "currentColor"})=>(
+  <svg xmlns="http://www.w3.org/2000/svg" 
+             fill="none" 
+             viewBox="0 0 24 24" 
+             stroke-width="2" 
+             stroke={color}
+             className={`${className}`}>
+    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+</svg>
 )
 
 export const ClockIcon:React.FC<{className?:string, color?:string}> = ({className = "w-8 h-8", color="#1A73E8"}):React.JSX.Element=>(
@@ -181,4 +187,7 @@ export const HeartHandIcon: React.FC<{ className?: string }> = ({
   </svg>
 );
 
+export const CancelIcon:React.FC<{className?:string, color?:string}> = ({className="w-5 h-5"})=>(<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" className={className}>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>)
 

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { GivrRoundLogo } from "./icons";
 import { RadioButton } from "./ReuseableComponents";
 
@@ -23,7 +22,7 @@ const UserDashboardInformation:React.FC<{username:string; buttons:Array<string>;
     {/* Navigation*/}
     const NavigationBar: React.FC<{buttons:Array<string>; active:string; onclick:(event:React.MouseEvent<HTMLButtonElement>)=>void}> = ({buttons, active, onclick}) => {
         return (
-            <div className="w-full flex justify-center my-1">
+            <div className="w-full flex justify-center mb-3">
                 <nav className="w-full bg-[#E7E9EF] rounded-xl shadow-inner-sm">
                     <div className="flex justify-evenly gap-x-1">
                         {buttons.map((label) => (
