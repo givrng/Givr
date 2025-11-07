@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { useNavigate } from 'react-router-dom';
 import heroImage from "../assets/hero-image.svg"
 import { BulletIcon, DigitalCertificate, FileXIcon, GivrLogoIcon, GreenCheck, LockIcon, SearchTimeIcon, ShieldIcon, StarIcon, UsersIcon, VerifiedIcon, YelloBadge } from '../components/icons';
 import { Button, FeatureCard, NavLink, PlatformCategory } from '../components/landingPageComponents';
@@ -8,29 +8,45 @@ import type { FeatureCardProps } from '../props interface/landingPage';
 
 // --- Section Components ---
 
-const Header: React.FC = () => (
-  // Fixed header with slightly off-white background
-  <header className="fixed top-0 left-0 right-0 z-50 bg-[#F7FAFC] backdrop-blur-sm border-b border-gray-100">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
-      <div className="flex items-center space-x-1 font-semibold text-xl text-gray-800">
-        <GivrLogoIcon />
-      </div>
+const Header: React.FC = () => {
+  const navigate = useNavigate();
+  return (
+    // Fixed header with slightly off-white background
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#F7FAFC] backdrop-blur-sm border-b border-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
+        <div className="flex items-center space-x-1 font-semibold text-xl text-gray-800">
+          <GivrLogoIcon />
+        </div>
 
-      {/* Navigation Links */}
-      <nav className="hidden lg:flex space-x-8">
-        <NavLink label="Opportunities" href="#opportunities" />
-        <NavLink label="Organizations" href="#organizations" />
-        <NavLink label="Certificates" href="#certificates" />
-      </nav>
+        {/* Navigation Links */}
+        <nav className="hidden lg:flex space-x-8">
+          <NavLink label="Opportunities" href="#opportunities" />
+          <NavLink label="Organizations" href="#organizations" />
+          <NavLink label="Certificates" href="#certificates" />
+        </nav>
 
-      {/* Action Buttons: Sign In (Primary), Sign Up (Outline) */}
-      <div className="flex space-x-3">
-        <Button variant="primary" className="text-sm px-4 py-2 shadow-none" href='signin' >Sign In</Button>
-        <Button variant="outline" className="text-sm px-4 py-2 shadow-none" href="signup-select-role" >Sign Up</Button>
+        {/* Action Buttons: Sign In (Primary), Sign Up (Outline) */}
+        <div className="flex space-x-3">
+          <Button
+            variant="primary"
+            className="text-sm px-4 py-2 shadow-none"
+          // href="signin"
+          >
+            Sign In
+          </Button>
+          <Button
+            variant="outline"
+            className="text-sm px-4 py-2 shadow-none"
+            // href="signup-select-role"
+            onClick={() => navigate("/signup-select-role")}
+          >
+            Sign Up
+          </Button>
+        </div>
       </div>
-    </div>
-  </header>
-);
+    </header>
+  )
+};
 
 // HeroSection rewritten to match the provided structure and image styling
 const HeroSection: React.FC = () => (

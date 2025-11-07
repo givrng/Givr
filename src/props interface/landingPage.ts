@@ -5,10 +5,10 @@ export interface NavLinkProps {
 
 export interface ButtonProps {
   children: React.ReactNode;
-  variant: 'primary' | 'secondary' | 'outline'| 'green';
-  onClick?: () => void;
+  variant: "primary" | "secondary" | "outline" | "green";
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
-  href?: string;
+  type?: "submit" | "reset" | "button";
 }
 
 export interface FeatureCardProps {

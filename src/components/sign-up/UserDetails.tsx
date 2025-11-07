@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import Input from "../form/Input";
 import {
   Button,
 } from "../landingPageComponents";
+import { useNavigate } from "react-router-dom";
+import LocationSelect from "../form/LocationSelect";
 
 
 type inputProps = {
@@ -13,30 +15,52 @@ type inputProps = {
     value?: string;
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     required?: boolean;
-    error?: string;
+    error?: string  ;
+    autoComplete?: string;
 }
 
 /**
  * Define a local interface for the form state to avoid colliding with the DOM's FormData type.
  */
 interface FormFields {
-  name: string;
+  firstname: string;
+  middlename: string;
+  lastname: string;
   email: string;
   phone: string;
   password: string;
   confirmPassword: string;
-  location: string;
+    state: string;
+    lga: string;
 }
 
 const UserDetails = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState<FormFields>({
-      name: "",
+      firstname: "",
+      middlename: "",
+      lastname: "",
       email: "",
       phone: "",
       password: "",
       confirmPassword: "",
-      location: "",
+      state: "",
+      lga: "",
     });
+
+      const handleLocationChange = useCallback(
+    (location: { state: string; lga: string }) => {
+      setFormData((prev) => ({ ...prev, ...location }));
+
+            //   clears error once an item is selected
+      setErrors((prev) => ({
+        ...prev,
+        ...(location.state && { state: "" }),
+        ...(location.lga && { lga: "" }),
+      }));
+    },
+    [] // no dependencies → stable reference
+  );
 
     const [errors, setErrors] = useState<Partial<FormFields>>({});
 
@@ -48,66 +72,136 @@ const UserDetails = () => {
       setErrors((prev) => ({ ...prev, [name as keyof FormFields]: "" }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-
+    const validateForm = (): Partial<FormFields> => {
       const newErrors: Partial<FormFields> = {};
 
-      // simple required field validation
-      (Object.keys(formData) as (keyof FormFields)[]).forEach((key) => {
-        if (!formData[key]) {
-          newErrors[key] = "This field is required";
-        }
-      });
-
-      setErrors(newErrors);
-
-      // if no errors, proceed
-      if (Object.keys(newErrors).length === 0) {
-        // navigate or go to next page here
+      // First name validation
+      if (!formData.firstname.trim()) {
+        newErrors.firstname = "First name is required";
+      } else if (formData.firstname.trim().length < 2) {
+        newErrors.firstname = "First name must be at least 2 characters";
       }
+
+      // Middle name validation (optional but validate length if provided)
+      if (
+        formData.middlename &&
+        formData.middlename.trim().length > 0 &&
+        formData.middlename.trim().length < 2
+      ) {
+        newErrors.middlename = "Middle name must be at least 2 characters";
+      }
+
+      // Last name validation
+      if (!formData.lastname.trim()) {
+        newErrors.lastname = "Last name is required";
+      } else if (formData.lastname.trim().length < 2) {
+        newErrors.lastname = "Last name must be at least 2 characters";
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!formData.email) {
+        newErrors.email = "Email is required";
+      } else if (!emailRegex.test(formData.email)) {
+        newErrors.email = "Please enter a valid email address";
+      }
+
+      // Phone validation
+      const phoneRegex = /^\d{11,}$/;
+      if (!formData.phone) {
+        newErrors.phone = "Phone number is required";
+      } else if (!phoneRegex.test(formData.phone)) {
+        newErrors.phone = "Phone number must be at least 11 digits";
+      }
+
+      // Password validation
+      if (!formData.password) {
+        newErrors.password = "Password is required";
+      } else if (formData.password.length < 6) {
+        newErrors.password = "Password must be at least 6 characters";
+      }
+
+      // Confirm Password validation
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = "Please confirm your password";
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
+      }
+
+    if (!formData.state) newErrors.state = "State is required";
+    if (!formData.lga) newErrors.lga = "LGA is required";
+
+      return newErrors;
     };
+
+ const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const newErrors = validateForm();
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        // If validation passes, navigate to next page
+        navigate('/signup-pick-interests');
+    };
+
      const inputs: inputProps[] = [
        {
-         label: "Full Name",
+         label: "First Name",
          type: "text",
-         name: "name",
-         placeholder: "John Doe",
+         name: "firstname",
+         placeholder: "John",
+         autoComplete: "given-name",
+       },
+       {
+         label: "Middle Name",
+         type: "text",
+         name: "middlename",
+         placeholder: "Michael",
+         autoComplete: "additional-name",
+       },
+       {
+         label: "Last Name",
+         type: "text",
+         name: "lastname",
+         placeholder: "Doe",
+         autoComplete: "family-name",
        },
        {
          label: "Email",
          type: "email",
          name: "email",
          placeholder: "john@example.com",
+         autoComplete: "email",
        },
        {
          label: "Phone Number",
          type: "tel",
          name: "phone",
          placeholder: "08123456789",
+         autoComplete: "tel",
        },
        {
          label: "Password",
          type: "password",
          name: "password",
          placeholder: "********",
+         autoComplete: "new-password",
        },
        {
          label: "Confirm Password",
          type: "password",
          name: "confirmPassword",
          placeholder: "********",
+         autoComplete: "new-password",
        },
-       {
-         label: "Location",
-         type: "text",
-         name: "location",
-         placeholder: "Lagos, Nigeria",
-       },
+
      ];
     return (
       <div className="bg-[#F3FAFA] flex flex-col min-h-screen pt-5 px-3 sm:px-4 lg:px-4 mx-auto w-full">
-        <form className="form " onSubmit={handleSubmit}>
+        <form className="form " onSubmit={handleSubmit} noValidate>
           <h2 className=" font-bold text-2xl leading-4 text-[#323338]  ">
             Input your details
           </h2>
@@ -118,9 +212,15 @@ const UserDetails = () => {
                 type={input.type}
                 placeholder={input.placeholder}
                 name={input.name}
-                value={input.name ? formData[input.name as keyof FormFields] : ''}
+                value={
+                  input.name ? formData[input.name as keyof FormFields] : ""
+                }
                 onChange={handleChange}
-                error={input.name ? errors[input.name as keyof FormFields] : undefined}
+                error={
+                  input.name
+                    ? errors[input.name as keyof FormFields]
+                    : undefined
+                }
                 // required
               />
               {input.name && errors[input.name as keyof FormFields] && (
@@ -130,15 +230,20 @@ const UserDetails = () => {
               )}
             </div>
           ))}
-
-
-            <Button
-              variant="primary"
-              className="text-sm px-4 py-2 shadow-none w-full mt-4"
-              href="signup-pick-interests"
-            >
-              Next
-            </Button>
+          {/*  LocationSelect component here */}
+          <div>
+            <LocationSelect
+              onChange={handleLocationChange}
+              error={{ state: errors.state, lga: errors.lga }}
+            />
+          </div>
+          <Button
+            variant="primary"
+            className="text-sm px-4 py-2 shadow-none w-full mt-4"
+            type="submit"
+          >
+            Next
+          </Button>
         </form>
       </div>
     );

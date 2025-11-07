@@ -4,9 +4,12 @@ type interestprops = {
     title: string;
     items: string[];
 }
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 
 const PickInterests = () => {
+    const navigate = useNavigate();
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const interestCategories: interestprops[] = [
     {
@@ -121,18 +124,22 @@ const handleSelect = (item: string): void => {
             </h3>
 
             <div className="flex flex-wrap gap-2">
-                    {category.items.map((item, i) => {
-const isSelected = selectedInterests.includes(item);
-                        return (
-                          <span
-                            key={i}
-                                className={`border border-ui px-5  sm:text-lg text-sm rounded-2xl cursor-pointer  text-[#323338] hover:bg-(--primary-color) hover:text-white  ${isSelected ? "bg-(--primary-color) text-white" : "text-[#323338] bg-white"}`}
-                            onClick={() => handleSelect(item)}
-                          >
-                            <p>{item}</p>
-                          </span>
-                        );
-                    })}
+              {category.items.map((item, i) => {
+                const isSelected = selectedInterests.includes(item);
+                return (
+                  <span
+                    key={i}
+                    className={`border border-ui px-5  sm:text-lg text-sm rounded-2xl cursor-pointer  text-[#323338] hover:bg-(--primary-color) hover:text-white  ${
+                      isSelected
+                        ? "bg-(--primary-color) text-white"
+                        : "text-[#323338] bg-white"
+                    }`}
+                    onClick={() => handleSelect(item)}
+                  >
+                    <p>{item}</p>
+                  </span>
+                );
+              })}
             </div>
             <hr className="border border-ui mt-5" />
           </div>
@@ -142,23 +149,24 @@ const isSelected = selectedInterests.includes(item);
         <Button
           variant="outline"
           className="text-sm px-4 py-2 shadow-none sm:w-60 w-full "
-          href="dashboard"
+          //   href="dashboard"
+          onClick={() => navigate("/signup-user-details")}
         >
           skip
         </Button>
         <Button
           variant="primary"
           className="text-sm px-4 py-2 shadow-none sm:w-60 w-full "
-          href="dashboard"
+          onClick={() => navigate("/signup-user-details")}
         >
           Next
         </Button>
       </div>
       <span className="text-base text-[#676879] my-6 ">
         Already have an account?
-        <a href="signin" className="text-[#323338] font-bold ml-2 ">
+        <Link to="signin" className="text-[#323338] font-bold ml-2 ">
           SignIn here
-        </a>
+        </Link>
       </span>
     </div>
   );

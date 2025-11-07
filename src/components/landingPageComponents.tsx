@@ -2,9 +2,10 @@ import type { ButtonProps, FeatureCardProps, NavLinkProps } from "../props inter
 
 
 
+
 // --- Reusable Components ---
 
-export const Button: React.FC<ButtonProps> = ({ children, variant, className = '', href }) => {
+export const Button: React.FC<ButtonProps> = ({ children, variant, className = '',  type, onClick }) => {
   // Adjusted base classes for a cleaner look matching the image
   const baseClasses = 'px-6 py-3 font-semibold rounded-lg transition duration-200 whitespace-nowrap';
 
@@ -29,11 +30,9 @@ export const Button: React.FC<ButtonProps> = ({ children, variant, className = '
   }
 
   return (
-    <a href={`${href}`}>
-      <button className={`${baseClasses} ${variantClasses} ${className}`}>
+      <button type={type} onClick={onClick} className={`${baseClasses} ${variantClasses} ${className}`}>
         {children}
       </button>
-    </a>
   );
 };
 
