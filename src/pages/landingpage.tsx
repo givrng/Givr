@@ -1,40 +1,16 @@
 import React from 'react';
 
 import heroImage from "../assets/hero-image.svg"
-import { BulletIcon, DigitalCertificate, FileXIcon, GivrLogoIcon, GreenCheck, LockIcon, SearchTimeIcon, ShieldIcon, StarIcon, UsersIcon, VerifiedIcon, YelloBadge } from '../components/icons';
-import { Button, FeatureCard, NavLink, PlatformCategory } from '../components/ReuseableComponents';
+import { BulletIcon, DigitalCertificate, FileXIcon, GreenCheck, LockIcon, SearchTimeIcon, ShieldIcon, StarIcon, UsersIcon, VerifiedIcon, YelloBadge } from '../components/icons';
+import { Button, FeatureCard, PlatformCategory } from '../components/ReuseableComponents';
 import type { FeatureCardProps, BasicNatigationProps } from '../interface/interfaces'
-
+import { GenericHeader } from '../components/landingHeader';
 
 // --- Section Components ---
 
-const Header: React.FC<BasicNatigationProps> = ({ onToSignIn, onToSignUp }) => (
-  // Fixed header with slightly off-white background
-  <header className="fixed top-0 left-0 right-0 z-50 bg-[#F7FAFC] backdrop-blur-sm border-b border-gray-100">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
-      <div className="flex items-center space-x-1 font-semibold text-xl text-gray-800">
-        <GivrLogoIcon className='w-20 h-auto max-w-full' />
-      </div>
-
-      {/* Navigation Links */}
-      <nav className="hidden lg:flex space-x-8">
-        <NavLink label="Opportunities" href="#opportunities" />
-        <NavLink label="Organizations" href="#organizations" />
-        <NavLink label="Certificates" href="#certificates" />
-      </nav>
-
-      {/* Action Buttons: Sign In (Primary), Sign Up (Outline) */}
-      <div className="flex space-x-2">
-        <Button variant="primary" className="text-sm px-4 py-2 shadow-none" onClick={onToSignIn}>Sign In</Button>
-        <Button variant="outline" className="text-sm px-4 py-2 shadow-none" onClick={onToSignUp}>Sign Up</Button>
-      </div>
-    </div>
-  </header>
-);
-
 // HeroSection rewritten to match the provided structure and image styling
 const HeroSection: React.FC<BasicNatigationProps> = ({onToSignUp}) => (
-  <section className="pt-32 pb-16 bg-[#F7FAFC] min-h-[85vh] flex items-center">
+  <section className="mt-21 pb-16 bg-[#F7FAFC] min-h-[85vh] flex items-center">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
       {/* Left Content Column */}
       <div className="max-w-lg">
@@ -326,15 +302,7 @@ const Footer: React.FC = () => (
 export default function LandingPage(navigation: BasicNatigationProps) {
   return (
     <div className="min-h-screen font-[Inter] antialiased">
-      {/* Load Inter Font - assumed to be available or loaded via global CSS */}
-      <style>{`
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #F7FAFC; /* Match the subtle background color from the image */
-        }
-      `}</style>
-
-      <Header {...navigation} />
+      <GenericHeader></GenericHeader>
       <main>
         <HeroSection onToSignUp={navigation.onToSignUp}/>
         <ProblemSection />
@@ -343,8 +311,6 @@ export default function LandingPage(navigation: BasicNatigationProps) {
         <CTASection onToSignUp={navigation.onToSignUp}/>
         <Footer />
       </main>
-
-
     </div>
   );
 }

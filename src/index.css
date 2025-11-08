@@ -90,3 +90,8 @@ button:focus-visible {
               #33333300;
   }
 }
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #F7FAFC; 
+}

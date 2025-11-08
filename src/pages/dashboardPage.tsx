@@ -1,25 +1,48 @@
 import {  BriefcaseIcon, ClockIcon, ShieldIcon, StarIcon } from "../components/icons"
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import UserDashboardInformation from "../components/userDashBoardInfo";
 import Dashboard from "../components/dashboard";
-import rawProjects from "../data/projects.json" assert {type: 'json'}
-import type { MetricProps, ProjectProps } from "../interface/interfaces";
+
+import type { MetricProps, NavTypes, ProjectProps, QuickActions } from "../interface/interfaces";
 import { FindOpportunity } from "../components/findOpportunities";
+import { DashboardHeader } from "../components/dashboardHeader";
 
 export const DashboardPage = ()=>{
-    type NavTypes = "Dashboard" | "Find Opportunities"| "My Volunteering"| "Profile & Achievements";
-    const [active, setActive] = useState<NavTypes>("Dashboard");
     
+    const [active, setActive] = useState<NavTypes>("Dashboard");
+    const [projects, setProjects] = useState<ProjectProps[]>([])
     const buttons = new Map<string, string>()
     buttons.set("Dashboard", "Dashboard")
     buttons.set("Find Opportunities", "Find Opportunities")
     buttons.set("My Volunteering", "My Volunteering")
     buttons.set("Profile & Achievements", "Profile & Achievements")
 
-    const projects = rawProjects as ProjectProps[]
+    // const projects = rawProjects as ProjectProps[]
     const activateNavButton = (event: React.MouseEvent<HTMLButtonElement>)=>{
         let selectButtonValue = buttons.get(event.currentTarget.textContent);
         setActive(selectButtonValue? selectButtonValue as NavTypes: "Dashboard")
+    }
+    const fetchProjects = async(): Promise<ProjectProps[]>=>{
+        try{
+
+            const response = await fetch("/data/projects.json", {
+            headers:{
+                "content-Type":"application/json",
+                "cache-control":"no-cache"
+            }
+        })
+
+            if(!response.ok){
+                throw new Error("Failed to fetch projects")
+            }
+
+            const data = await response.json()
+            console.log(data)
+            return data as ProjectProps[]
+        }catch(error){
+            console.error("Error loading data")
+            return []
+        }
     }
 
     const metrics: MetricProps[] = [
@@ -50,12 +73,29 @@ export const DashboardPage = ()=>{
         }
     ]
 
+    const quickAction = (action:QuickActions)=>{
+        switch(action){
+            case "Find Opportunities":
+                setActive(action as NavTypes)
+                break;
+            
+        }
+    }
+
+    
+    useEffect(()=>{
+       (async ()=>{
+        const data = await fetchProjects()
+        setProjects(data)
+       })()
+    }, [])
+
     return <>
     <main className="">
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <DashboardHeader/>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-15">
             <UserDashboardInformation activeButton={active} buttons={[...buttons.keys()]} onClick={activateNavButton} username="Daniel"/>
-            {active=="Dashboard" &&<Dashboard projects={projects} metrics={metrics}/>}
+            {active=="Dashboard" &&projects&& <Dashboard projects={projects} metrics={metrics} triggerAction={quickAction}/>}
             {active=="Find Opportunities" && <FindOpportunity projects={projects}/>}
         </div>
     </main>

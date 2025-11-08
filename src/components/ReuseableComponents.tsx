@@ -35,6 +35,9 @@ export const Button: React.FC<ButtonProps> = ({ children, variant, className = '
     case 'void':
       variantClasses= ''
       break
+    case "danger":
+      variantClasses = 'bg-red-600 text-white'
+      break
     default:
       variantClasses = 'bg-[#34A853] text-white hover:bg-[#156cd4] shadow-md';
   }
@@ -132,7 +135,7 @@ export const Card: React.FC<{children: React.ReactNode}> = ({ children }) => (
   </div>
 );
 
-
+/**Used to display the performance information */
 export const MetricCard: React.FC<MetricComponentProps> = ({title, context, icon, value, className = "w-full ", color})=>{
   return (
     <div className={`bg-white p-6 rounded-xl shadow-lg max-w-sm ${className}`}>
@@ -150,10 +153,9 @@ export const MetricCard: React.FC<MetricComponentProps> = ({title, context, icon
   )
 }
 
-
-export const Banner:React.FC<{className?:string; onClick?:()=>void; title:string; content:string}> = ({title, content, onClick})=>(
-  <button
-  onClick={onClick}
+/**Displays quick actions in title - content pairs */
+export const Banner:React.FC<{className?:string; title:string; content:string}> = ({title, content})=>(
+  <div
    className="p-3 transition duration-300 ease-in-out cursor-pointer w-full max-w-lg">
     
     <div className="flex justify-between items-center gap-x-2">
@@ -163,7 +165,7 @@ export const Banner:React.FC<{className?:string; onClick?:()=>void; title:string
         </div>
         <ArrowIcon className="w-6 h-6"/>
     </div>
-</button>
+</div>
 )
 
 export const InfoCell:React.FC<{icon:ReactNode, info:string}> = ({icon, info})=>(
@@ -173,8 +175,8 @@ export const InfoCell:React.FC<{icon:ReactNode, info:string}> = ({icon, info})=>
   </div>
 
 )
-
-const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, description, location, numOfActiveProjects, categories, status, hasVolunteered=false})=>{
+/**Displays an organization's information */
+export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, description, location, numOfActiveProjects, categories, status, hasVolunteered=false})=>{
   const {confirmAsk, ConfirmDialog} = useConfirmAsk()
   const {alertMessage, AlertDialog} = useAlert()
 
@@ -196,7 +198,7 @@ const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, descripti
     }
   }
 
-  return <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full max-w-2xl">
+  return <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full ">
     
     <div className="flex justify-between items-start mb-4">
         <div className="flex flex-col pr-4"> 
@@ -230,7 +232,7 @@ const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, descripti
         <div className="flex space-x-2">
             {categories.map((category)=><span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{category}</span>)}
         </div>
-        
+        <Button variant="primary">View Projects</Button>
         {hasVolunteered?<Button variant="outline" onClick={handleApplication} > Cancel Application</Button>: null}
     </div>
     <ConfirmDialog/>
@@ -238,6 +240,7 @@ const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, descripti
 </div>
 }
 
+/**Displays details of a project */
 export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization, categories, attendanceHours, location, maxApplicants, startDate,status, totalApplicants, superVolunteer, viewDetails=false, applied=false})=>{
 
   const [displayForm, setDisplayForm] = useState(false)
@@ -308,7 +311,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization
 }
 
 
- {/*Highlights only active button, used for navigation, allowing user toggle*/}
+{/*Highlights only active button, used for navigation, allowing user toggle*/}
 export const RadioButton: React.FC<{children: React.ReactNode;  value?:string; activeSyle?:string; inActiveStyle?:string; active?: boolean; onClick?: (event:React.MouseEvent<HTMLButtonElement>) => void;}> = ({ children, active, onClick, activeSyle, inActiveStyle, value}) => {
   let activeStyle_ = activeSyle;
   let notActiveStyle = inActiveStyle;
@@ -332,8 +335,8 @@ export const RadioButton: React.FC<{children: React.ReactNode;  value?:string; a
     );
 };
 
+/**Promts volunteer to provide their reason for applying for a project before application */
 export const ApplicationForm:React.FC<{onCancel:()=>void, organization:string}> = ({onCancel, organization})=>{
-
   interface ApplicationFields {
     reason: string;
     availability:string

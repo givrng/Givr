@@ -7,7 +7,7 @@ export interface NavLinkProps {
 
 export interface ButtonProps {
   children: React.ReactNode;
-  variant: 'primary' | 'secondary' | 'outline'| 'green'|'disabled'|'void';
+  variant: 'primary' | 'secondary' | 'outline'| 'green'|'disabled'|'void'|'danger';
   onClick?: () => void;
   className?: string;
 }
@@ -45,7 +45,8 @@ export interface BasicNatigationProps{
   toForgotPassword?:string;
   toSignUp?:string;
   toVolunteerDetails?:string;
-  
+  toDashBoard?:string;
+  toOppurtunities?:string;  
 }
 
 export interface MetricProps{
@@ -95,4 +96,16 @@ export interface DashboardProps{
   metrics?: MetricProps[];
   projects: ProjectProps[];
   className?:string
+  triggerAction?:(action:QuickActions)=>void
+}
+export type NavTypes = "Dashboard" | "Find Opportunities"| "My Volunteering"| "Profile & Achievements";
+export type QuickActions = "Find Opportunities"| "View Organizations" | "Update Profile"|""
+
+
+export interface VolunteerProfileProps{
+  firstName:string;
+  lastName:string;
+  email:string;
+  Location:string;
+
 }

@@ -10,14 +10,17 @@ export const App:React.FC = function(){
 
     const navigate = useNavigate();
 
-    return <Routes>
+    return <>
+      <Routes>
         <Route index element= {<LandingPage onToSignUp={()=>navigate("/sign-up")} onToSignIn={()=>navigate("/sign-in")}/>} />
         <Route path='sign-in' element= {<SignInPage onToSignUp={()=>navigate("/sign-in")} toForgotPassword="/forgot-password" toSignUp="/sign-up"/>} />
         <Route path='sign-up/*' element= {<SignUpPage onToSignIn={()=>navigate("/sign-in")}/>}/>
         <Route path='forgot-password' element={<ForgotPasswordForm toSignUp="/sign-up"/>}/>
         <Route path='/dashboard' element={<DashboardPage/>}/>
 
-        <Route path="*" element ={<PageNotFound/>}/>
+        <Route path="*" element ={<PageNotFound toDashBoard="/dashboard" />}/>
       </Routes>
+  
+    </>
 
 }
