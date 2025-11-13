@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-import type { DashboardProps, MetricProps, OrganizationProps, QuickActions } from "../interface/interfaces";
+import { useState } from "react";
+import type { DashboardProps, OrganizationProps, QuickActions } from "../interface/interfaces";
 import { Banner, MetricCard, OrganizationCard, ProjectCard, RadioButton } from "./ReuseableComponents";
-import { BriefcaseIcon, ClockIcon, ShieldIcon, StarIcon } from "./icons";
 import { EditProfile } from "./editProfile";
 
 const Dashboard:React.FC<DashboardProps> = ({metrics, projects, triggerAction})=>{
