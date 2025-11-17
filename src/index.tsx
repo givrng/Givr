@@ -20,8 +20,8 @@ export const IndexPage = ()=>{
           <Route path='signup/*' element={<SignUpPage />} />
           <Route path='forgot-password' element={<ForgotPasswordForm toSignUp="/signup" />} />   
                
-          <Route path='/volunteer' element={<VolunteerApp/>}/>
-          <Route path='/organization' element={<OrganizationApp/>}/>
+          <Route path='/volunteer/*' element={<VolunteerApp/>}/>
+          <Route path='/organization/*' element={<OrganizationApp/>}/>
 
           <Route path="*" element={<PageNotFound toDashBoard="/dashboard" />} />
         </Routes>
