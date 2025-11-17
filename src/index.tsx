@@ -1,11 +1,12 @@
 import { Route, Routes, useNavigate } from "react-router-dom"
-import LandingPage from "./landingpage"
-import { SignInPage } from "./signIn"
-import { SignUpPage } from "./signup"
-import { ForgotPasswordForm } from "../components/forgotPassword"
-import { PageNotFound } from "./Volunteer/404 Page"
-import { VolunteerApp } from "../volunteerApp"
-import { OrganizationApp } from "../organizationApp"
+import LandingPage from "./pages/landingpage"
+import { SignInPage } from "./pages/signIn"
+import { SignUpPage } from "./pages/signup"
+import { ForgotPasswordForm } from "./components/forgotPassword"
+import { VolunteerApp } from "./volunteerApp"
+import { OrganizationApp } from "./organizationApp"
+import { PageNotFound } from "./pages/Volunteer/404 Page"
+
 
 export const IndexPage = ()=>{
     const navigate = useNavigate()

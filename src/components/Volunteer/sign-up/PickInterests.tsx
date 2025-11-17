@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSignup } from "./SignupContext";
 import { LoadingEffect } from "../../icons";
 import { useAlert } from "../../hooks/useAlert";
+import useAuthFetch from "../../hooks/useAuthFetch";
 type interestprops = {
     title: string;
     items: string[];
@@ -16,6 +17,7 @@ const PickInterests: React.FC<BasicNatigationProps> = ({onToSignIn}) => {
   const usesignup = useSignup()
   const [isLoading, setIsloading] = useState(false)
   const {alertMessage, AlertDialog} = useAlert()
+  const {API} = useAuthFetch("volunteer")
   const interestCategories: interestprops[] = [
     {
       title: "Creative & Media",
@@ -119,29 +121,26 @@ const PickInterests: React.FC<BasicNatigationProps> = ({onToSignIn}) => {
   const handleSubmit = async ()=>{
     setIsloading(true)
     // make a patch request to add interests for volunteer
-    const baseUrl = import.meta.env.VITE_API_BASE_VOLUNTEER_URL
+    
     const payload = {
       ...usesignup?.formData,
       interests: selectedInterests
     }
 
-    const response = await fetch(`${baseUrl}/auth/signup`, {
+    API().post(`/auth/signup`, {
       method: 'POST', 
       headers: {
         "Content-type": "application/json"
       },
       body: JSON.stringify(payload)
     }
-    )
-    console.log(payload)
-  
-    if(response.ok && onToSignIn){
-      onToSignIn()
-    }else{
+    ).then(()=>{
+      if(onToSignIn)
+        onToSignIn()
+    }, ()=>{
       alertMessage("Account Creation failed, please try again")
       setIsloading(false) 
-    }
-    
+    })
   }
   
   return (

@@ -49,13 +49,13 @@ export const ProjectHub:React.FC<{projects:ProjectProps[], isOrganization?:boole
         }
 
         {/* Organization view */}
-        {isOrganization && newProject?<CreateProject onClose={()=>{setNewProject(false)}}/>:<>
-        <p className="text-xl font-bold text-green-800 flex justify-between">
+        {newProject?<CreateProject onClose={()=>{setNewProject(false)}}/>:<>
+        {isOrganization && <p className="text-xl font-bold text-green-800 flex justify-between">
             <span>Project Management</span>
             <Button variant="green" onClick={createProject}>+ Create Project</Button>
-        </p>
+        </p>}
 
-        {activeCategory=="All Categories"? (projects.map((project, index)=> <ProjectCard {...project} key={index} isOrganization={true} manage={true}/>))
+        {activeCategory=="All Categories"? (projects.map((project, index)=> <ProjectCard {...project} key={index} isOrganization={isOrganization} manage={true}/>))
         : (projects.filter((p)=> p.categories.includes(activeCategory)).map((p, i)=><ProjectCard {...p} key={i} manage={true}/>))}
         </>
         }

@@ -1,22 +1,26 @@
-import { BriefcaseIcon, CheckmarkLogoIcon, ClockIcon, GroupIcon, ShieldIcon, StarIcon, VerifiedIcon } from "../../components/icons"
+import { ClockIcon, GroupIcon, StarIcon, VerifiedIcon } from "../../components/icons"
 import React, { useEffect, useState } from "react";
 import UserDashboardInformation from "../../components/Volunteer/userDashBoardInfo";
 import Dashboard from "../../components/Volunteer/dashboard";
 
-import type { MetricProps, OrganizationNavTypes, OrganizationQuickActions, ProjectProps, VolunteerDashboardProps } from "../../interface/interfaces";
+import type { MetricProps, OrganizationDashboardProps, OrganizationNavTypes, OrganizationQuickActions, ProjectProps } from "../../interface/interfaces";
 import { ProjectHub } from "../../components/Volunteer/projectHub";
 import { DashboardHeader } from "../../components/dashboardHeader";
-import { useAuth } from "../../components/hooks/useAuth";
+
+import { ApplicationHub } from "../../components/Organization/applicationHub";
+import useAuthFetch from "../../components/hooks/useAuthFetch";
+
 
 export const DashboardPage = () => {
 
     const [active, setActive] = useState<OrganizationNavTypes>("Dashboard");
-    const [volunteerDashboard, setVolunteerDashboard] = useState<VolunteerDashboardProps>({
-        firstname: "",
-        projectApplication: []
+   
+    const [dashboard, setDashboard] = useState<OrganizationDashboardProps>({
+        name: "", 
+        projects: []
     });
-    const [projects, setProjects] = useState<ProjectProps[]>([])
-    const [metrics, setMetrics] = useState<MetricProps[]>([
+    
+    const [metrics, _] = useState<MetricProps[]>([
         {
             title: "Active Projects",
             context: "+12 hours this month",
@@ -46,7 +50,7 @@ export const DashboardPage = () => {
             color: "#B86705"
         }
     ])
-
+    const {API} = useAuthFetch("organization")
 
     const buttons = new Map<string, string>()
     buttons.set("Dashboard", "Dashboard")
@@ -68,34 +72,32 @@ export const DashboardPage = () => {
 
 
     const fetchProjects = async (): Promise<ProjectProps[]> => {
-        try {
-
-            const response = await fetch("/data/projects.json", {
-                headers: {
-                    "Content-Type": "application/json",
-                    "cache-control": "no-cache"
-                }
-            })
-
-            if (!response.ok) {
-                throw new Error("Failed to fetch projects")
-            }
-
-            const data = await response.json()
-            return data as ProjectProps[]
-        } catch (error) {
-            console.error("Error loading data")
-            return []
-        }
+        API().get("/projects")
+        .then((response)=>{
+            return response.data as ProjectProps[]
+        }) 
+        return []
     }
 
 
+    const fetchOrganizationDashboard = async ()=>{
+        API().get("/dashboard")
+        .then((response)=>{
+            return setDashboard(response.data)
+        })
+        return null
+    }
     const quickAction = (action: OrganizationQuickActions) => {
         switch (action) {
             case "Create New Project":
-                setActive(action as OrganizationNavTypes)
+                setActive("Project Management" as OrganizationNavTypes)
                 break;
-
+            case "Review pending applications":
+                setActive("Applications")
+                break;
+            case "View Analytics":
+                setActive("Analytics")
+                break;
         }
     }
 
@@ -103,18 +105,21 @@ export const DashboardPage = () => {
 
     useEffect(() => {
         (async () => {
-            const data = await fetchProjects()
-            setProjects(data)
+            await fetchOrganizationDashboard()
+            
         })()
     }, [])
+
+
 
     return <>
         <main className="">
             <DashboardHeader isOrganization={true} />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-15">
-                <UserDashboardInformation activeButton={active} buttons={[...buttons.keys()]} onClick={activateNavButton} username={"Abuja Health Organization"} />
-                {active == "Dashboard" && projects && <Dashboard projects={projects} metrics={metrics} orgTriggerAction={quickAction} />}
-                {active == "Project Management" && <ProjectHub projects={projects} isOrganization={true}/>}
+                <UserDashboardInformation activeButton={active} buttons={[...buttons.keys()]} onClick={activateNavButton} username={dashboard.name} />
+                {active == "Dashboard" && dashboard && <Dashboard projects={dashboard.projects} metrics={metrics} orgTriggerAction={quickAction} />}
+                {active == "Project Management" && <ProjectHub projects={dashboard.projects} isOrganization={true}/>}
+                {active == "Applications" && <ApplicationHub/>}
             </div>
         </main>
     </>

@@ -8,12 +8,12 @@ type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
 };
 
 const Input: React.FC<InputProps> = ({
-  label,
-  className = "",
+    label,
+    className = "",
     labelClassName = "",
     name = "",
-  error,
-  ...props
+    error,
+    ...props
 }) => {
     const borderClasses = error
       ? "border border-red-500 focus:ring-red-500"
@@ -33,11 +33,12 @@ const Input: React.FC<InputProps> = ({
         </>
       )}
 
-      <div className={` w-full ${className}`}>
+      <div className={`w-full ${className}`}>
               <input
                   {...props}
                   name={name}
                   id={name}
+                  
                   className={`  rounded-md pl-3 py-2 outline-none  w-full  ${borderClasses}
           } ${className}`}
         />

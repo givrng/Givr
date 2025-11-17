@@ -4,10 +4,14 @@ import { Button } from "../ReuseableComponents";
 import { useConfirmAsk } from "../hooks/useConfirm";
 import type { ProjectFormProps } from "../../interface/interfaces";
 import { interestCategories } from "../interest";
+import useAuthFetch from "../hooks/useAuthFetch";
+import { useAlert } from "../hooks/useAlert";
 
 export const CreateProject:React.FC<{onClose?:()=>void}> = ({onClose})=>{
 
-    const {confirmAsk, ConfirmDialog} = useConfirmAsk()
+    const {confirmAsk, ConfirmDialog} = useConfirmAsk({isOrg:true})
+    const {alertMessage, AlertDialog} = useAlert()
+    const {API} = useAuthFetch("organization")
     const [formFields, setFormFields] = useState<ProjectFormProps>({
         title:'',
         description:'',
@@ -28,7 +32,10 @@ export const CreateProject:React.FC<{onClose?:()=>void}> = ({onClose})=>{
 
     const handleLocationChange = useCallback(
         (location: { state: string; lga: string }) => {
-          
+          setFormFields(prev=>({
+            ...prev,
+            location
+          }))
         },
         [] // no dependencies → stable reference
       );
@@ -46,9 +53,26 @@ export const CreateProject:React.FC<{onClose?:()=>void}> = ({onClose})=>{
         }
     }
 
-    const handleSubmit = ()=>{}
+    const handleSubmit = async ()=>{
+        let userConfirm = await confirmAsk({
+            question: "Are you sure you want to create this project?",
+            trueAnswer: "Create",
+            falseAnswer: "Cancel"
+        })
+        console.log(formFields)
+        if(userConfirm && onClose){
+            API().post("/projects", formFields)
+            .then(()=>{
+                onClose()
+            }, ()=>{
+                alertMessage("We experienced some trouble creating account, please try again")
+            })
+        }
+        
+    }
     return <>
         {<ConfirmDialog />}
+        <AlertDialog/>
         <div className="bg-white p-8 rounded-xl shadow-2xl w-full border border-gray-200">
         
         <h2 className="text-3xl font-extrabold text-gray-900 leading-tight">

@@ -4,8 +4,9 @@ import type { BasicNatigationProps, SignInFormProps } from "../interface/interfa
 import backgroundImage from "../assets/sign-in-background.svg"
 import { GoogleIcon, LoadingEffect } from "./icons";
 import { Link } from "react-router-dom";
+import useAuthFetch from "./hooks/useAuthFetch";
 
-const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toForgotPassword }) => {
+const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toForgotPassword, isOrganization}) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
@@ -87,13 +88,13 @@ const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toFo
                             Remember Me
                         </label>
                     </div>
-                    <Link className="font-medium text-[#1877F2] hover:underline hover:cursor-pointer" to={toForgotPassword ? toForgotPassword : "/"}>
+                    <Link className={`font-medium text-[#${isOrganization? "34A853":"1877F2"}] hover:underline hover:cursor-pointer`} to={toForgotPassword ? toForgotPassword : "/"}>
                         Forgot Password?
                     </Link>
                 </div>
 
                 {/* Sign In Button */}
-                <Button variant="primary" className="w-full py-3" >
+                <Button variant={isOrganization?"green":"primary"} className="w-full py-3" >
                     {isLoading ? (
                         <LoadingEffect message="Signing In..." />
                     ) : 'Sign In'}
@@ -116,7 +117,7 @@ const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toFo
             {/* Sign Up Link */}
             <p className="mt-8 text-center text-sm text-gray-600">
                 Don't have an account?
-                <Link className="font-semibold text-[#1877F2] hover:underline ml-1" to={toSignUp ? toSignUp : "/"}>
+                <Link className={`font-semibold text-[#${isOrganization? "34A853":"1877F2"}] hover:underline ml-1`} to={toSignUp ? toSignUp : "/"}>
                     Sign Up here
                 </Link>
             </p>
@@ -126,28 +127,22 @@ const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toFo
 };
 
 
-export const SignInComp: React.FC<BasicNatigationProps> = function ({ toSignUp, toForgotPassword, onToDashboard }) {
+export const SignInComp: React.FC<BasicNatigationProps> = function ({ toSignUp, toForgotPassword, onToDashboard, isOrganization=false }) {
+
+    const {API} = useAuthFetch(isOrganization?"organization": "volunteer")
 
     const handleSignIn = async (email: string, password: string) => {
-        const baseUrl = import.meta.env.VITE_API_BASE_VOLUNTEER_URL
 
-        let response = await fetch(`${baseUrl}/auth/login`, {
-            method: 'POST',
-            body: JSON.stringify({
-                email, password
-            }),
-            headers: {
-                "Content-Type": "application/json"
-            },
-            credentials: "include"
+        API().post(`/auth/login`, {email, password}, {
+            withCredentials: true
+        })
+        .then(()=>{
+            if(onToDashboard)
+                onToDashboard()
+            return true
         })
 
-
-        if (response.ok && onToDashboard) {
-            onToDashboard()
-            return true
-        }
-        return false
+        return false;
     }
 
     return (
@@ -168,7 +163,7 @@ export const SignInComp: React.FC<BasicNatigationProps> = function ({ toSignUp, 
                     </div>
                 </div>
 
-                <SignInForm toForgotPassword={toForgotPassword} toSignUp={toSignUp} onSignInAttempt={handleSignIn} />
+                <SignInForm toForgotPassword={toForgotPassword} toSignUp={toSignUp} onSignInAttempt={handleSignIn} isOrganization={isOrganization}/>
             </div>
         </section>
     )

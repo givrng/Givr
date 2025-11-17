@@ -175,9 +175,10 @@ export const InfoCell:React.FC<{icon:ReactNode, info:string}> = ({icon, info})=>
   </div>
 
 )
+
 /**Displays an organization's information */
-export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, description, location, numOfActiveProjects, categories, status, hasVolunteered=false})=>{
-  const {confirmAsk, ConfirmDialog} = useConfirmAsk()
+export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, description, location, numOfActiveProjects, category, status, hasVolunteered=false})=>{
+  const {confirmAsk, ConfirmDialog} = useConfirmAsk({})
   const {alertMessage, AlertDialog} = useAlert()
 
 
@@ -211,7 +212,7 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, de
             <span className="bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
                 Applied
             </span>
-            <span className={`${status=="Verified"?"bg-green-600": "bg-red-600"} text-white text-xs font-semibold px-3 py-1 rounded-full`}>
+            <span className={`${status=="VERIFIED"?"bg-green-600": "bg-red-600"} text-white text-xs font-semibold px-3 py-1 rounded-full`}>
                {status}
             </span>
         </div>
@@ -220,7 +221,7 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, de
     <div className="text-sm text-gray-700 space-y-2 mb-4">
         <p>
             <span className="font-semibold text-blue-600">Adress: </span> 
-            {location}
+            {`${location?.lga}, ${location?.state}`}
         </p>
         <p>
             <span className="font-semibold text-blue-600">Active Projects: </span> 
@@ -230,7 +231,7 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, de
 
     <div className="flex justify-between items-end">
         <div className="flex space-x-2">
-            {categories.map((category)=><span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{category}</span>)}
+            <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{category}</span>
         </div>
         <Button variant="primary">View Projects</Button>
         {hasVolunteered?<Button variant="outline" onClick={handleApplication} > Cancel Application</Button>: null}
@@ -241,28 +242,17 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, de
 }
 
 /**Displays details of a project */
-export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization, categories, attendanceHours, location, maxApplicants, startDate, status, totalApplicants, superVolunteer, manage=false, applied=false, isOrganization=false})=>{
+export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization, category, attendanceHours, location, maxApplicants, startDate, status, totalApplicants, superVolunteer, manage=false, applied=false, isOrganization=false})=>{
 
   const [displayForm, setDisplayForm] = useState(false)
   const {modal, DisplayModal} = useModal()
 
-
   // Makes request to backend to get organization information 
   const handleView = ()=>{
-    // Make the fetch requiest 
-    // const response: OrganizationProps = {
-    //   name: "The first NGO",
-    //   description: "A first time NGO to the building and improvement on First Class First timers",
-    //   categories: [
-    //     "Healthcare", "Community Outreach"
-    //   ],
-    //   location: "Plot 1, Ademola adetokunbo road, Wuse, Abuja",
-    //   numOfActiveProjects: 2,
-    //   status: "Verified"
-    // }
-    modal(<OrganizationCard {...organization} hasVolunteered={false}/>)
+    modal(<OrganizationCard {...organization} description={organization?.description!}  hasVolunteered={false}/>)
 
   }
+  const {state, lga} = location
 
 
   return <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full">
@@ -273,10 +263,10 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization
         </div>
        
         {!isOrganization? 
-        <span className={`${organization.status=="Verified"? "bg-green-600": "bg-red-600 "} text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider`}>
-            {organization.status? organization.status: "Verified"}
+        <span className={`${organization?.status=="VERIFIED"? "bg-green-600": "bg-red-600 "} text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider`}>
+            {organization?.status? organization?.status: "Verified"}
         </span>:
-        <span className={`${status=="Completed"?"bg-green-600":`${status=="In progress"? "bg-gray-600": "bg-orange-600 "}`} text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider`}>
+        <span className={`${status=="COMPLETED"?"bg-green-600":`${status=="PENDING"? "bg-gray-600": "bg-orange-600 "}`} text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider`}>
             {status? status: "In progress"}
         </span>}
     </div>
@@ -284,7 +274,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization
     <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-6 py-4 border-y border-gray-200">
         <InfoCell icon={<CalendarIcon/>} info={startDate? startDate: "Jan 20, 2025"}/>
         <InfoCell icon={<ClockIcon color="#676879" className="w-6 w-6"/>} info={attendanceHours? attendanceHours: "9:00 AM - 3:00 PM"}/>
-        <InfoCell icon={<LocationIcon/>} info={location? location: "Wuse District, Abuja"}/>
+        <InfoCell icon={<LocationIcon/>} info={location? `${lga}, ${state}`: "Wuse District, Abuja"}/>
         <InfoCell icon={<GroupIcon/>} info={`${totalApplicants?totalApplicants: 15 }/${maxApplicants?maxApplicants: 20}` }/>
     </div>
     
@@ -292,7 +282,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization
         
         <div className="flex flex-col space-y-3">
           <div className="flex space-x-2">
-              {categories? categories.map((category, i)=>(<span key= {i} className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{category}</span>)): <>
+              {category? category.map((cat, i)=>(<span key= {i} className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{cat}</span>)): <>
               <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">Healthcare</span>
               <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">Community Outreach</span>
               </>}
@@ -306,14 +296,14 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization
             {!applied?(<Button variant="primary" onClick={()=>setDisplayForm(true)}>Apply Now</Button>): <Button variant="disabled">Applied</Button>}
         </div>:
         <div className="flex gap-x-2 self-end">
-          {status!="Completed" &&<Button variant="outline" >Edit</Button>}
-            {status!="Completed" &&manage&&<Button variant="outline" > Manage Volunteers</Button>}  
+          {status!="COMPLETED" &&<Button variant="outline" >Edit</Button>}
+            {status!="COMPLETED" &&manage&&<Button variant="outline" > Manage Volunteers</Button>}  
         </div>  
       }
     </div>
 
     {/* Volunteer can views details of an organization after applying, therefore, application form should not be shown */}
-    {(displayForm && (!manage || !applied))&& <ApplicationForm organization={organization.name} onCancel={()=>setDisplayForm(false)}/>}
+    {(displayForm && (!manage || !applied))&& <ApplicationForm organization={organization?.name} onCancel={()=>setDisplayForm(false)}/>}
     <DisplayModal/>
     
 </div>
@@ -345,7 +335,7 @@ export const RadioButton: React.FC<{children: React.ReactNode;  value?:string; a
 };
 
 /**Promts volunteer to provide their reason for applying for a project before application */
-export const ApplicationForm:React.FC<{onCancel:()=>void, organization:string}> = ({onCancel, organization})=>{
+export const ApplicationForm:React.FC<{onCancel:()=>void, organization?:string}> = ({onCancel, organization})=>{
   interface ApplicationFields {
     reason: string;
     availability:string
@@ -355,7 +345,7 @@ export const ApplicationForm:React.FC<{onCancel:()=>void, organization:string}> 
     availability: ""
   })
 
-  let {confirmAsk, ConfirmDialog}= useConfirmAsk()
+  let {confirmAsk, ConfirmDialog}= useConfirmAsk({})
   let {alertMessage, AlertDialog} = useAlert()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>)=>{

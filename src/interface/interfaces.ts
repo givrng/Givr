@@ -36,6 +36,7 @@ export interface LabeledIcon {
 // Sign in
 export interface SignInFormProps extends BasicNatigationProps {
     onSignInAttempt: (email: string, pass: string) => Promise<boolean>;
+    
 }
 
 export interface BasicNatigationProps{
@@ -49,6 +50,7 @@ export interface BasicNatigationProps{
   toDashBoard?:string;
   toOppurtunities?:string;  
 
+  isOrganization?:boolean;
 }
 export interface MetricProps{
   title: string;
@@ -63,19 +65,25 @@ export interface MetricComponentProps extends MetricProps{
   className?:string
 }
 
+interface location{
+  state:string;
+  lga:string;
+}
+
 export interface ProjectProps{
   id: string;
   title: string;
-  organization:OrganizationProps;
-  status: "Pending" | "In progress" | "Completed";
+  organization?:OrganizationProps;
+  status: "PENDING" | "ACTIVE" | "COMPLETED"| "DRAFT";
   startDate: string;
   attendanceHours: string;
-  location: string;
+  location: location;
   totalApplicants: number;
   maxApplicants: number;
-  categories: Array<string>;
+  category: string[];
   superVolunteer?:string;
-}
+  deadline:string;
+  }
 
 export interface ProjectFormProps{
   title:string;
@@ -102,16 +110,19 @@ export interface ProjectComponentProps extends ProjectProps{
 }
 
 export interface OrganizationProps{
-  name: string;
-  description:string;
-  location:string;
-  categories:Array<string>;
-  status: "Verified" | "Unverified";
-  numOfActiveProjects:number;
+  name?: string;
+  description?:string;
+  location?:location;
+  category?:string;
+  status?: "VERIFIED" | "UNVERIFIED";
+  numOfActiveProjects?:number;
 }
+
 export interface OrganizationComponentProps extends OrganizationProps{
   hasVolunteered?:boolean
 }
+
+
 export interface DashboardProps{
   metrics?: MetricProps[];
   projects: ProjectProps[];
@@ -119,6 +130,8 @@ export interface DashboardProps{
   triggerAction?:(action:VolunteerQuickActions)=>void
   orgTriggerAction?: (action: OrganizationQuickActions)=>void
 }
+
+
 export type NavTypes = "Dashboard" | "Find Opportunities"| "My Volunteering"| "Profile & Achievements";
 export type VolunteerQuickActions = "Find Opportunities"| "View Organizations" | "Update Profile"|""
 
@@ -147,15 +160,70 @@ export interface FormDataProps{
   }
   interests: string[];
 }
+
+
 export interface VolunteerProjectApplicationProps{
   id:number;
   volunteer:number;
   project:number;
   status:'APPLIED'|"APPROVED"|"REJECTED";
+  title?:string;
   appliedAt:string;
 }
 
 export interface VolunteerDashboardProps{
   firstname:string;
-  projectApplication:VolunteerProjectApplicationProps[]
+  projectApplications:VolunteerProjectApplicationProps[]
+}
+interface skillProps{
+  name:string;
+}
+export interface VolunteerProps{
+  firstName?:string;
+  lastname:string;
+  skills:skillProps[];
+}
+
+export interface ProjectApplicationProps{
+  id: number;
+  project:ProjectProps;
+  status: string;
+  appliedAt:string;
+  applicationReason:string;
+  availableDays:string;
+}
+
+export interface VolunteerApplicationProps{
+  firstname:string;
+  lastname:string;
+  skills:string[];
+  projectApplied: VolunteerProjectApplicationProps
+}
+
+export type organizationType = "NGO/Non profit" | "Community Group" | "Religious Group"| "Educational Institution" | "Government Agency"|"Corporate Foundation"|""
+
+export interface OrganizationSignupProps{
+  email:string;
+  password:string;
+  confirmPassword:string;
+  contactFirstname:string;
+  contactLastname:string;
+  contactMiddleName:string;
+  phoneNumber:string;
+  
+  location: {
+    state:string;
+    lga:string;
+  }
+  organizationName:string;
+  organizationType:organizationType;
+  cacRegNumber:string;
+  driversLicenseNumber:string;
+  description:string;
+}
+
+export interface OrganizationDashboardProps {
+  name:string;
+
+  projects:ProjectProps[]
 }

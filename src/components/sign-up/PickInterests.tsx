@@ -95,7 +95,7 @@ const PickInterests: React.FC<BasicNatigationProps> = ({onToSignIn}) => {
           className="text-sm px-4 py-2 shadow-none sm:w-60 w-full "
           onClick={handleSubmit}
         >
-          {isLoading? <LoadingEffect message="Creating Account..."/>: "Next"}
+          {isLoading? <LoadingEffect message="Creating Account..."/>: "Create Account"}
         </Button>
       </div>
 

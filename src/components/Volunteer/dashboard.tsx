@@ -2,10 +2,11 @@ import { useState } from "react";
 import type { DashboardProps, OrganizationProps, OrganizationQuickActions, VolunteerQuickActions } from "../../interface/interfaces";
 import { Banner, MetricCard, OrganizationCard, ProjectCard, RadioButton } from "../ReuseableComponents";
 import { EditProfile } from "./editProfile";
+import useAuthFetch from "../hooks/useAuthFetch";
 
-const Dashboard:React.FC<DashboardProps> = ({metrics, projects, triggerAction})=>{
+const Dashboard:React.FC<DashboardProps> = ({metrics, projects, triggerAction, orgTriggerAction})=>{
     const [active, setActive] = useState("")
-    
+    const {API} = useAuthFetch("volunteer")
 
     const [organizations, setOrganizations] = useState<OrganizationProps[]>([])
 
@@ -62,41 +63,33 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, projects, triggerAction})=
 
             // Organization Actions
             case "Create New Project":
+                if(orgTriggerAction)
+                    orgTriggerAction(action)
                 break;
             case "Review pending applications":
+                if(orgTriggerAction)
+                    orgTriggerAction(action)
                 break;
             case "View Analytics":
+                if(orgTriggerAction)
+                    orgTriggerAction(action)
                 break;
         }
     }
     
 
     // Will make fetch request for organizations
-    const fetchOrganization = async ():Promise<OrganizationProps[]>=>{
+    const fetchOrganization = async ()=>{
         // fetch 
-         try{
+        await API().get("/organizations")
+        .then((response)=>{
+            setOrganizations(response.data as OrganizationProps[])
+        })
         
-            const response = await fetch("/data/organizations.json", {
-            headers:{
-                "content-Type":"application/json",
-                 "cache-control":"no-cache"
-                 }
-                })
-        
-            if(!response.ok){
-                throw new Error("Failed to fetch projects")
-            }
-        
-            const data = await response.json()
-            return data as OrganizationProps[]
-        }catch(error){
-            console.error("Error loading data")
-            return []
-        }
     }
 
     const handleOrganization = async ()=>{
-        setOrganizations(await fetchOrganization())
+        await fetchOrganization()
     }
 
     const renderContent = () => {

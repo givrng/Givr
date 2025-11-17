@@ -151,7 +151,7 @@ const UserDetails:React.FC<BasicNatigationProps> = ({onToInterest}) => {
         }}
     
        setFormPayload?.setFormPayload(prev=>({...prev, ...payload}))
-       console.log("Handling to this point")
+       
        if(onToInterest)
         onToInterest()
         

@@ -10,7 +10,7 @@ export const SignInPage:React.FC<BasicNatigationProps> = ()=>{
         <Routes>
             <Route index element={<SelectRole isSignin={true}/>} />
             <Route path="volunteer" element={<SignInComp onToDashboard={()=>navigate("/volunteer")} toSignUp="/signup/volunteeer" toForgotPassword="forgot"/>} />
-            <Route path="organization" element={<SignInComp onToDashboard={()=>navigate("/organization")} toSignUp="/signup/organization" toForgotPassword="forgot"/> } />
+            <Route path="organization" element={<SignInComp onToDashboard={()=>navigate("/organization")} toSignUp="/signup/organization" toForgotPassword="forgot" isOrganization={true}/> } />
         </Routes>
     )
 }

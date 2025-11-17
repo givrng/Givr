@@ -6,15 +6,16 @@ import Dashboard from "../../components/Volunteer/dashboard";
 import type { MetricProps, NavTypes, ProjectProps, VolunteerQuickActions, VolunteerDashboardProps } from "../../interface/interfaces";
 import { ProjectHub } from "../../components/Volunteer/projectHub";
 import { DashboardHeader } from "../../components/dashboardHeader";
-import { useAuth } from "../../components/hooks/useAuth";
+import useAuthFetch from "../../components/hooks/useAuthFetch";
 
 export const DashboardPage = () => {
 
     const [active, setActive] = useState<NavTypes>("Dashboard");
     const [volunteerDashboard, setVolunteerDashboard] = useState<VolunteerDashboardProps>({
         firstname: "",
-        projectApplication: []
+        projectApplications: []
     });
+    const {} = useAuthFetch("volunteer")
     const [projects, setProjects] = useState<ProjectProps[]>([])
     const [metrics, setMetrics] = useState<MetricProps[]>([
         {
@@ -56,9 +57,9 @@ export const DashboardPage = () => {
 
 
     // Makes requests with automatic refresh logic when access token expires
-    const authFetch = useAuth()
+    const {API} = useAuthFetch("volunteer")
 
-
+    
     // const projects = rawProjects as ProjectProps[]
     const activateNavButton = (event: React.MouseEvent<HTMLButtonElement>) => {
         let selectButtonValue = buttons.get(event.currentTarget.textContent);
@@ -68,6 +69,7 @@ export const DashboardPage = () => {
 
 
     const fetchProjects = async (): Promise<ProjectProps[]> => {
+       
         try {
 
             const response = await fetch("/data/projects.json", {
@@ -95,38 +97,33 @@ export const DashboardPage = () => {
             case "Find Opportunities":
                 setActive(action as NavTypes)
                 break;
-
         }
     }
 
-    const loadUserProfile = async (): Promise<VolunteerDashboardProps | null> => {
-        const baseUrl = import.meta.env.VITE_API_BASE_VOLUNTEER_URL
-        let response = await authFetch?.authFetch(`${baseUrl}/dashboard`, {
-            headers: {
-                "Content-Type": "application/json"
-            }
+    const loadUserProfile =  (): VolunteerDashboardProps | null => {
+        API().get(`/dashboard`, {
+            withCredentials:true
         })
-
-        if (response?.ok)
-            return await response.json() as VolunteerDashboardProps
-        else
-            return null
+        .then(response=>{
+            setVolunteerDashboard(response.data)
+        })
+    
+        return null
     }
 
 
     useEffect(() => {
         (async () => {
-            const data = await loadUserProfile()
-            if (data)
-                setVolunteerDashboard(data)
+            loadUserProfile()
+           
         })()
     }, [])
 
     useEffect(() => {
 
-        if (!volunteerDashboard.projectApplication) return;
+        if (!volunteerDashboard.projectApplications) return;
 
-        const applications = volunteerDashboard.projectApplication;
+        const applications = volunteerDashboard.projectApplications;
         const approvedApplicatins = applications.filter((app) => app.status === "APPROVED");
 
         const totalApplied = applications.length;
@@ -174,7 +171,7 @@ export const DashboardPage = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-15">
                 <UserDashboardInformation activeButton={active} buttons={[...buttons.keys()]} onClick={activateNavButton} username={volunteerDashboard?.firstname} />
                 {active == "Dashboard" && projects && <Dashboard projects={projects} metrics={metrics} triggerAction={quickAction} />}
-                {active == "Find Opportunities" && <ProjectHub projects={projects} />}
+                {active == "Find Opportunities" && <ProjectHub projects={projects}/>}
             </div>
         </main>
     </>

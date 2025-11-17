@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { Button} from "../ReuseableComponents";
 import useScrollLock from "./scrollLock";
 
-export function useConfirmAsk(){
+export const useConfirmAsk = ({isOrg=false})=>{
     interface confirmProps {question:string; trueAnswer:string; falseAnswer:string}
     
     const [props, setProps] = useState<confirmProps>({
@@ -47,7 +47,7 @@ export function useConfirmAsk(){
       </p>
   
       <div className="flex justify-end space-x-3">
-          <Button variant="primary" onClick={onApply}>
+          <Button variant={isOrg?"green": "primary"} onClick={onApply}>
               {props.trueAnswer}
           </Button>
           <Button variant="outline" onClick={onCancel}>

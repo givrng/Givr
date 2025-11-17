@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 
 import { BrowserRouter} from 'react-router-dom'
-import { IndexPage } from './pages'
+import { IndexPage } from '.'
 
 
 createRoot(document.getElementById("root")!).render(
