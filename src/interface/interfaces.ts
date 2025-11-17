@@ -47,7 +47,7 @@ export interface BasicNatigationProps{
   toSignUp?:string;
   toVolunteerDetails?:string;
   toDashBoard?:string;
-  toOppurtunities?:string;  
+  toOppurtunities?:string;
 
 }
 export interface MetricProps{
@@ -102,6 +102,55 @@ export interface DashboardProps{
 }
 export type NavTypes = "Dashboard" | "Find Opportunities"| "My Volunteering"| "Profile & Achievements";
 export type QuickActions = "Find Opportunities"| "View Organizations" | "Update Profile"|""
+
+
+export type ProjectType = {
+  id: number;
+  title: string;
+  company: string;
+  location: string;
+  dateStarted: string;
+  status: string;
+  rating?: string;
+  description: string;
+  verified?: boolean;
+  userApplied?: boolean;
+  companyAddress?: string;
+  companyActiveProjects?: number;
+  companyIndustries?: string[];
+};
+
+export type ProfileType = {
+  id: number;
+  name: string;
+  avatar: string;
+  location: string;
+  rating: number;
+  skills: string[];
+  interests: string[];
+  phoneVerified: boolean;
+  emailVerified: boolean;
+  role?: string;
+};
+
+export type DataType = {
+  id: number;
+  title: string;
+  company: string;
+  earned: string;
+  verified: boolean;
+  hoursContributed: number;
+  companyIndustries: string[];
+  userName: string
+  role: string
+};
+
+export type BadgeType = {
+  id: number;
+  icon: React.ReactNode;
+  description: string;
+  earned?: boolean;
+};
 
 
 export interface VolunteerProfileProps{

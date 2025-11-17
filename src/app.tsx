@@ -5,6 +5,7 @@ import { ForgotPasswordForm } from "./pages/forgotPassword";
 import { DashboardPage } from "./pages/dashboardPage";
 import { PageNotFound } from "./pages/404 Page";
 import { SignUpPage } from "./pages/signup";
+import Profile from "./components/Profile";
 
 export const App:React.FC = function(){
 
@@ -17,10 +18,11 @@ export const App:React.FC = function(){
         <Route path='signup/*' element= {<SignUpPage onToSignIn={()=>navigate("/signin")}/>}/>
         <Route path='forgot-password' element={<ForgotPasswordForm toSignUp="/signup"/>}/>
         <Route path='/dashboard' element={<DashboardPage/>}/>
+        <Route path='/profile' element={<Profile />}/>
 
         <Route path="*" element ={<PageNotFound toDashBoard="/dashboard" />}/>
       </Routes>
-  
+
     </>
 
 }

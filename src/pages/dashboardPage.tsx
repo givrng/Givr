@@ -1,9 +1,21 @@
-import {  BriefcaseIcon, ClockIcon, ShieldIcon, StarIcon } from "../components/icons"
+import {
+  BriefcaseIcon,
+  ClockIcon,
+  ShieldIcon,
+  StarIcon,
+} from "../components/icons";
 import React, { useEffect, useState } from "react";
 import UserDashboardInformation from "../components/userDashBoardInfo";
 import Dashboard from "../components/dashboard";
+import MyVolunteering from "../components/MyVolunteering";
+import Profile from "../components/Profile";
 
-import type { MetricProps, NavTypes, ProjectProps, QuickActions, VolunteerDashboardProps } from "../interface/interfaces";
+import type {
+  MetricProps,
+  NavTypes,
+  ProjectProps,
+  VolunteerQuickActions, VolunteerDashboardProps,
+} from "../interface/interfaces";
 import { FindOpportunity } from "../components/findOpportunities";
 import { DashboardHeader } from "../components/dashboardHeader";
 import { useAuth } from "../components/hooks/useAuth";
@@ -13,7 +25,7 @@ export const DashboardPage = ()=>{
     const [active, setActive] = useState<NavTypes>("Dashboard");
     const [volunteerDashboard, setVolunteerDashboard] = useState<VolunteerDashboardProps>({
         firstname:"",
-        projectApplication: []
+        projectApplications: []
     });
     const [projects, setProjects] = useState<ProjectProps[]>([])
     const [metrics, setMetrics] = useState<MetricProps[]>( [
@@ -59,38 +71,36 @@ export const DashboardPage = ()=>{
     const authFetch = useAuth()
 
 
-    // const projects = rawProjects as ProjectProps[]
-    const activateNavButton = (event: React.MouseEvent<HTMLButtonElement>)=>{
-        let selectButtonValue = buttons.get(event.currentTarget.textContent);
-        setActive(selectButtonValue? selectButtonValue as NavTypes: "Dashboard")
+  // const projects = rawProjects as ProjectProps[]
+  const activateNavButton = (event: React.MouseEvent<HTMLButtonElement>) => {
+    let selectButtonValue = buttons.get(event.currentTarget.textContent);
+    setActive(
+      selectButtonValue ? (selectButtonValue as NavTypes) : "Dashboard"
+    );
+  };
+  const fetchProjects = async (): Promise<ProjectProps[]> => {
+    try {
+      const response = await fetch("/data/projects.json", {
+        headers: {
+          "content-Type": "application/json",
+          "cache-control": "no-cache",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch projects");
+      }
+
+      const data = await response.json();
+      return data as ProjectProps[];
+    } catch (error) {
+      console.error("Error loading data");
+      return [];
     }
+  };
 
 
-
-    const fetchProjects = async(): Promise<ProjectProps[]>=>{
-        try{
-
-            const response = await fetch("/data/projects.json", {
-            headers:{
-                "Content-Type":"application/json",
-                "cache-control":"no-cache"
-            }
-        })
-
-            if(!response.ok){
-                throw new Error("Failed to fetch projects")
-            }
-
-            const data = await response.json()
-            return data as ProjectProps[]
-        }catch(error){
-            console.error("Error loading data")
-            return []
-        }
-    }
-
-
-    const quickAction = (action:QuickActions)=>{
+    const quickAction = (action:VolunteerQuickActions)=>{
         switch(action){
             case "Find Opportunities":
                 setActive(action as NavTypes)
@@ -124,9 +134,9 @@ export const DashboardPage = ()=>{
 
     useEffect(()=>{
 
-        if(!volunteerDashboard.projectApplication) return;
+        if(!volunteerDashboard.projectApplications) return;
 
-        const applications = volunteerDashboard.projectApplication;
+        const applications = volunteerDashboard.projectApplications;
         const approvedApplicatins = applications.filter((app)=> app.status === "APPROVED");
 
         const totalApplied = applications.length;
@@ -176,6 +186,6 @@ export const DashboardPage = ()=>{
             {active=="Dashboard" &&projects&& <Dashboard projects={projects} metrics={metrics} triggerAction={quickAction}/>}
             {active=="Find Opportunities" && <FindOpportunity projects={projects}/>}
         </div>
-    </main>
+      </main>
     </>
-}
+};
