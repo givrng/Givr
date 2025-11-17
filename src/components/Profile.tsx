@@ -1,44 +1,46 @@
 // import ProfileAchievements from "./ProfileAchievement";
-import Certifications from "./Certifications";
+
+import Certifications from "./Volunteer/Certifications";
+
 // import { BadgeIcon } from "./icons";
 
 
 
-const data = [
-  {
-    id: 1,
-    title: "Frontend Developer",
-    company: "TechCorp Ltd",
-    earned: "2025-11-10",
-    verified: true,
-    hoursContributed: 5,
-    companyIndustries: ["Technology", "Education"],
-    userName: "Habib Yusuf",
-    role: "super volunteer",
-  },
-  {
-    id: 2,
-    title: "Graphic Designer",
-    company: "Designify Studios",
-    earned: "2025-11-10",
-    verified: true,
-    hoursContributed: 7,
-    companyIndustries: ["Technology", "Education"],
-    userName: "Habib Yusuf",
-    role: "super volunteer",
-  },
-  {
-    id: 3,
-    title: "UI/UX Designer",
-    company: "SoftBridge",
-    earned: "2025-11-10",
-    verified: true,
-    hoursContributed: 5,
-    companyIndustries: ["Technology", "Education"],
-    userName: "Habib Yusuf",
-    role: "super volunteer",
-  },
-];
+// const data = [
+//   {
+//     id: 1,
+//     title: "Frontend Developer",
+//     company: "TechCorp Ltd",
+//     earned: "2025-11-10",
+//     verified: true,
+//     hoursContributed: 5,
+//     companyIndustries: ["Technology", "Education"],
+//     userName: "Habib Yusuf",
+//     role: "super volunteer",
+//   },
+//   {
+//     id: 2,
+//     title: "Graphic Designer",
+//     company: "Designify Studios",
+//     earned: "2025-11-10",
+//     verified: true,
+//     hoursContributed: 7,
+//     companyIndustries: ["Technology", "Education"],
+//     userName: "Habib Yusuf",
+//     role: "super volunteer",
+//   },
+//   {
+//     id: 3,
+//     title: "UI/UX Designer",
+//     company: "SoftBridge",
+//     earned: "2025-11-10",
+//     verified: true,
+//     hoursContributed: 5,
+//     companyIndustries: ["Technology", "Education"],
+//     userName: "Habib Yusuf",
+//     role: "super volunteer",
+//   },
+// ];
 
 
 
@@ -98,7 +100,7 @@ export default function ProfilePage() {
       onEditProfile={() => console.log("Edit clicked")}
     /> */}
     <Certifications
-    data={data}
+    data={null}
       onDownload={() => console.log("download clicked")}
           />
         </div>

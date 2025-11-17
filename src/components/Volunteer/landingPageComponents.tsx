@@ -1,4 +1,4 @@
-import type { ButtonProps, FeatureCardProps, NavLinkProps } from "../interface/interfaces"
+import type { ButtonProps, FeatureCardProps, NavLinkProps  } from "../../interface/interfaces";
 
 
 // --- Reusable Components ---
