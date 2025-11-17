@@ -139,7 +139,7 @@ export const Card: React.FC<{children: React.ReactNode}> = ({ children }) => (
 export const MetricCard: React.FC<MetricComponentProps> = ({title, context, icon, value, className = "w-full ", color})=>{
   return (
     <div className={`bg-white p-6 rounded-xl shadow-lg max-w-sm ${className}`}>
-    
+
     <div className="flex justify-between items-center mb-4">
         <h2 className="text-sm font-bold text-gray-700">{title? title: "Hours Logged"}</h2>
         {icon}
@@ -157,7 +157,7 @@ export const MetricCard: React.FC<MetricComponentProps> = ({title, context, icon
 export const Banner:React.FC<{className?:string; title:string; content:string}> = ({title, content})=>(
   <div
    className="p-3 transition duration-300 ease-in-out cursor-pointer w-full max-w-lg">
-    
+
     <div className="flex justify-between items-center gap-x-2">
         <div className="flex flex-col">
             <h3 className="text-sm font-semibold leading-tight">{title}</h3>
@@ -200,15 +200,15 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, de
   }
 
   return <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full ">
-    
+
     <div className="flex justify-between items-start mb-4">
-        <div className="flex flex-col pr-4"> 
+        <div className="flex flex-col pr-4">
             <h3 className="text-xl font-bold text-gray-900 mb-1">{name}</h3>
             <p className="text-sm text-gray-600 leading-relaxed">
                 {description}
             </p>
         </div>
-        <div className="flex-shrink-0 flex space-x-2"> 
+        <div className="flex-shrink-0 flex space-x-2">
             <span className="bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
                 Applied
             </span>
@@ -224,7 +224,7 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, de
             {`${location?.lga}, ${location?.state}`}
         </p>
         <p>
-            <span className="font-semibold text-blue-600">Active Projects: </span> 
+            <span className="font-semibold text-blue-600">Active Projects: </span>
             {numOfActiveProjects}
         </p>
     </div>
@@ -247,7 +247,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization
   const [displayForm, setDisplayForm] = useState(false)
   const {modal, DisplayModal} = useModal()
 
-  // Makes request to backend to get organization information 
+  // Makes request to backend to get organization information
   const handleView = ()=>{
     modal(<OrganizationCard {...organization} description={organization?.description!}  hasVolunteered={false}/>)
 
@@ -262,13 +262,9 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization
             {!isOrganization && <p className="text-sm font-medium text-gray-500">{organization? organization.name: "Abuja Health Initiative"}</p>}
         </div>
        
-        {!isOrganization? 
-        <span className={`${organization?.status=="VERIFIED"? "bg-green-600": "bg-red-600 "} text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider`}>
-            {organization?.status? organization?.status: "Verified"}
-        </span>:
-        <span className={`${status=="COMPLETED"?"bg-green-600":`${status=="PENDING"? "bg-gray-600": "bg-orange-600 "}`} text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider`}>
-            {status? status: "In progress"}
-        </span>}
+        <span className={`${status=="PENDING"? "bg-green-600": "bg-red-600 "} text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider`}>
+            {status? status: "Verified"}
+        </span>
     </div>
 
     <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-6 py-4 border-y border-gray-200">
@@ -277,9 +273,9 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization
         <InfoCell icon={<LocationIcon/>} info={location? `${lga}, ${state}`: "Wuse District, Abuja"}/>
         <InfoCell icon={<GroupIcon/>} info={`${totalApplicants?totalApplicants: 15 }/${maxApplicants?maxApplicants: 20}` }/>
     </div>
-    
+
     <div className="flex flex-col justify-between pt-4 gap-y-2">
-        
+
         <div className="flex flex-col space-y-3">
           <div className="flex space-x-2">
               {category? category.map((cat, i)=>(<span key= {i} className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{cat}</span>)): <>
@@ -305,7 +301,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({title, organization
     {/* Volunteer can views details of an organization after applying, therefore, application form should not be shown */}
     {(displayForm && (!manage || !applied))&& <ApplicationForm organization={organization?.name} onCancel={()=>setDisplayForm(false)}/>}
     <DisplayModal/>
-    
+
 </div>
 }
 
@@ -315,7 +311,7 @@ export const RadioButton: React.FC<{children: React.ReactNode;  value?:string; a
   let activeStyle_ = activeSyle;
   let notActiveStyle = inActiveStyle;
 
-  if(!activeSyle)  
+  if(!activeSyle)
     activeStyle_ = "bg-white rounded-xl w-full text-black shadow-md rounded-t-lg py-2"
   if(!inActiveStyle)
     notActiveStyle = "bg-[#E7E9EF] rounded-xl w-full text-gray-600 hover:bg-gray-300 py-2"
@@ -323,9 +319,9 @@ export const RadioButton: React.FC<{children: React.ReactNode;  value?:string; a
   return (
         <button
         onClick={onClick}
-        className={`font-semibold text-sm  px-4 relative z-10 transition-all 
-            ${active 
-            ? activeStyle_ 
+        className={`font-semibold text-sm  px-4 relative z-10 transition-all
+            ${active
+            ? activeStyle_
             : notActiveStyle}`}
         value={value}
         >
@@ -364,18 +360,18 @@ export const ApplicationForm:React.FC<{onCancel:()=>void, organization?:string}>
     onCancel()
   }
 
- 
+
   return <>
     <div className="bg-white p-8 rounded-xl mt-2 shadow-2xl w-full max-full">
       {/* <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-6 leading-tight">Appply for {project}</h2> */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        
+
         <label htmlFor="reason" className="block text-base font-semibold text-gray-700 mb-2">Why do you want to volunteer for this project?</label>
-        
+
         <textarea name="reason" rows={5}  value={applicationForm["reason"]} onChange={(e)=>setApplicationForm({...applicationForm, reason:e.currentTarget.value })} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 resize-y text-gray-800" required></textarea>
         <label htmlFor="availability" className="block text-base font-semibold text-gray-700 mb-2">Confirm you availability</label>
         <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800" type="text" name="availability" placeholder="e.g available all day" value={applicationForm.availability} onChange={e=>setApplicationForm({...applicationForm, availability: e.currentTarget.value})} required/>
-        
+
         <div className="flex justify-between pt-2 space-x-4">
           <Button variant="primary" className="w-full">Submit application</Button>
            <Button variant="outline"  className="w-full" onClick={onCancel}>Cancel</Button>

@@ -7,6 +7,10 @@ import blueVerifiedIcon from "../assets/icons/blue-tick-badge.svg"
 import roundCert from "../assets/icons/round-cert.svg"
 import bulletPointIcon from "../assets/icons/radiobox-marked.svg"
 import googleIcon from "../assets/icons/google.svg"
+import locationIcon from "../assets/icons/location-icon.svg"
+import calenderIcon from "../assets/icons/calender-icon.svg"
+import warningIcon from "../assets/icons/warning.svg"
+import cancelIcon from "../assets/icons/cancel-icon.svg"
 // Simplified Icon for Verified/Checkmark Logo
 
 export const GivrLogoIcon:React.FC<{className?:string}> = ({className = "h-6 w-auto max-w-full"}): React.JSX.Element => <img src={givrLogo} alt="Givr Logo" className={className}/>
@@ -90,14 +94,26 @@ export const LockIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-
   <img src={recognitionIcon} className={className} />
 );
 
+export const MapMarkerIcon: React.FC <{className?:string}> = ({className= "w-6 h-6"})=>(
+  <img src={locationIcon} alt="Google Logo Icon" className={className}/>
+)
+export const CalenderIcon: React.FC <{className?:string}> = ({className= "w-6 h-6"})=>(
+  <img src={calenderIcon} alt="Google Logo Icon" className={className}/>
+)
 export const GoogleIcon: React.FC <{className?:string}> = ({className= "w-6 h-6"})=>(
   <img src={googleIcon} alt="Google Logo Icon" className={className}/>
 )
+export const CloseIcon: React.FC <{className?:string}> = ({className= "w-6 h-6"})=>(
+  <img src={cancelIcon} alt="Google Logo Icon" className={className}/>
+)
+export const WarningIcon: React.FC <{className?:string}> = ({className= "w-6 h-6"})=>(
+  <img src={warningIcon} alt="Google Logo Icon" className={className}/>
+)
 export const ArrowIcon:React.FC<{className?:string, color?:string}>= ({className= "w-8 h-8", color= "currentColor"})=>(
-  <svg xmlns="http://www.w3.org/2000/svg" 
-             fill="none" 
-             viewBox="0 0 24 24" 
-             stroke-width="2" 
+  <svg xmlns="http://www.w3.org/2000/svg"
+             fill="none"
+             viewBox="0 0 24 24"
+             stroke-width="2"
              stroke={color}
              className={`${className}`}>
     <path d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
@@ -106,7 +122,7 @@ export const ArrowIcon:React.FC<{className?:string, color?:string}>= ({className
 
 export const ClockIcon:React.FC<{className?:string, color?:string}> = ({className = "w-8 h-8", color="#1A73E8"}):React.JSX.Element=>(
   <svg className={className} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M7.33333 5.33366H8.66667V9.33366H7.33333V5.33366ZM10 0.666992H6V2.00033H10V0.666992ZM8 13.3337C5.42 13.3337 3.33333 11.247 3.33333 8.66699C3.33333 6.08699 5.42 4.00033 8 4.00033C10.58 4.00033 12.6667 6.08699 12.6667 8.66699C13.1333 8.66699 13.5733 8.75366 14 8.90033C14 8.82033 14 8.74699 14 8.66699C14 7.25366 13.5067 5.95366 12.6867 4.92699L13.6333 3.98033C13.3333 3.64033 13.0333 3.33366 12.6933 3.04033L11.7467 4.00033C10.7133 3.16033 9.41333 2.66699 8 2.66699C4.68667 2.66699 2 5.35366 2 8.66699C2 11.9803 4.68667 14.667 8 14.667C8.39333 14.667 8.77333 14.627 9.14 14.5537C8.93333 14.167 8.78667 13.7337 8.72 13.2737C8.48 13.307 8.24667 
+        <path d="M7.33333 5.33366H8.66667V9.33366H7.33333V5.33366ZM10 0.666992H6V2.00033H10V0.666992ZM8 13.3337C5.42 13.3337 3.33333 11.247 3.33333 8.66699C3.33333 6.08699 5.42 4.00033 8 4.00033C10.58 4.00033 12.6667 6.08699 12.6667 8.66699C13.1333 8.66699 13.5733 8.75366 14 8.90033C14 8.82033 14 8.74699 14 8.66699C14 7.25366 13.5067 5.95366 12.6867 4.92699L13.6333 3.98033C13.3333 3.64033 13.0333 3.33366 12.6933 3.04033L11.7467 4.00033C10.7133 3.16033 9.41333 2.66699 8 2.66699C4.68667 2.66699 2 5.35366 2 8.66699C2 11.9803 4.68667 14.667 8 14.667C8.39333 14.667 8.77333 14.627 9.14 14.5537C8.93333 14.167 8.78667 13.7337 8.72 13.2737C8.48 13.307 8.24667
         13.3337 8 13.3337ZM14.2267 10.5603L11.8333 12.9537L10.7733 11.8937L10 12.667L11.8333 14.667L15 11.5003L14.2267 10.5603Z" fill={color}/>
     </svg>
 )
@@ -118,15 +134,28 @@ export const CalendarIcon:React.FC<{className?:string, color?: string}> = ({clas
 )
 
 export const LocationIcon: React.FC<{className?:string, color?: string}> = ({className ="w-6 h-6", color= "#676879"})=>(<svg className={className} viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M7 4.5C7.66304 4.5 8.29893 4.76339 8.76777 5.23223C9.23661 5.70107 9.5 6.33696 9.5 7C9.5 7.3283 9.43534 7.65339 9.3097 7.95671C9.18406 8.26002 8.99991 8.53562 8.76777 8.76777C8.53562 8.99991 8.26002 9.18406 7.95671 9.3097C7.65339 9.43534 7.3283 9.5 7 9.5C6.33696 9.5 5.70107 9.23661 5.23223 8.76777C4.76339 8.29893 4.5 7.66304 4.5 7C4.5 6.33696 4.76339 5.70107 5.23223 5.23223C5.70107 4.76339 6.33696 4.5 7 4.5ZM7 0C8.85652 0 10.637 0.737498 11.9497 2.05025C13.2625 3.36301 14 5.14348 14 7C14 12.25 7 20 7 20C7 20 0 12.25 0 7C0 5.14348 0.737498 3.36301 2.05025 2.05025C3.36301 0.737498 5.14348 0 7 0ZM7 2C5.67392 2 4.40215 2.52678 3.46447 3.46447C2.52678 4.40215 2 5.67392 2 7C2 8 2 10 7 16.71C12 10 12 8 12 7C12 5.67392 11.4732 4.40215 10.5355 3.46447C9.59785 
+<path d="M7 4.5C7.66304 4.5 8.29893 4.76339 8.76777 5.23223C9.23661 5.70107 9.5 6.33696 9.5 7C9.5 7.3283 9.43534 7.65339 9.3097 7.95671C9.18406 8.26002 8.99991 8.53562 8.76777 8.76777C8.53562 8.99991 8.26002 9.18406 7.95671 9.3097C7.65339 9.43534 7.3283 9.5 7 9.5C6.33696 9.5 5.70107 9.23661 5.23223 8.76777C4.76339 8.29893 4.5 7.66304 4.5 7C4.5 6.33696 4.76339 5.70107 5.23223 5.23223C5.70107 4.76339 6.33696 4.5 7 4.5ZM7 0C8.85652 0 10.637 0.737498 11.9497 2.05025C13.2625 3.36301 14 5.14348 14 7C14 12.25 7 20 7 20C7 20 0 12.25 0 7C0 5.14348 0.737498 3.36301 2.05025 2.05025C3.36301 0.737498 5.14348 0 7 0ZM7 2C5.67392 2 4.40215 2.52678 3.46447 3.46447C2.52678 4.40215 2 5.67392 2 7C2 8 2 10 7 16.71C12 10 12 8 12 7C12 5.67392 11.4732 4.40215 10.5355 3.46447C9.59785
 2.52678 8.32608 2 7 2Z" fill={color}/>
 </svg>
 )
+export const BadgeIcon: React.FC<{ className?: string; color?: string }> = ({
+  className = "w-6 h-6",
+  color = "#676879",
+}) => (
+  <svg
+    className={className}
+    viewBox="0 0 16 16"
+    fill={color}
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="8" cy="8" r="8" fill={color} fill-opacity="0.1" />
+  </svg>
+);
 
 export const GroupIcon: React.FC<{className?:string, color?: string}> = ({className ="w-6 h-6", color= "#676879"})=>(<svg className={className} viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M11.07 6.41005C11.6774 5.56132 12.0041 4.54377 12.0041 3.50005C12.0041 2.45634 11.6774 1.43879 11.07 0.590053C11.6385 0.202008 12.3117 -0.00378014 13 5.2579e-05C13.9283 5.2579e-05 14.8185 0.368802 15.4749 1.02518C16.1313 1.68156 
+<path d="M11.07 6.41005C11.6774 5.56132 12.0041 4.54377 12.0041 3.50005C12.0041 2.45634 11.6774 1.43879 11.07 0.590053C11.6385 0.202008 12.3117 -0.00378014 13 5.2579e-05C13.9283 5.2579e-05 14.8185 0.368802 15.4749 1.02518C16.1313 1.68156
 16.5 2.57179 16.5 3.50005C16.5 4.42831 16.1313 5.31855 15.4749 5.97493C14.8185 6.6313 13.9283 7.00005 13 7.00005C12.3117 7.00389 11.6385 6.7981 11.07 6.41005ZM3.5 3.50005C3.5 2.80782 3.70527 2.13113 4.08986 1.55556C4.47444 0.979985 5.02107 0.531381 5.66061
- 0.266474C6.30015 0.00156766 7.00388 -0.067744 7.68282 0.0673043C8.36175 0.202353 8.98539 0.535695 9.47487 1.02518C9.96436 1.51466 10.2977 2.1383 10.4327 2.81724C10.5678 3.49617 10.4985 4.1999 10.2336 4.83944C9.96867 5.47899 9.52007 6.02561 8.9445 6.4102C8.36892 
+ 0.266474C6.30015 0.00156766 7.00388 -0.067744 7.68282 0.0673043C8.36175 0.202353 8.98539 0.535695 9.47487 1.02518C9.96436 1.51466 10.2977 2.1383 10.4327 2.81724C10.5678 3.49617 10.4985 4.1999 10.2336 4.83944C9.96867 5.47899 9.52007 6.02561 8.9445 6.4102C8.36892
  6.79478 7.69223 7.00005 7 7.00005C6.07174 7.00005 5.1815 6.6313 4.52513 5.97493C3.86875 5.31855 3.5 4.42831 3.5 3.50005ZM5.5 3.50005C5.5 3.79672 5.58797 4.08673 5.7528 4.33341C5.91762 4.58008 6.15189 4.77234 6.42597 4.88587C6.70006 4.9994 7.00166 5.02911 7.29264 4.97123C7.58361 4.91335
   7.85088 4.77049 8.06066 4.56071C8.27044 4.35093 8.4133 4.08366 8.47118 3.79269C8.52906 3.50172 8.49935 3.20012 8.38582 2.92603C8.27229 2.65194 8.08003 2.41767 7.83335 2.25285C7.58668 2.08803 7.29667 2.00005 7 2.00005C6.60218 2.00005 6.22064 2.15809 5.93934 2.43939C5.65804 2.7207 5.5 3.10223 5.5 3.50005ZM14 13.0001V15.0001H0V13.0001C0 13.0001 0 9.00005 7 9.00005C14 9.00005 14 13.0001 14 13.0001ZM12 13.0001C11.86 12.2201 10.67 11.0001 7 11.0001C3.33 11.0001 2.07 12.3101 2 13.0001M13.95 9.00005C14.5629 9.47678 15.064 10.0819 15.4182 10.7729C15.7723 11.4639 15.9709 12.2241 16 13.0001V15.0001H20V13.0001C20 13.0001 20 9.37005 13.94 9.00005H13.95Z" fill={color}/>
 </svg>

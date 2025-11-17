@@ -48,7 +48,7 @@ export interface BasicNatigationProps{
   toSignUp?:string;
   toVolunteerDetails?:string;
   toDashBoard?:string;
-  toOppurtunities?:string;  
+  toOppurtunities?:string;
 
   isOrganization?:boolean;
 }
