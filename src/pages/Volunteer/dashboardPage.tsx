@@ -14,8 +14,18 @@ export const DashboardPage = () => {
 
     const [active, setActive] = useState<NavTypes>("Dashboard");
     const [volunteerDashboard, _] = useState<VolunteerDashboardProps>({
-        firstname: "",
-        projectApplications: []
+        firstname: "Daniel",
+        projectApplications: [
+            {
+                appliedAt: "2025-12-13",
+                id: 10,
+                project: 20,
+                status: "APPLIED",
+                volunteer: 10,
+                title: "Testing"
+            }
+
+        ]
     });
     const {} = useAuthFetch("volunteer")
     const [projects, setProjects] = useState<ProjectProps[]>([])

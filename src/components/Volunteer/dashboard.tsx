@@ -2,13 +2,13 @@ import { useState } from "react";
 import type { DashboardProps, OrganizationProps, OrganizationQuickActions, VolunteerQuickActions } from "../../interface/interfaces";
 import { Banner, MetricCard, OrganizationCard, ProjectCard, RadioButton } from "../ReuseableComponents";
 import { EditProfile } from "./editProfile";
-import useAuthFetch from "../hooks/useAuthFetch";
+// import useAuthFetch from "../hooks/useAuthFetch";
 
 const Dashboard:React.FC<DashboardProps> = ({metrics, projects, triggerAction, orgTriggerAction})=>{
     const [active, setActive] = useState("")
-    const {API} = useAuthFetch("volunteer")
+    // const {API} = useAuthFetch("volunteer")
 
-    const [organizations, setOrganizations] = useState<OrganizationProps[]>([])
+    const [organizations, _] = useState<OrganizationProps[]>([])
 
 
 //     useEffect(() => {
@@ -81,10 +81,10 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, projects, triggerAction, o
     // Will make fetch request for organizations
     const fetchOrganization = async ()=>{
         // fetch 
-        await API().get("/organizations")
-        .then((response)=>{
-            setOrganizations(response.data as OrganizationProps[])
-        })
+        // await API().get("/organizations")
+        // .then((response)=>{
+        //     setOrganizations(response.data as OrganizationProps[])
+        // })
         
     }
 
