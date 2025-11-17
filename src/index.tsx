@@ -14,7 +14,6 @@ export const IndexPage = ()=>{
 
     return <>
         <Routes>
-
           <Route index element={<LandingPage onToSignUp={() => navigate("/signup")} onToSignIn={() => navigate("/signin")} />} />
           <Route path='signin/*' element={<SignInPage onToDashboard={() => navigate("/dashboard")} onToSignUp={() => navigate("/signin")} toForgotPassword="/forgot-password" toSignUp="/signup" />} />
           <Route path='signup/*' element={<SignUpPage />} />
