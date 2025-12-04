@@ -1,17 +1,7 @@
-
-interface DataType  {
-  title:string;
-  company:string;
-  verified:boolean;
-  earned:string;
-  hoursContributed:number;
-  companyIndustries:string[]
-  role:string;
-  username:string;
-}
+import type { MyCertificationProps } from "../../interface/interfaces";
 
 interface ProfilePageProps {
-  data: DataType[] | null;
+  data: MyCertificationProps[] | null;
   onDownload: () => void;
 }
 
@@ -41,11 +31,11 @@ if (!data || data.length === 0) {
               <h2 className="text-base font-semibold mb-2">
                 {certification.title}
               </h2>
-              <p className="text-gray-700 mb-1">{certification.company}</p>
+              <p className="text-gray-700 mb-1">{certification.organization?.name}</p>
             </div>
 
             <div className="flex items-center gap-3 mb-3">
-              {certification.verified && (
+              {certification.organization?.status && (
                 <div className="flex items-center gap-1 text-white bg-[#00854D]   px-5 rounded-3xl   text-sm">
                   Verified
                 </div>
@@ -69,10 +59,10 @@ if (!data || data.length === 0) {
             )}
           </div>
 
-          {certification.companyIndustries &&
-            certification.companyIndustries.length > 0 && (
+          {certification.organization?.category &&
+            certification.organization.category.length > 0 && (
               <div className="flex flex-wrap gap-2 my-3">
-                {certification.companyIndustries.map((industry, idx) => (
+                {certification.organization.category.map((industry, idx) => (
                   <span
                     key={idx}
                     className="border border-ui text-xs px-5 py-1 rounded-full"
@@ -85,7 +75,7 @@ if (!data || data.length === 0) {
           <div className="flex justify-between items-center">
             <div className="sm:text-sm text-xs text-[#676879]">
               <p >{certification.role}:</p>
-              <span>{certification.username}</span>
+              <span>{certification.userName}</span>
             </div>
             <button
               onClick={onDownload}

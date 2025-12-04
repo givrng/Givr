@@ -14,11 +14,11 @@ const HeroSection: React.FC<BasicNatigationProps> = ({ onToSignUp }) => (
       {/* Left Content Column */}
       <div className="max-w-lg">
         <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-6 text-gray-900">
-          <span className="block">Volunteer your time.</span>
+          <span className="block">Welcome to Givr</span>
           <span className="block text-[#1A73E8]">Create Lasting Impact</span>
         </h1>
         <p className="text-lg text-gray-600 mb-8">
-          Givr.ng makes volunteering in Nigeria trusted, transparent, and rewarding. Connect with verified organizations and make a real difference in your community.
+          Whether you are volunteering or managing a project, get skill-matched opportunities,seamless coordination, meaningful recognition, and a smarter way to drive community service on Givr.
         </p>
 
         {/* Call to action Buttons */}
@@ -87,10 +87,11 @@ const ProblemSection: React.FC = () => {
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-900">
-          Volunteering in Nigeria is <span className="text-[#FB2C36]">broken</span>
+          Volunteering in Nigeria needs a better system
         </h2>
         <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-16">
-          Current volunteering efforts face serious challenges that prevent meaningful impact
+          Current volunteering efforts face serious challenges that prevent
+          meaningful impact
         </p>
 
         {/* Problem Cards Grid */}
@@ -104,10 +105,14 @@ const ProblemSection: React.FC = () => {
         <div className="max-w-5xl mx-auto p-8 md:p-12 bg-white rounded-3xl shadow-2xl border border-gray-100">
           <h3 className="text-3xl font-extrabold mb-4 text-gray-900">
             Givr.ng fixes this by making volunteering <br />
-            <span className="text-[#1A73E8]">easy</span>, <span className="text-[#34A853]">credible</span>, and <span className="text-[#FBBC05]">rewarding</span>
+            <span className="text-[#1A73E8]">easy</span>,
+            <span className="text-[#34A853]">credible</span>, and
+            <span className="text-[#FBBC05]">rewarding</span>
           </h3>
           <p className="text-[#676879] max-w-2xl mx-auto">
-            Our platform connects trusted volunteers with verified organizations through a transparent, gamified system that recognizes your contributions.
+            Our platform connects trusted volunteers with verified organizations
+            through a transparent, gamified system that recognizes your
+            contributions.
           </p>
         </div>
       </div>
@@ -123,7 +128,7 @@ const MoreInfoSection: React.FC<BasicNatigationProps> = ({ onToSignUp }) => {
       description: [
         "Sign up with basic verification",
         "Browse verfied opportunities by location and skills",
-        "Apply and get approved by super volunteers",
+        "Apply and get approved",
         "Complete service and earn digital certificates"
       ],
       color: 'blue',
@@ -147,7 +152,7 @@ const MoreInfoSection: React.FC<BasicNatigationProps> = ({ onToSignUp }) => {
   return (<section className="py-20 bg-white">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-900">
-        How Givr.ng works <br />
+        How Givr works <br />
       </h2>
       <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-16">
         Two simple pathways to make volunteering work for everyone

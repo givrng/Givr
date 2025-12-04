@@ -36,7 +36,7 @@ export interface LabeledIcon {
 // Sign in
 export interface SignInFormProps extends BasicNatigationProps {
     onSignInAttempt: (email: string, pass: string) => Promise<boolean>;
-    
+
 }
 
 export interface BasicNatigationProps{
@@ -114,11 +114,52 @@ export interface OrganizationProps{
   name?: string;
   description?:string;
   location?:location;
-  category?:string;
+  category?:string[];
   status?: "VERIFIED" | "UNVERIFIED";
   numOfActiveProjects?:number;
   address?:string;
 }
+
+export interface MyCertificationProps {
+  id?: string;
+  title?: string;
+      organization?: OrganizationProps;
+  earned?: string;
+  hoursContributed?: number;
+  userName?: string;
+  role?: string;
+}
+export interface MyVolunteeringProps extends OrganizationProps {
+  id?: string;
+  organization?: OrganizationProps;
+  title?: string;
+  startDate?: string;
+  userApplied?: boolean;
+  progressStatus?: "PENDING" | "COMPLETED";
+  rating?:string;
+}
+
+
+export interface ProfileProps {
+  id?: number;
+  name?: string;
+  avatar?: string;
+  location?: string;
+  rating?: string | number | undefined;
+  skills?: string[];
+  interests?: string[];
+  phoneVerified?: boolean;
+  emailVerified?: boolean;
+  role?: string;
+};
+
+export interface BadgeProps {
+  id: number;
+  icon: React.ReactNode;
+  description: string;
+  earned?: boolean;
+};
+
 
 export interface OrganizationComponentProps extends OrganizationProps{
   hasVolunteered?:boolean
@@ -212,7 +253,7 @@ export interface OrganizationSignupProps{
   contactLastname:string;
   contactMiddleName:string;
   phoneNumber:string;
-  
+
   location: {
     state:string;
     lga:string;

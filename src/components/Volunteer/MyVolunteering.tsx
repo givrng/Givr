@@ -1,87 +1,94 @@
 import { useState, useEffect } from "react";
 import ProjectCard from "../ProjectCard";
 import ConfirmDialog from "../ConfirmDialog";
-// import ProjectDetailsModal from "../ProjectModalDetails";
-import type { ProjectProps } from "../../interface/interfaces";
+import ProjectDetailsModal from "../ProjectModalDetails";
+import type { MyVolunteeringProps } from "../../interface/interfaces";
 
 export default function MyVolunteering() {
-  const [projects, setProjects] = useState<ProjectProps[]>([]);
+  const [projects, setProjects] = useState<MyVolunteeringProps[]>([]);
   const [showDialog, setShowDialog] = useState(false);
-  // const [showDetails, setShowDetails] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<ProjectProps | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<MyVolunteeringProps | null>(
+    null
+  );
 
   // Simulate backend fetch
   useEffect(() => {
     async function fetchProjects() {
-      // const data: ProjectProps[] = [
-      //   {
-      //     id: "1",
-      //     title: "Frontend Developer",
-      //     organization: {
-      //       name: "TechCorp Ltd",
-      //       status: "VERIFIED",
-      //       address: "123 Business Rd, Lagos, Nigeria",
-      //       numOfActiveProjects: 5,
-      //       category: "Technology, Education"
-      //     },
-      //     location: {
-      //       lga: "Ikoyi",
-      //       state: "Lagos"
-      //     },
-      //     startDate: "2025-11-10",
-      //     status: "PENDING",
-      //     description:
-      //       "Responsible for building and maintaining user interfaces using React. Collaborate with backend developers and designers to ensure seamless functionality.",
-      //     category: "",
-      //   },
-      //   {
-      //     id: 2,
-      //     title: "Graphic Designer",
-      //     company: "Designify Studios",
-      //     location: "Abuja, Nigeria",
-      //     dateStarted: "2025-10-22",
-      //     status: "completed",
-      //     rating: "⭐⭐⭐⭐",
-      //     description:
-      //       "Design marketing materials, social media graphics, and branding assets for client projects.",
-      //     verified: true,
-      //     userApplied: true,
-      //     companyAddress: "123 Business Rd, Lagos, Nigeria",
-      //     companyActiveProjects: 5,
-      //     companyIndustries: ["Technology", "Education"],
-      //   },
-      //   {
-      //     id: 3,
-      //     title: "UI/UX Designer",
-      //     company: "SoftBridge",
-      //     location: "Kano, Nigeria",
-      //     dateStarted: "2025-11-05",
-      //     status: "ongoing",
-      //     description:
-      //       "Create wireframes, prototypes, and collaborate with developers to bring designs to life.",
-      //     verified: true,
-      //     userApplied: true,
-      //     companyAddress: "123 Business Rd, Lagos, Nigeria",
-      //     companyActiveProjects: 5,
-      //     companyIndustries: ["Technology", "Education"],
-      //   },
-      // ];
-      
-      let response = await fetch("/data/projects.json")
-      try{
-        if(response.ok){
-          setProjects(await response.json() as ProjectProps[])
-        }
-      }catch(err){
-        console.error(err)
-      }
-      
+      const data: MyVolunteeringProps[] = [
+        {
+          id: "1",
+          title: "Frontend Developer",
+          organization: {
+            name: "TechCorp Ltd",
+            status: "VERIFIED",
+            address: "123 Business Rd, Lagos, Nigeria",
+            numOfActiveProjects: 5,
+            category: ["Technology", "Education"],
+          },
+          location: {
+            lga: "Ikoyi",
+            state: "Lagos",
+          },
+          startDate: "2025-11-10",
+          progressStatus: "PENDING",
+          description:
+            "Responsible for building and maintaining user interfaces using React. Collaborate with backend developers and designers to ensure seamless functionality.",
+          userApplied: true,
+          rating: "⭐⭐⭐⭐",
+        },
+        {
+          id: "2",
+          title: "Graphic Designer",
+          organization: {
+            name: "Designify Studios",
+            status: "VERIFIED",
+            address: "123 Business Rd, Lagos, Nigeria",
+            numOfActiveProjects: 5,
+            category: ["Technology", "Education"],
+          },
+          location: {
+            lga: "Ikoyi",
+            state: "Lagos",
+          },
+          startDate: "2025-11-10",
+          progressStatus: "COMPLETED",
+          description:
+            "Design marketing materials, social media graphics, and branding assets for client projects.",
+          userApplied: true,
+rating: "⭐⭐⭐⭐"
+        },
+        {
+    id: "2",
+          title: "UI/UX Designer",
+          organization: {
+            name: "SoftBridge",
+            status: "VERIFIED",
+            address: "123 Business Rd, Lagos, Nigeria",
+            numOfActiveProjects: 5,
+            category: ["Technology", "Education"],
+          },
+          location: {
+            lga: "Ikoyi",
+            state: "Lagos",
+          },
+          startDate: "2025-11-10",
+          progressStatus: "PENDING",
+          description:
+            "Create wireframes, prototypes, and collaborate with developers to bring designs to life.",
+          userApplied: true,
+rating: "⭐⭐⭐⭐"
+        },
+      ];
+
+    setProjects(data);
+
     }
 
     fetchProjects();
   }, []);
 
-  const handleCancelClick = (project: ProjectProps) => {
+  const handleCancelClick = (project: MyVolunteeringProps) => {
     setSelectedJob(project);
     setShowDialog(true);
   };
@@ -93,7 +100,7 @@ export default function MyVolunteering() {
     setSelectedJob(null);
   };
 
-  const handleViewDetailsClick = (project: ProjectProps) => {
+  const handleViewDetailsClick = (project: MyVolunteeringProps) => {
     setSelectedJob(project);
     // setShowDetails(true);
   };
@@ -117,11 +124,11 @@ export default function MyVolunteering() {
         onConfirm={confirmCancel}
         onClose={() => setShowDialog(false)}
       />
-      {/* <ProjectDetailsModal
+      <ProjectDetailsModal
         visible={showDetails}
         project={selectedJob}
         onClose={() => setShowDetails(false)}
-      /> */}
+      />
     </div>
   );
 }

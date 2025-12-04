@@ -12,7 +12,7 @@ export default function useAuthFetch(path:"volunteer"|"organization"){
 
     const authFetch = async (url:string, options?:RequestInit):Promise<Response> =>{
         let response = await fetch(url, {...options, credentials: "include"});
-        
+
         if(response.status == 403){
             if(!isRefreshing){
                 isRefreshing = true;
@@ -62,7 +62,7 @@ export default function useAuthFetch(path:"volunteer"|"organization"){
             if(error.response?.status !==401){
                 return Promise.reject(error)
             }
-            
+
             if(originalRequest._retry)
                 return Promise.reject(error)
 

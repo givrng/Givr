@@ -1,22 +1,13 @@
-import type { ProjectProps } from "../interface/interfaces";
+import type { MyVolunteeringProps } from "../interface/interfaces";
 import { MapMarkerIcon, CalendarIcon } from "./icons";
 import { Link } from "react-router-dom";
 
-// type projectProps = {
-//   id: number;
-//   title: string;
-//   company: string;
-//   location: string;
-//   dateStarted: string;
-//   status: string;
-//   rating?: string;
-//   description: string;
-// };
+
 
 interface ProjectCardProps {
-  project: ProjectProps;
-  onCancelClick: (project: ProjectProps) => void;
-  onViewDetailsClick: (project: ProjectProps) => void;
+  project: MyVolunteeringProps;
+  onCancelClick: (project: MyVolunteeringProps) => void;
+  onViewDetailsClick: (project: MyVolunteeringProps) => void;
   href?: string;
 }
 
@@ -28,7 +19,7 @@ export default function ProjectCard({
   return (
     <div className="border border-ui rounded-2xl  p-5">
       <h2 className=" text-[#676879] text-base font-semibold mb-4 ">
-        {project.status === "PENDING"
+        {project.progressStatus === "PENDING"
           ? "Ongoing Commitments"
           : "Recent Projects"}
       </h2>
@@ -47,7 +38,7 @@ export default function ProjectCard({
           </p>
         </div>
 
-        {project.status === "ACTIVE" ? (
+        {project.progressStatus === "PENDING" ? (
           <div className="flex gap-4 mt-3">
             <button
               onClick={() => onViewDetailsClick(project)}
