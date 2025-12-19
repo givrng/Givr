@@ -13,8 +13,8 @@ export const SignUpPage: React.FC<BasicNatigationProps> = () => {
         <SignupProvider>
             <Routes>
                 <Route index element={<SelectRole isSignin={false} />} />
-                <Route path="volunteer" element={<VolunteerSignup />} />
-                <Route path="organization" element={<OrganizationSignup onToSignIn={()=>navigate("/signin/organization")}/>} />
+                <Route path="volunteer/*" element={<VolunteerSignup />} />
+                <Route path="organization/*" element={<OrganizationSignup onToSignIn={()=>navigate("/signin/organization")}/>} />
             </Routes>
         </SignupProvider>
     )

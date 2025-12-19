@@ -8,7 +8,7 @@ export const VolunteerSignup = ()=>{
     const navigate = useNavigate();
     return <SignupProvider>
         <Routes>
-            <Route index element={<UserDetails onToInterest={() => navigate("../interests", { relative: "path" })} />} />
+            <Route index element={<UserDetails onToInterest={() => navigate("interests", {relative: "path"})} />} />
             <Route path="interests" element={<PickInterests onToSignIn={() => navigate("/signin")} />} />
         </Routes>
         </SignupProvider>
