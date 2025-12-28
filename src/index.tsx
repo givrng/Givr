@@ -23,10 +23,10 @@ export const IndexPage = ()=>{
           <Route path='signup/*' element={<SignUpPage />} />
           <Route path='forgot-password' element={<ForgotPasswordForm toSignUp="/signup" />} />   
                
-          <Route path='volunteer/*' element={<RequireAuth>
+          <Route path='volunteer/*' element={<RequireAuth user="volunteer">
             <VolunteerApp/>
           </RequireAuth>}/>
-          <Route path='organization/*' element={<RequireAuth>
+          <Route path='organization/*' element={<RequireAuth user="organization">
             <OrganizationApp/>
           </RequireAuth>}/>
 

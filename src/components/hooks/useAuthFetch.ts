@@ -1,17 +1,16 @@
 import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from "axios";
-import { useVerifyAuth } from "../Auth/AuthContext";
+import type { UserTypes } from "../../interface/interfaces";
 
 interface PendindRequest {
     resolve:(response:any)=>void;
     reject:(error:unknown)=>void;
 }
 
-export default function useAuthFetch(path:"volunteer"|"organization"){
+export default function useAuthFetch(path:UserTypes){
 
     let isRefreshing= false;
     let refreshPromise:Promise<number>|null=null;
-    const verifyAuth = useVerifyAuth()
-
+    
     const ApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
     const authFetch = async (url:string, options?:RequestInit):Promise<Response> =>{
@@ -69,7 +68,6 @@ export default function useAuthFetch(path:"volunteer"|"organization"){
             }
 
             if(error.config?.url?.includes("/auth/refresh")){
-                verifyAuth?.logout()
                 return Promise.reject(error)
             }
 
@@ -93,9 +91,11 @@ export default function useAuthFetch(path:"volunteer"|"organization"){
                 })
 
                 processQueue(null)
+                
                 return instance(originalRequest)
             }catch(refreshErr){
                 processQueue(refreshErr)
+                return Promise.reject(refreshErr)
             }finally{
                 isRefreshing = false;
             }

@@ -53,7 +53,7 @@ export default function MyVolunteering() {
       <ConfirmDialog/>
       <DisplayModal/>
       <div className="min-h-screen flex flex-col gap-y-3">
-      {isLoading?<PageLoader message="Loading Projects"/>:
+      {isLoading?<PageLoader message="Loading Projects" />:
       
       <>
       <div className="border border-ui rounded-2xl p-5">

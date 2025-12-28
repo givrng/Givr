@@ -128,7 +128,7 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean}>= ({ isOrganization=
     return <div className="border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2">
         {<AlertDialog/>}
         {<ConfirmDialog/>}
-       {isLoading? <PageLoader/>:<>
+       {isLoading? <PageLoader color={isOrganization?"green":"blue"}/>:<>
         {/**Volunteer View */}
         {!isOrganization&&
              <>

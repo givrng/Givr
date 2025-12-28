@@ -308,3 +308,5 @@ export interface OrganizationDashboardProps {
     numRejected:number;
   }
 }
+
+export type UserTypes = "volunteer"|"organization"|"";
