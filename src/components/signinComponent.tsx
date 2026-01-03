@@ -133,6 +133,7 @@ export const SignInComp: React.FC<BasicNatigationProps> = function ({ toSignUp, 
     const handleSignIn = async (email: string, password: string) => {
 
         try{
+            
             let res = await API().post(`/auth/login`, {email, password}, {
                 withCredentials: true
             });

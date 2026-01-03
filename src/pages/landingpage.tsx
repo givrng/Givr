@@ -8,7 +8,7 @@ import { GenericHeader } from '../components/Volunteer/landingHeader';
 // --- Section Components ---
 
 // HeroSection rewritten to match the provided structure and image styling
-const HeroSection: React.FC<BasicNatigationProps> = ({ onToSignUp }) => (
+const HeroSection: React.FC<BasicNatigationProps> = ({ onToVolunteerSignUp, onToOrgSignUp }) => (
   <section className="mt-21 pb-16 bg-[#F7FAFC] min-h-[85vh] flex items-center">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
       {/* Left Content Column */}
@@ -24,9 +24,9 @@ const HeroSection: React.FC<BasicNatigationProps> = ({ onToSignUp }) => (
         {/* Call to action Buttons */}
         <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
           {/* Sign up as a volunteer (Primary Button) */}
-          <Button variant="primary" className="text-base" onClick={onToSignUp}>Sign up as a volunteer</Button>
+          <Button variant="primary" className="text-base" onClick={onToVolunteerSignUp}>Sign up as a volunteer</Button>
           {/* Post a project (Secondary/Outline Button) */}
-          <Button variant="secondary" className="text-base">Post a project</Button>
+          <Button variant="secondary" className="text-base" onClick={onToOrgSignUp}>Post a project</Button>
         </div>
 
         {/* Verification Badges (Styled like LabeledIcons) */}
@@ -120,7 +120,7 @@ const ProblemSection: React.FC = () => {
   );
 };
 
-const MoreInfoSection: React.FC<BasicNatigationProps> = ({ onToSignUp }) => {
+const MoreInfoSection: React.FC<BasicNatigationProps> = ({ onToOrgSignUp, onToVolunteerSignUp }) => {
 
   const platformCategories: Array<FeatureCardProps> = [
     {
@@ -133,7 +133,7 @@ const MoreInfoSection: React.FC<BasicNatigationProps> = ({ onToSignUp }) => {
       ],
       color: 'blue',
       cta: "Sign up as a volunteer",
-      action: onToSignUp
+      action: onToVolunteerSignUp
     },
     {
       title: "For Organization",
@@ -144,7 +144,8 @@ const MoreInfoSection: React.FC<BasicNatigationProps> = ({ onToSignUp }) => {
         "Rate volunteer and build relationships"
       ],
       color: 'green',
-      cta: "Sign up as an Organization"
+      cta: "Sign up as an Organization",
+      action: onToOrgSignUp
     }
 
   ]
@@ -223,7 +224,7 @@ const CredibilitySection: React.FC = () => {
 
 // --- New CTA Section ---
 
-const CTASection: React.FC<BasicNatigationProps> = ({ onToSignUp }) => (
+const CTASection: React.FC<BasicNatigationProps> = ({ onToOrgSignUp, onToVolunteerSignUp }) => (
   <section className="bg-[#1C212A] py-8 text-center">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-white">
@@ -235,8 +236,8 @@ const CTASection: React.FC<BasicNatigationProps> = ({ onToSignUp }) => (
 
       {/* CTA Buttons */}
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center mb-8">
-        <Button variant="primary" className="text-base shadow-lg" onClick={onToSignUp}>Sign up as a volunteer</Button>
-        <Button variant="secondary" className="text-base shadow-lg">Post a project</Button>
+        <Button variant="primary" className="text-base shadow-lg" onClick={onToVolunteerSignUp}>Sign up as a volunteer</Button>
+        <Button variant="secondary" className="text-base shadow-lg" onClick={onToOrgSignUp}>Post a project</Button>
       </div>
 
 
@@ -308,11 +309,11 @@ export default function LandingPage(navigation: BasicNatigationProps) {
     <div className="min-h-screen font-[Inter] antialiased">
       <GenericHeader onToSignIn={navigation.onToSignIn} onToSignUp={navigation.onToSignUp} />
       <main>
-        <HeroSection onToSignUp={navigation.onToSignUp} />
+        <HeroSection onToOrgSignUp={navigation.onToOrgSignUp} onToVolunteerSignUp={navigation.onToVolunteerSignUp} />
         <ProblemSection />
-        <MoreInfoSection onToSignUp={navigation.onToSignUp} />
+        <MoreInfoSection onToOrgSignUp={navigation.onToOrgSignUp} onToVolunteerSignUp={navigation.onToVolunteerSignUp}  />
         <CredibilitySection />
-        <CTASection onToSignUp={navigation.onToSignUp} />
+        <CTASection onToOrgSignUp={navigation.onToOrgSignUp} onToVolunteerSignUp={navigation.onToVolunteerSignUp} />
         <Footer />
       </main>
     </div>

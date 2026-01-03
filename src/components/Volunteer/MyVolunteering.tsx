@@ -6,6 +6,7 @@ import { useConfirmAsk } from "../hooks/useConfirm";
 import { useModal } from "../hooks/useModal";
 import useAuthFetch from "../hooks/useAuthFetch";
 import {  PageLoader } from "../icons";
+import { useAlert } from "../hooks/useAlert";
 
 export default function MyVolunteering() {
   const [projects, setProjects] = useState<MyVolunteeringProps[]>([]);
@@ -13,7 +14,7 @@ export default function MyVolunteering() {
   const {modal, DisplayModal} = useModal()
   const {API} = useAuthFetch("volunteer")
   const {confirmAsk, ConfirmDialog} = useConfirmAsk({isOrg: false})
-
+  const {alertMessage, AlertDialog} = useAlert({isOrg:false})
   // Simulate backend fetch
   useEffect(() => {
     async function fetchProjects() {
@@ -40,7 +41,17 @@ export default function MyVolunteering() {
     })
 
     if(confirmation){
+      try{
+        setIsLoading(true)
+        await API().delete(`volunteering/${volunteered.id}`)
 
+        setProjects(projects.filter(p=>p.id != volunteered.id))
+      }catch{
+        setIsLoading(false)
+        await alertMessage(`Failed to cancel participation in ${volunteered.project?.title}`)
+      }finally{
+        setIsLoading(false)
+      }
     }
   };
 
@@ -52,6 +63,7 @@ export default function MyVolunteering() {
     <>
       <ConfirmDialog/>
       <DisplayModal/>
+      <AlertDialog/>
       <div className="min-h-screen flex flex-col gap-y-3">
       {isLoading?<PageLoader message="Loading Projects" />:
       

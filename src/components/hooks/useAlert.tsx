@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { Button } from "../ReuseableComponents";
 import useScrollLock from "./scrollLock";
 
-export function useAlert(){
+export function useAlert({isOrg=false}: {isOrg?:boolean}){
     const [message, setMessage] = useState("")
     const resolverRef = useRef<(() => void) | null>(null);
     const alertMessage = useCallback((organization:string)=>{
@@ -41,7 +41,7 @@ export function useAlert(){
         </p>
 
         <div className="flex justify-end">
-            <Button onClick={onClose} variant="primary">
+            <Button onClick={onClose} variant={isOrg?"green":"primary"}>
                 Close
             </Button>
         </div>

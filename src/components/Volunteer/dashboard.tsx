@@ -13,19 +13,6 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
 
     const [selectedProjectCategory, setSelectedProjectCategory]= useState("")
 
-//     useEffect(() => {
-//     if (metrics && metrics.length > 0) {
-        
-//       setMetrics((prev) =>
-//         prev.map((defaultMetric) => {
-//           const match = metrics.find((m) => m.title === defaultMetric.title);
-//           return match
-//             ? { ...defaultMetric, value: match.value, context: match.context }
-//             : defaultMetric;
-//         })
-//       );
-//     }
-//   }, [metrics]);
 
     useEffect(()=>{
         // Fetch projects when component is mounted
@@ -41,7 +28,7 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
     }else{
         quickActions.set("Create New Project", "Create New Project")
         quickActions.set("Review pending applications", "Review pending applications")
-        quickActions.set("View Analytics", "View Analytics")
+        quickActions.set("Edit Profile", "Modify Profile Information")
     }
     
     const activateQuickAction = (event:React.MouseEvent<HTMLButtonElement>)=>{
@@ -79,7 +66,7 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
                 if(orgTriggerAction)
                     orgTriggerAction(action)
                 break;
-            case "View Analytics":
+            case "Edit Profile":
                 if(orgTriggerAction)
                     orgTriggerAction(action)
                 break;
@@ -99,7 +86,7 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
 
 
     const fetchProjects = async ()=>{
-        await API().get("/projects")
+        await API().get(orgTriggerAction?"/projects":"/projects/recommended")
             .then((val)=>{
                 setProjects(val.data as ProjectProps[])
             })

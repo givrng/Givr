@@ -7,11 +7,12 @@ import { useAlert } from "../hooks/useAlert"
 import { useConfirmAsk } from "../hooks/useConfirm"
 import  { PageLoader } from "../icons"
 
-export const ProjectHub:React.FC<{ isOrganization?:boolean}>= ({ isOrganization=false})=>{
+export const ProjectHub:React.FC<{ isOrganization?:boolean, isDisabled?:boolean}>= ({ isOrganization=false, isDisabled=false})=>{
     const[itemsCategories, setItemCategories] = useState<string[]>([])
     const [activeCategory, setActiveCategory] = useState<string>("All Categories")
     const [newProject, setNewProject] = useState<boolean>(false);
-    const {alertMessage, AlertDialog} = useAlert()
+    const {alertMessage, AlertDialog} = useAlert({isOrg:isOrganization})
+
     const {confirmAsk, ConfirmDialog} = useConfirmAsk({isOrg:true})
     const [change, setChange] = useState(false)
     // Projects are for volunteers
@@ -24,14 +25,16 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean}>= ({ isOrganization=
     const [isLoading, setIsloading] = useState(true)
 
 
-    if(!isOrganization){
-        useEffect(()=>{
-            const categories = new Set<string>()
-            projects.forEach((project)=>project.categories.forEach((category)=>categories.add(category)))
-            categories.keys()
-            setItemCategories(["All Categories" , ...Array.from(categories).sort()])
-        }, [projects])
-    }
+    
+    useEffect(()=>{
+        if(isOrganization)
+            return
+        const categories = new Set<string>()
+        projects.forEach((project)=>project.categories.forEach((category)=>categories.add(category)))
+        categories.keys()
+        setItemCategories(["All Categories" , ...Array.from(categories).sort()])
+    }, [projects])
+
 
 
     const activatecategory = (e:React.MouseEvent<HTMLButtonElement>)=>{
@@ -39,6 +42,7 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean}>= ({ isOrganization=
     }
 
     const createProject = ()=>{
+        
         setNewProject(true)
     }
 
@@ -107,6 +111,28 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean}>= ({ isOrganization=
 
     }
 
+    useEffect(() => {
+        if (!isOrganization || !isDisabled) return;
+
+        const timeout = setTimeout(() => {
+            alertMessage("Complete organization profile to create projects");
+        }, 500);
+
+        return () => clearTimeout(timeout);
+    }, [isOrganization, isDisabled]);
+        
+    useEffect(()=>{
+
+        let timeout;
+        if(isDisabled){
+        timeout = setTimeout(()=>{
+            alertMessage("Complete organization profile to create projects")
+        }, 100)
+
+        return clearTimeout(timeout)
+    }
+    }, [])
+    
 
     useEffect(()=>{
         setIsloading(true)
@@ -157,7 +183,7 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean}>= ({ isOrganization=
         {isOrganization && <div>
             <p className="text-xl font-bold text-green-800 flex justify-between">
                 <span>Project Management</span>
-                <Button variant="green" onClick={createProject}>+ Create Project</Button>
+                <Button variant={isDisabled?"disabled":"green"} onClick={createProject}>+ Create Project</Button>
             </p>
 
                 <div className="text-sm font-bold text-green-800 flex flex-col justify-between">

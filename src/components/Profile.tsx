@@ -80,12 +80,14 @@ export const ProfilePage:React.FC<{editing?:boolean}> = ({editing = false})=> {
 
   const [isEditing, setIsEditing] = useState(editing)
   const [profile, setProfile] = useState<ProfileProps>({
+    skills:[],
     rating: 5,
   })
   const [isLoading, setIsLoading] = useState(false)
 
 
   const {API} = useAuthFetch("volunteer")
+
   useEffect(()=>{
     const loadProfile = async ()=>{
       try{
@@ -103,9 +105,13 @@ export const ProfilePage:React.FC<{editing?:boolean}> = ({editing = false})=> {
 
   return (
     <div className="p-6 space-y-6 flex flex-col justify-center items-center">
-      {isLoading? <PageLoader message="Loading your profile"/> : isEditing?<EditProfile onClose={()=>{
+      {isLoading && <PageLoader message="Loading your profile"/> }
+
+      { isEditing?<EditProfile onClose={()=>{
         setIsEditing(false)
-      }}/> : <ProfileAchievements
+      }}
+      profileProps={profile}
+      /> : <ProfileAchievements
         profile={profile}
         badges={sampleBadges}
         onEditProfile={() => setIsEditing(true)}

@@ -7,11 +7,11 @@ import { useAlert } from "../hooks/useAlert";
 import { interestCategories } from "../interest";
 
 
-const PickInterests: React.FC<BasicNatigationProps> = ({onToSignIn}) => {
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+const PickInterests: React.FC<{nav: BasicNatigationProps, back:()=>void, selectedInterests:string[], setSelectedInterests:(e:React.SetStateAction<string[]>)=>void}> = ({nav, back, selectedInterests, setSelectedInterests}) => {
+  
   const usesignup = useSignup()
   const [isLoading, setIsloading] = useState(false)
-  const {alertMessage, AlertDialog} = useAlert()
+  const {alertMessage, AlertDialog} = useAlert({})
 
   // Toggle selection
   const handleSelect = (item: string): void => {
@@ -41,8 +41,8 @@ const PickInterests: React.FC<BasicNatigationProps> = ({onToSignIn}) => {
     )
     console.log(payload)
   
-    if(response.ok && onToSignIn){
-      onToSignIn()
+    if(response.ok && nav.onToSignIn){
+      nav.onToSignIn()
     }else{
       alertMessage("Account Creation failed, please try again")
       setIsloading(false) 
@@ -51,62 +51,83 @@ const PickInterests: React.FC<BasicNatigationProps> = ({onToSignIn}) => {
   }
   
   return (
-    <div className="min-h-screen ">
-    <div className=" flex flex-col gap-y-2 justify-center items-center min-h-screen pt-5 px-3 sm:px-4 lg:px-4 mx-auto w-full max-w-4xl text-[#323338]">
+    <div className="min-h-screen bg-gray-50">
+    <div className="flex flex-col justify-center items-center min-h-screen px-4 mx-auto w-full max-w-4xl text-[#323338]">
       <AlertDialog/>
-      <h1 className="md:text-5xl sm:text-3xl text-xl  text-center">
-        Select your skills and interests
+      
+       {/* Header */}
+    <div className="text-center mb-6">
+      <h1 className="md:text-5xl sm:text-3xl text-xl font-bold">
+        Select your skills & interests
       </h1>
-      <div className="form  border-none shadow-none ">
-        {interestCategories.map((category, index) => (
-          <div key={index}>
-            <h3 className="sm:text-2xl text-base font-semibold text-[#323338] mb-2">
-              {category.title}
-            </h3>
+      <p className="text-sm text-gray-500 mt-2">
+        Choose at least one — this helps us personalize your experience
+      </p>
 
-            <div className="flex flex-wrap gap-2">
+      {/* Selected count */}
+      <div className="mt-3 text-sm font-medium text-[#323338]">
+          Selected:{" "}
+          <span className="text-(--primary-color)">
+            {selectedInterests.length}
+          </span>
+        </div>
+      </div>
+
+      {/* Categories */}
+      <div className="w-full space-y-6 ">
+        {interestCategories.map((category, index) => (
+          <div key={index}
+            className="bg-white rounded-2xl p-5 shadow-sm border border-ui"
+          >
+          <h3 className="sm:text-xl text-base font-semibold mb-3">
+            {category.title}
+          </h3>
+
+          <div className="flex flex-wrap gap-3">
                     {category.items.map((item, i) => {
                       const isSelected = selectedInterests.includes(item);
                         return (
-                          <span
-                            key={i}
-                                className={`rounded-xl p-2 sm:text-lg text-sm rounded-2xl cursor-pointer  text-[#323338] hover:bg-(--primary-color) hover:text-white  ${isSelected ? "bg-(--primary-color) text-white" : "text-[#323338] bg-gray-200"}`}
+                          <button
                             onClick={() => handleSelect(item)}
+                            key={i}
+                            className={`
+                              px-4 py-2 rounded-full text-sm sm:text-base
+                              transition-all duration-150
+                              ${
+                                isSelected
+                                  ? "bg-(--primary-color) text-white shadow-md scale-[1.03]"
+                                  : "bg-gray-100 text-gray-700 hover:bg-(--primary-color)/10"
+                              }
+                            `}
                           >
-                            <p>{item}</p>
-                          </span>
+                            {item}
+                          </button>
                         );
                     })}
             </div>
-            <hr className="border border-ui mt-5" />
           </div>
         ))}
       </div>
-      <div className="flex justify-center mb-2 space-x-3 w-full">
+
+       {/* Actions */}
+      <div className="flex justify-center mt-8 mb-4 space-x-3 w-full">
         {/* User should provide their interest, it is required for recommendation */}
-        {/* <Button
-          variant="outline"
-          className="text-sm px-4 py-2 shadow-none sm:w-60 w-full "
-          onClick={onBackToSignIn}
-        >
-          skip
-        </Button> */}
         <Button
-          variant="primary"
-          className="text-sm px-4 py-2 shadow-none sm:w-60 w-full "
+          variant="outline"
+          className="text-sm px-4 py-2 sm:w-60 w-full"
+          onClick={back}
+        >
+          Back
+        </Button>
+        <Button
+          variant={selectedInterests.length == 0? "disabled":"primary"}
+          className="text-sm px-4 py-2 sm:w-60 w-full "
           onClick={handleSubmit}
+
         >
           {isLoading? <LoadingEffect message="Creating Account..."/>: "Create Account"}
         </Button>
       </div>
-
-      {/* A user that has an account should not get to the pick interest stage */}
-      {/* <span className="text-base text-[#676879] my-6 ">
-        Already have an account?
-        <Link to="signin" className="text-[#323338] font-bold ml-2 ">
-          SignIn here
-        </a>
-      </span> */}
     </div>
   </div>
   );

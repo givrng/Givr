@@ -11,7 +11,9 @@ import { LoadingEffect } from "../icons";
 export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updProject: ProjectProps)=>void, projectData?:ProjectFormProps, isCreating?:boolean, handlesave?: (projects:ProjectProps[])=>void}> = ({onClose, projectData, isCreating=true, onSuccessfulEdit, handlesave})=>{
 
     const {confirmAsk, ConfirmDialog} = useConfirmAsk({isOrg:true})
-    const {alertMessage, AlertDialog} = useAlert()
+    const {alertMessage, AlertDialog} = useAlert({
+        isOrg:true
+    })
     const {API} = useAuthFetch("organization")
     const [isLoading, setIsLoading] = useState(false)
     

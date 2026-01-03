@@ -2,8 +2,10 @@ import React, { useState, useCallback } from "react";
 import Input from "../form/Input";
 import { Button } from "../ReuseableComponents";
 import LocationSelect from "../form/LocationSelect";
-import type { BasicNatigationProps } from "../../interface/interfaces";
+
 import { useSignup } from "../Volunteer/sign-up/SignupContext";
+import { CloudinaryUpload } from "../CloudinaryWidget";
+import type { FormFields } from "../../pages/Volunteer/volunteerSignup";
 
 
 type inputProps = {
@@ -22,36 +24,12 @@ type inputProps = {
  * Define a local interface for the form state to avoid colliding with the DOM's FormData type.
  */
 
-interface FormFields {
-  firstname: string;
-  middlename: string;
-  lastname: string;
-  email: string;
-  phone: string;
-  password: string;
-  confirmPassword: string;
-  state: string;
-  lga: string;
-}
-
-const UserDetails:React.FC<BasicNatigationProps> = ({onToInterest}) => {
-  
+const UserDetails:React.FC<{formData:FormFields; setFormData:(d: React.SetStateAction<FormFields>)=>void, next:()=>void}> =({formData, setFormData, next}) => {
   const setFormPayload = useSignup()
-  const [formData, setFormData] = useState<FormFields>({
-      firstname: "",
-      middlename: "",
-      lastname: "",
-      email: "",
-      phone: "",
-      password: "",
-      confirmPassword: "",
-      state: "",
-      lga: "",
-    });
-
+ 
     const handleLocationChange = useCallback(
     (location: { state: string; lga: string }) => {
-      setFormData((prev) => ({ ...prev, ...location }));
+      setFormPayload?.setFormPayload((prev) => ({ ...prev, ...location }));
 
             //   clears error once an item is selected
       setErrors((prev) => ({
@@ -144,17 +122,18 @@ const UserDetails:React.FC<BasicNatigationProps> = ({onToInterest}) => {
             return;
         }
         
-        let {state, lga, ...rest} = formData;
+        let {state, lga, profileUrl,...rest} = formData;
+        
         
         const payload = {...rest, location: {
           state, lga
-        }}
+        },
+        profileUrl: profileUrl || `https://avatar.iran.liara.run/username?username=${formData.firstname} + ${formData.lastname}`
+      }
     
        setFormPayload?.setFormPayload(prev=>({...prev, ...payload}))
        
-       if(onToInterest)
-        onToInterest()
-        
+        next()
     };
 
     const inputs: inputProps[] = [
@@ -210,12 +189,42 @@ const UserDetails:React.FC<BasicNatigationProps> = ({onToInterest}) => {
 
      ];
     return (
-    <div className="min-h-screen flex flex-col bg-gray-200 place-items-center">
-      <div className="bg-[#F3FAFA] flex flex-col min-h-screen max-w-4xl p-10 px-3 sm:px-4 lg:px-4 mx-auto w-full">
-        <form className="form mb-4" onSubmit={handleSubmit} noValidate>
-          <h2 className="font-bold text-2xl leading-4 text-[#323338] mb-3">
-            Input your details
-          </h2>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-200 to-gray-300 place-items-center w-full p-8">
+      <div className="bg-[#F3FAFA] rounded-2xl shadow-xl flex flex-col min-h-screen max-w-4xl p-8 sm:p-10 mx-auto w-full">
+        <form className="form mb-4 grid grid-cols-1 gap-y-4" onSubmit={handleSubmit} noValidate>
+         <h2 className="font-bold text-2xl text-[#323338] mb-6 relative">
+          Input your details
+          <span className="absolute -bottom-2 left-0 h-1 w-12 rounded-full bg-blue-500"></span>
+        </h2>
+
+          
+           <div className="flex items-center gap-6 p-4 rounded-xl bg-white/60 border border-gray-200">
+            <img
+                src={ formData.profileUrl || `https://avatar.iran.liara.run/username?username=[${formData.firstname}] + ${formData.lastname}`}
+                alt="Profile"
+                className="w-24 h-24 rounded-full object-cover border shadow-sm"
+            />
+        
+            <div className="flex flex-col gap-2">
+              <span className="text-sm text-gray-600">
+                  Profile Photo
+              </span>
+              <CloudinaryUpload
+              folder="avatars"
+              buttonText="Change Photo"
+              onUploadSuccess={(url) => {
+                  setFormData(prev => ({
+                  ...prev,
+                  profileUrl: url,
+                  }));
+              }}
+              />
+              <p className="text-xs text-gray-400">
+                JPG, PNG or WEBP. Max 2MB.
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {inputs.map((input) => (
             <div key={input.name}>
               <Input
@@ -241,16 +250,19 @@ const UserDetails:React.FC<BasicNatigationProps> = ({onToInterest}) => {
               )}
             </div>
           ))}
+          </div>
           {/*  LocationSelect component here */}
           <div>
             <LocationSelect
               onChange={handleLocationChange}
+              state={setFormPayload?.formData.location?.state}
+              lga={setFormPayload?.formData.location?.lga}
               error={{ state: errors.state, lga: errors.lga }}
             />
           </div>
           <Button
             variant="primary"
-            className="text-sm px-4 py-2 shadow-none w-full mt-4"
+            className="text-sm px-4 py-3 shadow-md w-full mt-6 hover:shadow-lg transition"
           >
             Next
           </Button>

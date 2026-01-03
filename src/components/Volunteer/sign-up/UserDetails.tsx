@@ -51,7 +51,7 @@ const UserDetails:React.FC<BasicNatigationProps> = ({onToInterest}) => {
       lga: "",
     });
 
-      const handleLocationChange = useCallback(
+    const handleLocationChange = useCallback(
     (location: { state: string; lga: string }) => {
       setFormData((prev) => ({ ...prev, ...location }));
 

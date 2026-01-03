@@ -9,6 +9,7 @@ import { DashboardHeader } from "../../components/dashboardHeader";
 
 import { ApplicationHub } from "../../components/Organization/applicationHub";
 import useAuthFetch from "../../components/hooks/useAuthFetch";
+import OrganizationProfilePage from "./OrganizationProfilePage";
 
 
 export const DashboardPage = () => {
@@ -24,13 +25,15 @@ export const DashboardPage = () => {
             ongoingProjects: [],
             completedProjects: []
         },
-
+    
         rating: 0.0,
         applicationStats: {
             numApplied: 0,
             numApproved: 0,
             numRejected:0
-        }
+        },
+        isRestricted: false
+
     });
     
     const metrics = useMemo<MetricProps[]>(()=>[
@@ -70,7 +73,7 @@ export const DashboardPage = () => {
     buttons.set("Dashboard", "Dashboard")
     buttons.set("Project Management", "Project Management")
     buttons.set("Applications", "Applications")
-    buttons.set("Analytics", "Analytics")
+    buttons.set("Profile", "Profile")
 
 
     // Makes requests with automatic refresh logic when access token expires
@@ -100,8 +103,8 @@ export const DashboardPage = () => {
             case "Review pending applications":
                 setActive("Applications")
                 break;
-            case "View Analytics":
-                setActive("Analytics")
+            case "Edit Profile":
+                setActive("Profile")
                 break;
         }
     }
@@ -112,16 +115,15 @@ export const DashboardPage = () => {
         })()
     }, [dashboardIsMounted])
 
-
-
     return <>
         <main className="">
             <DashboardHeader isOrganization={true} />
             {<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-15">
                 <UserDashboardInformation activeButton={active} buttons={[...buttons.keys()]} onClick={activateNavButton} username={dashboard.name} />
                 {active == "Dashboard" && dashboard && <Dashboard projects={[]} metrics={metrics} orgTriggerAction={quickAction} hasMounted={()=>setDashboardIsMounted(!dashboardIsMounted)} />}
-                {active == "Project Management" && <ProjectHub isOrganization={true}/>}
+                {active == "Project Management" && <ProjectHub isOrganization={true} isDisabled={dashboard.isRestricted}/>}
                 {active == "Applications" && <ApplicationHub/>}
+                {active == "Profile" && <OrganizationProfilePage/>}
             </div>}
         </main>
     </>

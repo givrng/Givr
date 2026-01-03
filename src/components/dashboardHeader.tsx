@@ -1,11 +1,24 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { GivrLogoIcon, LogoutIcon, MenuIcon } from "./icons";
 import { useState } from "react";
 import { Button } from "./ReuseableComponents";
+import useAuthFetch from "./hooks/useAuthFetch";
 
 export const DashboardHeader: React.FC<{ isOrganization?: boolean }> = ({ isOrganization = false }) => {
 
   let [isOpen, setIsOpen] = useState(false)
+
+  const {Logout} = useAuthFetch(isOrganization?"organization":"volunteer")
+
+  const navigate = useNavigate()
+
+  const logout = async ()=>{
+    try{
+      await Logout()
+    }finally{
+      navigate("../")
+    }
+  }
 
   // Fixed header with slightly off-white background
   return <header className="fixed top-0 left-0 right-0 z-50 bg-[#F7FAFC] backdrop-blur-sm border-b border-gray-100 mb-1 shadow-md">
@@ -31,7 +44,7 @@ export const DashboardHeader: React.FC<{ isOrganization?: boolean }> = ({ isOrga
 
       {/* Logout button, visible for large screens*/}
       <div className="hidden md:inline text-lg font-bold">
-        <NavLink to={"/logout"}><LogoutIcon /></NavLink>
+        <button onClick={logout}><LogoutIcon /></button>
       </div>
     </div>
 
@@ -41,7 +54,7 @@ export const DashboardHeader: React.FC<{ isOrganization?: boolean }> = ({ isOrga
           <NavLink to={"/"}>Home</NavLink>
           <NavLink to={""}>Organizations</NavLink>
           <NavLink to={"certificates"}>Certificates</NavLink>
-          <NavLink to={"/logout"}>Logout</NavLink>
+          <button onClick={logout}>Logout</button>
         </div>
       </div>
     )}

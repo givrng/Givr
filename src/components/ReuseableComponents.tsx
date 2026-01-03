@@ -181,7 +181,7 @@ export const InfoCell:React.FC<{icon:ReactNode, info:string}> = ({icon, info})=>
 /**Displays an organization's information */
 export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, description, numOfActiveProjects,location, category, status, hasVolunteered=false})=>{
   const {confirmAsk, ConfirmDialog} = useConfirmAsk({})
-  const {alertMessage, AlertDialog} = useAlert()
+  const {alertMessage, AlertDialog} = useAlert({isOrg:true})
 
 
   const handleApplication = async ()=>{
@@ -252,7 +252,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({id, title, organiza
 
   // Makes request to backend to get organization information
   const handleView = ()=>{
-    modal(<OrganizationCard {...organization} description={organization?.description!}  hasVolunteered={false}/>)
+    modal(<OrganizationCard {...organization} description={organization?.description!}  hasVolunteered={false} />)
 
   }
   const {state, lga} = location
@@ -391,7 +391,7 @@ export const ApplicationForm:React.FC<{onCancel:()=>void, organization?:string, 
   const {API} = useAuthFetch("volunteer")
 
   let {confirmAsk, ConfirmDialog}= useConfirmAsk({})
-  let {alertMessage, AlertDialog} = useAlert()
+  let {alertMessage, AlertDialog} = useAlert({isOrg:false})
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>)=>{
     e.preventDefault()

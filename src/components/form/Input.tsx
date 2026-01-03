@@ -35,11 +35,10 @@ const Input: React.FC<InputProps> = ({
 
       <div className={`w-full ${className}`}>
               <input
-                  {...props}
                   name={name}
                   id={name}
-                  
-                  className={`  rounded-md pl-3 py-2 outline-none  w-full  ${borderClasses}
+                  {...props}
+                  className={`rounded-md pl-3 py-2 outline-none  w-full  ${borderClasses}
           } ${className}`}
         />
       </div>

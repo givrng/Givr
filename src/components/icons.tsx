@@ -17,10 +17,10 @@ export const GivrLogoIcon:React.FC<{className?:string}> = ({className = "h-6 w-a
 export const GivrRoundLogo:React.FC<{className?:string, color?:string}> = ({className="w-6 h-6", color="#1A73E8"})=>(
   <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <rect className={className} rx="12" fill="#DAF0FF"/>
-<g clip-path="url(#clip0_355_13176)">
-<path d="M7.60547 18.113L19.1106 9.5332" stroke={color} stroke-width="1.51798" stroke-miterlimit="10"/>
-<path d="M13.0872 9.34377L10.4958 5.63882C9.62408 4.393 7.81877 4.94164 7.40675 6.5778L5.03328 16.0109C4.57789 17.8228 6.22706 19.1705 7.60517 18.1133" stroke={color} stroke-width="1.51798" stroke-miterlimit="10"/>
-<path d="M15.9648 14.5449L18.0044 17.1786" stroke={color} stroke-width="1.51798" stroke-miterlimit="10"/>
+<g clipPath="url(#clip0_355_13176)">
+<path d="M7.60547 18.113L19.1106 9.5332" stroke={color} strokeWidth="1.51798" strokeMiterlimit="10"/>
+<path d="M13.0872 9.34377L10.4958 5.63882C9.62408 4.393 7.81877 4.94164 7.40675 6.5778L5.03328 16.0109C4.57789 17.8228 6.22706 19.1705 7.60517 18.1133" stroke={color} strokeWidth="1.51798" strokeMiterlimit="10"/>
+<path d="M15.9648 14.5449L18.0044 17.1786" stroke={color} strokeWidth="1.51798" strokeMiterlimit="10"/>
 </g>
 <defs>
 <clipPath id="clip0_355_13176">
@@ -113,7 +113,7 @@ export const ArrowIcon:React.FC<{className?:string, color?:string}>= ({className
   <svg xmlns="http://www.w3.org/2000/svg"
              fill="none"
              viewBox="0 0 24 24"
-             stroke-width="2"
+             strokeWidth="2"
              stroke={color}
              className={`${className}`}>
     <path d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
@@ -217,17 +217,17 @@ export const HeartHandIcon: React.FC<{ className?: string }> = ({
   </svg>
 );
 
-export const CancelIcon:React.FC<{className?:string, color?:string}> = ({className="w-5 h-5"})=>(<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" className={className}>
+export const CancelIcon:React.FC<{className?:string, color?:string}> = ({className="w-5 h-5"})=>(<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={className}>
     <path d="M6 18 18 6M6 6l12 12" />
 </svg>)
 
 export const MenuIcon:React.FC<{className?:string, color?:string}> = ({className="w-10 h-10", color="#1877F2"})=>(<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" className={className} viewBox="0 0 48 48">
-<linearGradient id="C9TYDZarys49lHDy~k4THa_eofQ1g5BaAx6_gr1" x1="12.373" x2="34.611" y1="-154.373" y2="-176.611" gradientTransform="matrix(1 0 0 -1 0 -154)" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color={color}></stop><stop offset="1" stop-color="#0b59a2"></stop></linearGradient><path fill="url(#C9TYDZarys49lHDy~k4THa_eofQ1g5BaAx6_gr1)" d="M42,15H6c-1.65,0-3-1.35-3-3v0c0-1.65,1.35-3,3-3h36c1.65,0,3,1.35,3,3v0	C45,13.65,43.65,15,42,15z"></path><linearGradient id="C9TYDZarys49lHDy~k4THb_eofQ1g5BaAx6_gr2" x1="12.373" x2="34.611" y1="-166.373" y2="-188.611" gradientTransform="matrix(1 0 0 -1 0 -154)" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color={color}></stop><stop offset="1" stop-color="#0b59a2"></stop></linearGradient><path fill="url(#C9TYDZarys49lHDy~k4THb_eofQ1g5BaAx6_gr2)" d="M42,27H6c-1.65,0-3-1.35-3-3v0c0-1.65,1.35-3,3-3h36c1.65,0,3,1.35,3,3v0	C45,25.65,43.65,27,42,27z"></path><linearGradient id="C9TYDZarys49lHDy~k4THc_eofQ1g5BaAx6_gr3" x1="12.373" x2="34.611" y1="-178.373" y2="-200.611" gradientTransform="matrix(1 0 0 -1 0 -154)" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color={color}></stop><stop offset="1" stop-color="#0b59a2"></stop></linearGradient><path fill="url(#C9TYDZarys49lHDy~k4THc_eofQ1g5BaAx6_gr3)" d="M42,39H6c-1.65,0-3-1.35-3-3v0c0-1.65,1.35-3,3-3h36c1.65,0,3,1.35,3,3v0	C45,37.65,43.65,39,42,39z"></path>
+<linearGradient id="C9TYDZarys49lHDy~k4THa_eofQ1g5BaAx6_gr1" x1="12.373" x2="34.611" y1="-154.373" y2="-176.611" gradientTransform="matrix(1 0 0 -1 0 -154)" gradientUnits="userSpaceOnUse"><stop offset="0" stopColor={color}></stop><stop offset="1" stopColor="#0b59a2"></stop></linearGradient><path fill="url(#C9TYDZarys49lHDy~k4THa_eofQ1g5BaAx6_gr1)" d="M42,15H6c-1.65,0-3-1.35-3-3v0c0-1.65,1.35-3,3-3h36c1.65,0,3,1.35,3,3v0	C45,13.65,43.65,15,42,15z"></path><linearGradient id="C9TYDZarys49lHDy~k4THb_eofQ1g5BaAx6_gr2" x1="12.373" x2="34.611" y1="-166.373" y2="-188.611" gradientTransform="matrix(1 0 0 -1 0 -154)" gradientUnits="userSpaceOnUse"><stop offset="0" stopColor={color}></stop><stop offset="1" stopColor="#0b59a2"></stop></linearGradient><path fill="url(#C9TYDZarys49lHDy~k4THb_eofQ1g5BaAx6_gr2)" d="M42,27H6c-1.65,0-3-1.35-3-3v0c0-1.65,1.35-3,3-3h36c1.65,0,3,1.35,3,3v0	C45,25.65,43.65,27,42,27z"></path><linearGradient id="C9TYDZarys49lHDy~k4THc_eofQ1g5BaAx6_gr3" x1="12.373" x2="34.611" y1="-178.373" y2="-200.611" gradientTransform="matrix(1 0 0 -1 0 -154)" gradientUnits="userSpaceOnUse"><stop offset="0" stopColor={color}></stop><stop offset="1" stopColor="#0b59a2"></stop></linearGradient><path fill="url(#C9TYDZarys49lHDy~k4THc_eofQ1g5BaAx6_gr3)" d="M42,39H6c-1.65,0-3-1.35-3-3v0c0-1.65,1.35-3,3-3h36c1.65,0,3,1.35,3,3v0	C45,37.65,43.65,39,42,39z"></path>
 </svg>)
 
 
 export const LogoutIcon:React.FC<{className?:string, color?:string}> = ({className="w-10 h-10", color="#1877F2"})=><svg fill="none"  className={className} viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg">
-  <path d="M17 16L21 12M21 12L17 8M21 12L7 12M13 16V17C13 18.6569 11.6569 20 10 20H6C4.34315 20 3 18.6569 3 17V7C3 5.34315 4.34315 4 6 4H10C11.6569 4 13 5.34315 13 7V8" stroke={color} stroke-width="2"/>
+  <path d="M17 16L21 12M21 12L17 8M21 12L7 12M13 16V17C13 18.6569 11.6569 20 10 20H6C4.34315 20 3 18.6569 3 17V7C3 5.34315 4.34315 4 6 4H10C11.6569 4 13 5.34315 13 7V8" stroke={color} strokeWidth="2"/>
   </svg>
 
 export const LoadingEffect:React.FC<{message:string}> = ({message})=>(
@@ -240,7 +240,7 @@ export const LoadingEffect:React.FC<{message:string}> = ({message})=>(
   </div>
 )
 
-export const PageLoader: React.FC<{ message?: string, color?:"blue"|"green" }> = ({ message, color="blue" }) => (
+export const PageLoader: React.FC<{ message?: string, color?:`blue`|`green` }> = ({ message, color="blue" }) => (
   <div className="fixed inset-0 flex flex-col items-center justify-center gap-4">
     <div className="relative w-16 h-16">
       <div className={`absolute inset-0 rounded-full border-4 border-${color}-500/30`}></div>

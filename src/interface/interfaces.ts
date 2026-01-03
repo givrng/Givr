@@ -44,6 +44,8 @@ export interface BasicNatigationProps{
   onToSignIn?: ()=> void
   onToInterest?:()=>void;
   onToDashboard?: ()=>void;
+  onToVolunteerSignUp?: ()=>void;
+  onToOrgSignUp?:()=>void;
   toForgotPassword?:string;
   toSignUp?:string;
   toVolunteerDetails?:string;
@@ -65,7 +67,7 @@ export interface MetricComponentProps extends MetricProps{
   className?:string
 }
 
-interface location{
+export interface location{
   state:string;
   lga:string;
 }
@@ -134,8 +136,25 @@ export interface OrganizationProps{
   category?:string[];
   status?: "VERIFIED" | "UNVERIFIED";
   numOfActiveProjects?:number;
+  website?:string;
   address?:string;
   activeProjects?: ProjectProps[]
+  cacRegNumber?:string;
+  rating?:number;
+  profileCompleted?:boolean;
+  profileUrl?:string;
+}
+
+export interface OrgContantProfileProps{
+  contactFirstname:string;
+  contactLastname:string;
+  contactMiddleName:string;
+  phoneNumber:string;
+  email:string;
+}
+export interface OrganizationProfileProps{
+  organizationContact: OrgContantProfileProps;
+  organization: OrganizationProps;
 }
 
 export interface MyCertificationProps {
@@ -164,11 +183,12 @@ export interface ProfileProps {
   profileUrl?: string;
   location?: location;
   rating?: string | number | undefined;
-  skills?: string[];
+  skills: string[];
   interests?: string[];
   phoneIsVerified?: boolean;
   emailIsVerified?: boolean;
   role?: "VOLUNTEER"|"ORGANIZATION";
+  email?:string;
 };
 
 export interface BadgeProps {
@@ -197,14 +217,18 @@ export interface DashboardProps{
 export type NavTypes = "Dashboard" | "Find Opportunities"| "My Volunteering"| "Profile & Achievements";
 export type VolunteerQuickActions = "Find Opportunities"| "View Organizations" | "Update Profile"|""
 
-export type OrganizationNavTypes = "Dashboard"| "Project Management" | "Applications" | "Analytics"
-export type OrganizationQuickActions = "Create New Project"| "Review pending applications"| "View Analytics"
+export type OrganizationNavTypes = "Dashboard"| "Project Management" | "Applications" | "Profile"
+export type OrganizationQuickActions = "Create New Project"| "Review pending applications"| "Edit Profile"
 
 export interface VolunteerProfileProps{
   firstName:string;
   lastName:string;
+  middleName:string;
   email:string;
   location:location;
+  phoneNumber:string;
+  skills:string[]
+  profileUrl:string;
 }
 
 export interface FormDataProps{
@@ -220,6 +244,7 @@ export interface FormDataProps{
     lga:string;
   }
   interests: string[];
+  profileUrl:string;
 }
 
 
@@ -281,6 +306,7 @@ export interface OrganizationSignupProps{
     state:string;
     lga:string;
   }
+  address:string;
   organizationName:string;
   organizationType:organizationType;
   cacRegNumber:string;
@@ -307,6 +333,7 @@ export interface OrganizationDashboardProps {
     numApproved:number;
     numRejected:number;
   }
+  isRestricted:boolean;
 }
 
 export type UserTypes = "volunteer"|"organization"|"";

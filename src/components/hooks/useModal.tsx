@@ -1,20 +1,23 @@
-import { useState, type ReactNode } from "react"
+import { useRef, useState, type ReactNode } from "react"
 import useScrollLock from "./scrollLock"
 
 const Modal:React.FC<{children:ReactNode; onClose:()=>void}> = ({children, onClose})=>{
     useScrollLock(true)
-    
+    const backDropRef = useRef<HTMLDivElement>(null)
     return <div 
         className="fixed inset-0 backdrop-blur-sm bg-black/40 flex items-center justify-center z-50"
-        
-        onClick={()=>{
-            onClose()
+        onClick={(e)=>{
+            if(e.currentTarget !== backDropRef.current)
+                onClose()
         }}
         >
-            <div
-                className="bg-white rounded-lg p-4">
+            <p
+             ref={backDropRef}
+                className="bg-white rounded-lg p-4"
+                
+                >
                 {children}
-            </div>
+            </p>
         </div>
     }
 
