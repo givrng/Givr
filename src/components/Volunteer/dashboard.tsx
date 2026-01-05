@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { projectStatuses, type DashboardProps, type OrganizationProps, type OrganizationQuickActions, type ProjectProps, type VolunteerQuickActions } from "../../interface/interfaces";
 import { Banner, MetricCard, OrganizationCard, ProjectCard, RadioButton } from "../ReuseableComponents";
-import { EditProfile } from "./editProfile";
 import useAuthFetch from "../hooks/useAuthFetch";
 // import useAuthFetch from "../hooks/useAuthFetch";
 
@@ -93,13 +92,7 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
     }
 
     const renderContent = () => {
-        if (active === "Update Profile") {
-            return (
-            <div className="border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2">
-                <EditProfile />
-            </div>
-            );
-        }
+      
 
         if (organizations && active === "View Organizations") {
             return (

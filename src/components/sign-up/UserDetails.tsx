@@ -200,7 +200,7 @@ const UserDetails:React.FC<{formData:FormFields; setFormData:(d: React.SetStateA
           
            <div className="flex items-center gap-6 p-4 rounded-xl bg-white/60 border border-gray-200">
             <img
-                src={ formData.profileUrl || `https://avatar.iran.liara.run/username?username=[${formData.firstname}] + ${formData.lastname}`}
+                src={ formData.profileUrl || `https://avatar.iran.liara.run/username?username=${formData.firstname}+${formData.lastname}`}
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover border shadow-sm"
             />

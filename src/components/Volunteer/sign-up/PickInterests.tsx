@@ -16,7 +16,7 @@ const PickInterests: React.FC<BasicNatigationProps> = ({onToSignIn}) => {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const usesignup = useSignup()
   const [isLoading, setIsloading] = useState(false)
-  const {alertMessage, AlertDialog} = useAlert()
+  const {alertMessage, AlertDialog} = useAlert({isOrg:false})
   const {API} = useAuthFetch("volunteer")
   const interestCategories: interestprops[] = [
     {
