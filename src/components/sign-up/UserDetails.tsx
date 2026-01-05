@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, } from "react";
 import Input from "../form/Input";
 import { Button } from "../ReuseableComponents";
 import LocationSelect from "../form/LocationSelect";
@@ -29,9 +29,8 @@ const UserDetails:React.FC<{formData:FormFields; setFormData:(d: React.SetStateA
  
     const handleLocationChange = useCallback(
     (location: { state: string; lga: string }) => {
-      setFormPayload?.setFormPayload((prev) => ({ ...prev, ...location }));
-
-            //   clears error once an item is selected
+      setFormData((prev) => ({ ...prev, ...location }))
+      //   clears error once an item is selected
       setErrors((prev) => ({
         ...prev,
         ...(location.state && { state: "" }),
@@ -255,8 +254,8 @@ const UserDetails:React.FC<{formData:FormFields; setFormData:(d: React.SetStateA
           <div>
             <LocationSelect
               onChange={handleLocationChange}
-              state={setFormPayload?.formData.location?.state}
-              lga={setFormPayload?.formData.location?.lga}
+              state={formData.state}
+              lga={formData.lga}
               error={{ state: errors.state, lga: errors.lga }}
             />
           </div>
