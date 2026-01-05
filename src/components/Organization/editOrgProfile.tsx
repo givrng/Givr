@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import Input from "../form/Input";
-import type { location, OrganizationProps } from "../../interface/interfaces";
+import type { location, OrganizationProps, organizationType } from "../../interface/interfaces";
 import { Button } from "../ReuseableComponents";
 import { PageLoader } from "../icons";
 import LocationSelect from "../form/LocationSelect";
@@ -35,6 +35,7 @@ export const EditOrgProfileModal = ({org, onSave,onClose}: EditOrgProfileModalPr
     }
   };
 
+  let organizationTypes: organizationType[] = ["NGO/Non profit", "Religious Group", "Government Agency", "Educational Institution", "Corporate Foundation", "Community Group"]
   const handleLocationChange = useCallback((location:location)=>{
     setLocation(location)
   }, [])
@@ -76,32 +77,33 @@ export const EditOrgProfileModal = ({org, onSave,onClose}: EditOrgProfileModalPr
         </div>
         </div>
 
-        <Input
-          label="Organization Name"
-          value={form.name}
-          onChange={v => setForm(p => ({ ...p, organizationName: v }))}
-          required
-          key={form.name}
+        <Input 
+        label="Organization Name"
+        value={form.name}
+        onChange={v => setForm(p=>({...p, name:v.target.value}))}
         />
+        <div className="flex flex-col gap-y-2">
+          <label
+            htmlFor={"description"}
+            className={`text-xs sm:text-sm text-[#323338]`}
+          >Organization Type</label>
+          <select name={form.name}
+            className="w-full border-ui focus:ring-blue-500 rounded-md pl-3 py-2 outline-none"
+            value={form.category}
+            onChange={v => setForm(p => ({ ...p, category: [v.target.value] }))}
+            >
+            <option selected hidden value={""} key={"default"}>Organization Type</option>
 
+            {organizationTypes.map(option => <option key={option} value={option}>{option}</option>)}
+          </select>
+        </div>
+
+        
         <Input
-          label="Organization Type"
-          value={form.category}
-          onChange={v => setForm(p => ({ ...p, organizationType: v }))}
-          required
-          
-        />
-
-        <Input
-          label="CAC Registration Number"
-          value={form.cacRegNumber}
-          onChange={v =>
-            setForm(p => ({ ...p, cacRegistrationNumber: v }))
-          }
-          required
-          key={form.cacRegNumber}
-        />
-
+        label="CAC Registration Number"
+        value={form.cacRegNumber}
+        onChange={v=>setForm(p=>({...p, cacRegNumber: v.target.value}))}/>
+        
         <Input
           label="Website"
           value={form.website}

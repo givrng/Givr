@@ -8,7 +8,7 @@ import useAuthFetch from "../hooks/useAuthFetch";
 import { useAlert } from "../hooks/useAlert";
 import { LoadingEffect } from "../icons";
 
-export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updProject: ProjectProps)=>void, projectData?:ProjectFormProps, isCreating?:boolean, handlesave?: (projects:ProjectProps[])=>void}> = ({onClose, projectData, isCreating=true, onSuccessfulEdit, handlesave})=>{
+export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updProject: ProjectProps)=>void, projectData?:ProjectFormProps, isCreating?:boolean, handlesave?: (projects:ProjectProps[])=>Promise<void>}> = ({onClose, projectData, isCreating=true, onSuccessfulEdit, handlesave})=>{
 
     const {confirmAsk, ConfirmDialog} = useConfirmAsk({isOrg:true})
     const {alertMessage, AlertDialog} = useAlert({
@@ -84,7 +84,7 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                 let projects = response.data as ProjectProps[]
 
                 if(handlesave)
-                    handlesave(projects)
+                    await handlesave(projects)
                 onClose()
             }catch{
                 alertMessage("We experienced some trouble creating account, please try again")
@@ -94,21 +94,30 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
     }
 
     const handleUpdate = async ()=>{
-        setIsLoading(true)
-
-        API().patch(`/projects/${projectData?.id}`, formFields)
-            .then((res)=>{
+        let userConfirm = await confirmAsk({
+            question: "Are you sure you want to update this project?",
+            trueAnswer: "Update",
+            falseAnswer: "Cancel"
+        })
+       
+       try{
+            setIsLoading(true)
+            if(userConfirm){   
+                let project = await API().patch(`/projects/${projectData?.id}`, formFields)
                 if(onSuccessfulEdit){
-                    let updatedProject = res.data as ProjectProps
-                    onSuccessfulEdit(updatedProject)
+                        let updatedProject = project.data as ProjectProps
+                        onSuccessfulEdit(updatedProject)
                 }
-                
-            })
-            .catch(async ()=>{
-                setIsLoading(false)
-                await alertMessage( `Failed to update project`)
-            })
-        setIsLoading(false)
+            }
+       }catch{
+            await alertMessage( `Failed to update project`)
+            
+       }finally{
+            setIsLoading(false)
+            if(onClose)
+                onClose()
+       }
+        
     }
 
     
@@ -200,7 +209,7 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                 </div>
 
                 {/* Start Date & End Date - Grid Layout */}
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-6 ">
                     <div>
                         <label htmlFor="startDate" className="block text-base font-semibold text-gray-700 mb-2">
                             Start Date
@@ -230,78 +239,84 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                             }}/>
                     </div>
                 </div>
+                {/**Attendance hours */}
+                <div>
+                    <label htmlFor="attendanceHours" className="block text-base font-semibold text-gray-700 mb-2">
+                        Attendance Hours
+                    </label>
 
-                {/* Attendance Hours & Application Deadline - Grid Layout */}
-                <div className="grid grid-cols-2 gap-6">
-                    <div>
-                        <label htmlFor="attendanceHours" className="block text-base font-semibold text-gray-700 mb-2">
-                            Attendance Hours
-                        </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2">
+                        <div className="flex gap-x-2">
+                            <label htmlFor="from" className="whitespace-nowrap">From: </label>
+                            <input type="time" id="attendanceHours" placeholder="9:00" 
+                            className="w-full px-2 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800"
+                            value={formFields.attendanceHours.from.split(" ")[0]}
+                            onChange={e=>{
+                                setFormFields(prev=>({
+                                    ...prev,
+                                    attendanceHours:{
+                                        ...prev.attendanceHours,
+                                        from: e.target.value
+                                    }
+                                }))
+                            }}/>
 
-                       <div className="flex items-center gap-x-1">
-                        <label htmlFor="from" className="whitespace-nowrap">From: </label>
-                        <input type="time" id="attendanceHours" placeholder="9:00" 
-                        className="w-full px-2 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800"
-                        value={formFields.attendanceHours.from.split(" ")[0]}
-                        onChange={e=>{
-                            setFormFields(prev=>({
-                                ...prev,
-                                attendanceHours:{
-                                    ...prev.attendanceHours,
-                                    from: e.target.value
-                                }
-                            }))
-                        }}/>
+                            <select name="fromTime" 
+                            className="px-1 py-3 border border-gray-300 rounded-lg"
+                            value={formFields.attendanceHours.from.includes("AM") ? "AM" : "PM"}
+                            onChange={e=>{
+                                setFormFields(prev=>({
+                                    ...prev,
+                                    attendanceHours:{
+                                        ...prev.attendanceHours,
+                                        from: `${prev.attendanceHours.from.split(" ")[0]} ${e.target.value}`
+                                    }
+                                }))
+                                
+                            }}>
+                                <option value="AM">AM</option>
+                                <option value="PM">PM</option>
+                            </select>
+                        </div>
+                       
 
-                        <select name="fromTime" 
-                        className="px-1 py-3 border border-gray-300 rounded-lg"
-                        value={formFields.attendanceHours.from.includes("AM") ? "AM" : "PM"}
-                        onChange={e=>{
-                            setFormFields(prev=>({
-                                ...prev,
-                                attendanceHours:{
-                                    ...prev.attendanceHours,
-                                    from: `${prev.attendanceHours.from.split(" ")[0]} ${e.target.value}`
-                                }
-                            }))
-                            
-                        }}>
-                            <option value="AM">AM</option>
-                            <option value="PM">PM</option>
-                        </select>
+                        <div className="flex gap-x-2">
+                            <label htmlFor="to">To: </label>
+                            <input type="time" id="attendanceHours" placeholder="3:00" 
+                            className="w-full px-2 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800"
+                            value={formFields.attendanceHours.to.split(" ")[0]}
+                            onChange={e=>{
+                                setFormFields(prev=>({
+                                    ...prev,
+                                    attendanceHours:{
+                                        ...prev.attendanceHours,
+                                        to: e.target.value
+                                    }
+                                }))
+                            }}/>
 
-
-                        <label htmlFor="to">To: </label>
-                        <input type="time" id="attendanceHours" placeholder="3:00" 
-                        className="w-full px-2 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800"
-                        value={formFields.attendanceHours.to.split(" ")[0]}
-                        onChange={e=>{
-                            setFormFields(prev=>({
-                                ...prev,
-                                attendanceHours:{
-                                    ...prev.attendanceHours,
-                                    to: e.target.value
-                                }
-                            }))
-                        }}/>
-
-                        <select name="time"
-                        className="px-1 py-3 border border-gray-300 rounded-lg" 
-                        value={formFields.attendanceHours.to.includes("AM") ? "AM" : "PM"} 
-                        onChange={e=>{
-                            setFormFields(prev=>({
-                                ...prev,
-                                attendanceHours:{
-                                    ...prev.attendanceHours,
-                                    to: `${prev.attendanceHours.to.split(" ")[0]} ${e.target.value}`
-                                }
-                            }))
-                        }}>
-                            <option value="AM">AM</option>
-                            <option value="PM">PM</option>
-                        </select>
-                       </div>
+                            <select name="time"
+                            className="px-1 py-3 border border-gray-300 rounded-lg" 
+                            value={formFields.attendanceHours.to.includes("AM") ? "AM" : "PM"} 
+                            onChange={e=>{
+                                setFormFields(prev=>({
+                                    ...prev,
+                                    attendanceHours:{
+                                        ...prev.attendanceHours,
+                                        to: `${prev.attendanceHours.to.split(" ")[0]} ${e.target.value}`
+                                    }
+                                }))
+                            }}>
+                                <option value="AM">AM</option>
+                                <option value="PM">PM</option>
+                            </select>
+                       
+                        </div>
                     </div>
+                </div>
+                {/* Attendance Hours & Application Deadline - Grid Layout */}
+                <div className="grid grid-cols-1 gap-6">
+                    
                     <div>
                         <label htmlFor="applicationDeadline" className="block text-base font-semibold text-gray-700 mb-2">
                             Application Deadline
@@ -386,7 +401,7 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                 {/* Action Buttons */}
                 <div className="flex justify-end pt-4 space-x-4">
                     {isCreating?<Button variant="green" onClick={handleCreate}>Save</Button>
-                        :<Button variant="green" onClick={handleUpdate}>Save</Button>}
+                        :<Button variant="green" onClick={handleUpdate}>Update</Button>}
 
                     <Button variant="secondary" onClick={handleClose}>
                         Cancel

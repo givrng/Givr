@@ -65,7 +65,7 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
                 {profile.organizationContact.contactMiddleName || ""}
               </p>
 
-              <p className="text-[#676879]">{"Organization"}</p>
+              <p className="text-[#676879]">{profile.organization.name}</p>
 
               <p className="text-[#676879]">
                 {profile.organization.location?.state}, {profile.organization.location?.lga}

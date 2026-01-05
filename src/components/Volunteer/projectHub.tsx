@@ -144,7 +144,7 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, isDisabled?:boolean}
         setIsloading(false)
     }, [change])
 
-    const handleSave = (projects: ProjectProps[])=>{
+    const handleSave = async (projects: ProjectProps[])=>{
         setOrganizationDraftProjects(projects)
     }
 
@@ -189,7 +189,7 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, isDisabled?:boolean}
                 <div className="text-sm font-bold text-green-800 flex flex-col justify-between">
                     <span>Draft Projects</span>
 
-                    <p className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <p className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {organizationDraftProjects.map((project, i) => <ProjectCard {...project} key={i} isOrganization={true} isDraft={true} onEdit={onSuccessfulProjectUpdate} onPublish={handlePublish} onDelete={handleDelete}/>).reverse()}
                     </p>
                 </div>
