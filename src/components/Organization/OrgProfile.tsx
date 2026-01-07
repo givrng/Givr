@@ -181,7 +181,7 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
                 </button>
               )}
             </div>
-            <VerifyEmailOtpModal email="jedidiah@gmail.com" isOpen={otpIsOpen} onSubmit={async ()=>{}}/>
+            <VerifyEmailOtpModal email={profile.organizationContact.email} isOpen={otpIsOpen} onSubmit={async ()=>{}}/>
           </div>
 
           {/* Password */}
@@ -203,7 +203,7 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
               Change Password
             </button>
           </div>
-          <ChangePasswordModal email="jediddiah@gmail.com" isOpen={isOpen} onClose={()=>{setIsOpen(false)}} onSubmit={async (p:ChangePasswordFormFields)=>{
+          <ChangePasswordModal email={profile.organizationContact.email} isOpen={isOpen} onClose={()=>{setIsOpen(false)}} onSubmit={async (p:ChangePasswordFormFields)=>{
             let x = p;
             console.log(x)
           }} />

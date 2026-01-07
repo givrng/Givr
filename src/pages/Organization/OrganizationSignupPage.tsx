@@ -13,7 +13,6 @@ type inputProps = {
   type?: string;
   name?: keyof FormFields;
   placeholder?: string;
-  value?: string | IdField;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
   error?: string;
@@ -23,12 +22,12 @@ type inputProps = {
 /**
  * Define a local interface for the form state to avoid colliding with the DOM's FormData type.
  */
-type IdType = "NIN" | "Drivers License" | ""
-const IdMeans: IdType[] = ["NIN", "Drivers License", ""]
-interface IdField {
-  type: IdType;
-  id: string;
-}
+// type IdType = "NIN" | "Drivers License" | ""
+// const IdMeans: IdType[] = ["NIN", "Drivers License", ""]
+// interface IdField {
+//   type: IdType;
+//   id: string;
+// }
 interface FormFields {
   email: string;
   password: string;
@@ -41,39 +40,39 @@ interface FormFields {
   lga: string;
   organizationName: string;
   organizationType: organizationType;
-  cacRegistrationNumber: string;
   description: string;
   website: string;
   address:string;
   profileUrl:string;
+  cacRegNumber:string;
 }
 
-const IdentificationField = ({ value, onChange }: {
-    value: IdField,
-    onChange: React.Dispatch<React.SetStateAction<IdField>>
-  }) => (<div className="flex flex-col mt-1">
-    <span className="flex gap-x-2">
-      <select name="identification"
-        className="w-[30%] border-ui focus:ring-blue-500 rounded-md pl-3 py-2 outline-none"
-        value={value.type}
-        onChange={e => onChange(prev => ({ ...prev, type: e.target.value as IdType }))}
-      >
-        <option value={""} selected hidden>ID <span className="text-red-500 ml-1">*</span></option>
-        {IdMeans.map(means => {
-          if (means == "")
-            return
+// const IdentificationField = ({ value, onChange }: {
+//     value: IdField,
+//     onChange: React.Dispatch<React.SetStateAction<IdField>>
+//   }) => (<div className="flex flex-col mt-1">
+//     <span className="flex gap-x-2">
+//       <select name="identification"
+//         className="w-[30%] border-ui focus:ring-blue-500 rounded-md pl-3 py-2 outline-none"
+//         value={value.type}
+//         onChange={e => onChange(prev => ({ ...prev, type: e.target.value as IdType }))}
+//       >
+//         <option value={""} selected hidden>ID <span className="text-red-500 ml-1">*</span></option>
+//         {IdMeans.map(means => {
+//           if (means == "")
+//             return
 
-          return <option value={means} key={means}>{means}</option>
-        })}
-      </select>
-      <input type="text" value={value.id}
-        placeholder="Identification number" className="w-full rounded-md pl-3 py-2 outline-none border-ui focus:ring-blue-500"
-        onChange={(e) => {
-          onChange(prev => ({ ...prev, id: e.target.value }))
-        }}
-      />
-    </span>
-  </div>)
+//           return <option value={means} key={means}>{means}</option>
+//         })}
+//       </select>
+//       <input type="text" value={value.id}
+//         placeholder="Identification number" className="w-full rounded-md pl-3 py-2 outline-none border-ui focus:ring-blue-500"
+//         onChange={(e) => {
+//           onChange(prev => ({ ...prev, id: e.target.value }))
+//         }}
+//       />
+//     </span>
+//   </div>)
   
 export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn }) => {
   const [step, setStep] = useState(0)
@@ -91,16 +90,13 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
     lga: "",
     organizationName: "",
     organizationType: "",
-    cacRegistrationNumber: "",
     description: "",
     website: "",
     address:"",
-    profileUrl:""
+    profileUrl:"",
+    cacRegNumber: ""
   });
-  const [identification, setIdentification] = useState<IdField>({
-    id: "",
-    type: ""
-  })
+ 
   const [isLoading, setIsLoading] = useState(false)
   const { alertMessage, AlertDialog } = useAlert({ isOrg: true })
   const { API } = useAuthFetch("organization")
@@ -151,15 +147,6 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
   if (!formData.contactFirstname) newErrors.contactFirstname = "Required";
   if (!formData.contactLastname) newErrors.contactLastname = "Required";
 
-  if (!formData.phoneNumber) {
-    newErrors.phoneNumber = "Phone number is required";
-  } else if (!/^\d{11,}$/.test(formData.phoneNumber)) {
-    newErrors.phoneNumber = "Invalid phone number";
-  }
-
-  if (!identification.type || !identification.id) {
-    alertMessage("Identification type and number are required");
-  }
 
   setErrors(newErrors);
   return Object.keys(newErrors).length === 0;
@@ -168,6 +155,7 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const newErrors: Partial<FormFields> = {};
 
     setIsLoading(true)
     // make a patch request to add interests for volunteer
@@ -178,15 +166,31 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
         lga
       },
       website: `https://${website}`,
-      identification: identification
     }
     
     try{
-        await API().post(`/auth/signup`, payload)
+         await API().post(`/auth/signup`, payload)
+     
         if(onToSignIn)
           onToSignIn()
-    }catch{
-      alertMessage("Account Creation failed")
+    }catch(err:any){
+      const status = err?.response?.status;
+
+      switch(status){
+        case 400:
+          alertMessage("Invalid signup data")
+          break
+        case 409:
+          newErrors.email = "Account exist"
+          setErrors(newErrors)
+          alertMessage("An account with these details already exists. Try signing in instead.")
+          break
+        case 500:
+          alertMessage("Server error. Try again later")
+          break
+        default:
+          alertMessage("Account Creation failed")
+      }
       setStep(0)
     }finally{
       setIsLoading(false)
@@ -202,6 +206,24 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
     setStep(1)
   }
   const input1: inputProps[] = [
+    {
+      label: "Contact Firstname",
+      type: "text",
+      name: "contactFirstname",
+      placeholder: "John",
+    },
+    {
+      label: "Contact Middle name",
+      type: "text",
+      name: "contactMiddleName",
+      placeholder: "Doe",
+    },
+    {
+      label: "Contact Lastname",
+      type: "text",
+      name: "contactLastname",
+      placeholder: "***",
+    },
     {
       label: "Email",
       type: "email",
@@ -222,30 +244,6 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
       name: "confirmPassword",
       placeholder: "********",
       autoComplete: "new-password",
-    },
-    {
-      label: "Contact Firstname",
-      type: "text",
-      name: "contactFirstname",
-      placeholder: "John",
-    },
-    {
-      label: "Contact Middle name",
-      type: "text",
-      name: "contactMiddleName",
-      placeholder: "Doe",
-    },
-    {
-      label: "Contact Lastname",
-      type: "text",
-      name: "contactLastname",
-      placeholder: "***",
-    },
-    {
-      label: "Phone Number",
-      type: "text",
-      name: "phoneNumber",
-      placeholder: "09012345689",
     }
   ];
 
@@ -261,12 +259,6 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
       type: "text",
       name: "organizationType",
       placeholder: "Non-profile/NGO",
-    },
-    {
-      label: "CAC Registration Number",
-      type: "text",
-      name: "cacRegistrationNumber",
-      placeholder: "CAC Reg No.",
     },
     {
       label: "Organization Website",
@@ -300,7 +292,7 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
 
         {step == 0 ?
           <>
-            <form className="space-y-6" onSubmit={handleNext} ref={firstFormRef}>
+            <form className="space-y-4" onSubmit={handleNext} ref={firstFormRef}>
               <div className="text-center space-y-2">
                 <h1 className="text-3xl font-bold text-[#323338]">
                   Create an Organization Account
@@ -346,14 +338,14 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
                   )}
                 </div>
               })}
-
-                <div>
-                  <label className="text-sm font-semibold text-gray-700">
+              
+                {/* <div> */}
+                  {/* <label className="text-sm font-semibold text-gray-700">
                     Identification
-                  </label>
+                  </label> */}
                   {/* Identification  */}
-                  <IdentificationField value={identification} onChange={setIdentification}/>
-                </div>
+                  {/* <IdentificationField value={identification} onChange={setIdentification}/> */}
+                {/* </div> */}
               </div>
              </div>
 
@@ -473,8 +465,6 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
             </form>
           </>
         }
-
-
       </div>
     </div>
   );
