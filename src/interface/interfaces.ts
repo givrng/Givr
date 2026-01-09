@@ -151,6 +151,7 @@ export interface OrgContantProfileProps{
   contactMiddleName:string;
   phoneNumber:string;
   email:string;
+  emailVerified:boolean;
 }
 export interface OrganizationProfileProps{
   organizationContact: OrgContantProfileProps;
@@ -337,3 +338,5 @@ export interface OrganizationDashboardProps {
 }
 
 export type UserTypes = "volunteer"|"organization"|"";
+
+export type OtpPurpose = "EMAIL_VERIFICATION" | "PASSWORD_UPDATE"

@@ -1,12 +1,10 @@
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { BasicNatigationProps, organizationType } from "../../interface/interfaces";
 import Input from "../../components/form/Input";
-import LocationSelect from "../../components/form/LocationSelect";
 import { Button } from "../../components/ReuseableComponents";
 import { LoadingEffect } from "../../components/icons";
 import { useAlert } from "../../components/hooks/useAlert";
 import useAuthFetch from "../../components/hooks/useAuthFetch";
-import { CloudinaryUpload } from "../../components/CloudinaryWidget";
 
 type inputProps = {
   label?: string;
@@ -100,19 +98,7 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
   const [isLoading, setIsLoading] = useState(false)
   const { alertMessage, AlertDialog } = useAlert({ isOrg: true })
   const { API } = useAuthFetch("organization")
-  const handleLocationChange = useCallback(
-    (location: { state: string; lga: string }) => {
-      setFormData((prev) => ({ ...prev, ...location }));
 
-      //   clears error once an item is selected
-      setErrors((prev) => ({
-        ...prev,
-        ...(location.state && { state: "" }),
-        ...(location.lga && { lga: "" }),
-      }));
-    },
-    [] // no dependencies → stable reference
-  );
 
   const [errors, setErrors] = useState<Partial<FormFields>>({});
 
@@ -155,22 +141,16 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if(!validateStepOne())
+      return
+
     const newErrors: Partial<FormFields> = {};
 
     setIsLoading(true)
-    // make a patch request to add interests for volunteer
-    const { state, lga, website, ...rest } = formData
-    const payload = {
-      ...rest, location: {
-        state,
-        lga
-      },
-      website: `https://${website}`,
-    }
     
     try{
-         await API().post(`/auth/signup`, payload)
-     
+        await API().post(`/auth/signup`, formData)
         if(onToSignIn)
           onToSignIn()
     }catch(err:any){
@@ -197,14 +177,7 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
     }
   };
 
-  const handleNext = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
 
-    if(!validateStepOne())
-      return
-
-    setStep(1)
-  }
   const input1: inputProps[] = [
     {
       label: "Contact Firstname",
@@ -247,52 +220,24 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
     }
   ];
 
-  const input2: inputProps[] = [
-    {
-      label: "Organization Name",
-      type: "text",
-      name: "organizationName",
-      placeholder: "Volunteering ltd.",
-    },
-    {
-      label: "Organization Type",
-      type: "text",
-      name: "organizationType",
-      placeholder: "Non-profile/NGO",
-    },
-    {
-      label: "Organization Website",
-      type: "text",
-      name: "website",
-      placeholder: "www.example.com",
-    },
-    {
-      label:"Organization Address",
-      type: "text",
-      name: "address",
-      placeholder: "10 AdeLombard Street"
-    }
-  ]
-  const fallbackUrl = `https://avatar.iran.liara.run/username?username=${formData.organizationType} + ${formData.organizationName}`
-
   return (
     <div className="bg-gray-300 flex place-items-center w-full p-8 min-h-screen h-full">
       <div className="bg-white rounded-2xl shadow-xl border border-gray-200 flex flex-col px-6 sm:px-8 py-6 mx-auto w-full max-w-5xl pt-5 px-3 sm:px-4 lg:px-4 mx-auto w-full max-w-5xl pb-2">
         <AlertDialog />
         <div className="flex items-center justify-center gap-3 mb-6">
-          {[0, 1].map(i => (
+          {[0].map(i => (
             <div
               key={i}
-              className={`h-2 w-24 rounded-full transition-all
+              className={`h-2 w-100 rounded-full transition-all
                 ${step === i ? "bg-[#34A853]" : "bg-gray-300"}
               `}
             />
           ))}
         </div>
 
-        {step == 0 ?
+        {
           <>
-            <form className="space-y-4" onSubmit={handleNext} ref={firstFormRef}>
+            <form className="space-y-2" onSubmit={handleSubmit} ref={firstFormRef}>
               <div className="text-center space-y-2">
                 <h1 className="text-3xl font-bold text-[#323338]">
                   Create an Organization Account
@@ -339,131 +284,16 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
                 </div>
               })}
               
-                {/* <div> */}
-                  {/* <label className="text-sm font-semibold text-gray-700">
-                    Identification
-                  </label> */}
-                  {/* Identification  */}
-                  {/* <IdentificationField value={identification} onChange={setIdentification}/> */}
-                {/* </div> */}
               </div>
              </div>
-
-
               <Button
-                variant="green"
-                className="w-full py-3 text-sm font-semibold"
-              >
-                Continue
-              </Button>
-            </form>
-          </> :
-          <>
-            <form onSubmit={handleSubmit}>
-              <h3 className="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2 mt-2">Organization Details</h3>
-              <div className="bg-gray-50 rounded-xl p-6 flex items-center gap-6">
-                  <img
-                      src={ formData.profileUrl || fallbackUrl}
-                      alt="Profile"
-                      className="w-24 h-24 rounded-full border object-cover"
-                  />
-                
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">
-                        Organization Logo
-                    </p>
-                    <CloudinaryUpload
-                    folder="avatars"
-                    buttonText="Change Photo"
-                    onUploadSuccess={(url) => {
-                        setFormData(prev => ({
-                        ...prev,
-                        profileUrl: url,
-                        }));
-                    }}
-                    />
-                    <p className="text-xs text-gray-400">
-                      JPG, PNG or WEBP • Max 2MB.
-                      </p>
-                    </div>
-                  </div>
-                
-                <div className="bg-gray-50 rounded-xl p-6 space-y-6">
-                  <h3 className="text-lg font-semibold border-b pb-2">
-                    Organization Details
-                  </h3>
-                  
-                  <div>
-                    {input2.map((input) => {
-
-                  if (input.name == "organizationType") {
-                    let options: organizationType[] = ["NGO/Non profit", "Religious Group", "Government Agency", "Educational Institution", "Corporate Foundation", "Community Group"]
-                    return <div className="flex flex-col gap-y-2">
-                      <label
-                        htmlFor={"description"}
-                        className={`text-xs sm:text-sm text-[#323338]`}
-                      >{input.label} </label>
-                      <select name={input.name}
-                        className="w-full border-ui focus:ring-blue-500 rounded-md pl-3 py-2 outline-none"
-                        onChange={handleChange}>
-
-                        <option selected hidden value={""} key={"default"}>{input.label}</option>
-
-                        {options.map(option => <option key={option}>{option}</option>)}
-                      </select>
-                    </div>
-                  }
-
-                  return <div key={input.name}>
-                    <Input
-                      label={input.label}
-                      type={input.type}
-                      placeholder={input.placeholder}
-                      name={input.name}
-                      value={
-                        input.name ? formData[input.name as keyof FormFields] : ""
-                      }
-                      onChange={handleChange}
-
-                    />
-                  </div>
-                })}
-                </div>
-                
-                {/*  LocationSelect component here */}
-                  <div >
-                    <LocationSelect
-                      onChange={handleLocationChange}
-                      error={{ state: errors.state, lga: errors.lga }}
-                    />
-                  </div>
-                  <div>
-                    
-                  <div>
-                    <label
-                      className="text-sm font-semibold"
-                    >Description</label>
-                    <textarea className="w-full rounded-md border-ui p-3"
-                      name={"description" as keyof FormFields} value={formData.description} 
-                      onChange={handleChange} rows={4} placeholder="Briefly describe your organization"/>
-                      
-                  </div>
-                  </div>
-              </div>
-              <div className="flex gap-x-4">
-                <Button variant="outline"
-                  className="text-sm px-4 py-2 shadow-none mt-4 w-full"
-                  onClick={() => setStep(0)}
-                >Back</Button>
-                <Button
                   variant="green"
                   className="text-sm px-4 py-2 shadow-none mt-4 w-full"
                 >
-                  {isLoading ? <LoadingEffect message="Creating Account..." /> : "Skip"}
+                  {isLoading ? <LoadingEffect message="Creating Account..." /> : "Create Account"}
                 </Button>
-              </div>
             </form>
-          </>
+          </> 
         }
       </div>
     </div>

@@ -1,13 +1,14 @@
+import type { AxiosResponse } from "axios";
 import { useState } from "react";
 
 type VerifyEmailOtpModalProps = {
   email: string;
-  onSubmit: (otp: string) => Promise<void>;
+  onSubmit: (otp: string) => Promise<AxiosResponse>;
   isOpen:boolean;
+  onSuccess: ()=>void;
 };
 
-export const VerifyEmailOtpModal = ({email, onSubmit, isOpen
-}: VerifyEmailOtpModalProps) => {
+export const VerifyEmailOtpModal = ({email, onSubmit, isOpen, onSuccess}: VerifyEmailOtpModalProps) => {
 
     if(!isOpen)
         return null
@@ -28,8 +29,16 @@ export const VerifyEmailOtpModal = ({email, onSubmit, isOpen
       setLoading(true);
       setError("");
       await onSubmit(otp);
-    } catch {
-      setError("Invalid or expired OTP");
+      onSuccess()
+
+    } catch(err:any) {
+      const status = err?.response?.status;
+
+      if(status == 404){
+        setError(`${email} is not associated with account`);
+      }else if(status == 400){
+        setError(`Invalid or expired OTP`)
+      }
     } finally {
       setLoading(false);
     }

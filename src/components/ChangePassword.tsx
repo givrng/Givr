@@ -1,3 +1,4 @@
+import type { AxiosResponse } from "axios";
 import { useState } from "react";
 
 export interface ChangePasswordFormFields {
@@ -22,7 +23,7 @@ type ChangePasswordModalProps = {
   email: string;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: ChangePasswordFormFields) => Promise<void>;
+  onSubmit: (data: ChangePasswordFormFields) => Promise<AxiosResponse>;
 };
 
 const initialErrors: ErrorState = {
@@ -38,7 +39,7 @@ const initialErrors: ErrorState = {
   serverError: {
     isActive: false,
     message: "Something went wrong. Try again.",
-  },
+  }
 };
 
 export const ChangePasswordModal = ({
@@ -93,7 +94,17 @@ export const ChangePasswordModal = ({
       setLoading(true);
       await onSubmit(fields);
       onClose(); // close only on success
-    } catch {
+    } catch(err:any) {
+      const status = err?.response?.status;
+
+      switch(status){
+        case 400:
+          setErrors(prev=>({...prev, otpInvalid: {...prev.otpInvalid, isActive: true}}))
+          break
+        default:
+          setErrors(prev=>({...prev, serverError: {...prev.serverError, isActive: true}}))
+      }
+      
       setErrors(prev => ({
         ...prev,
         serverError: { ...prev.serverError, isActive: true },
@@ -108,7 +119,20 @@ export const ChangePasswordModal = ({
     value: string
   ) => {
     setFields(prev => ({ ...prev, [key]: value }));
-    resetErrors();
+    
+    switch(key){
+      case "otp":
+        setErrors(prev=>({...prev, otpInvalid:{...prev.otpInvalid, isActive:false}}))
+        break
+      case "password": 
+        setErrors(prev=>({...prev, passwordTooShort: {...prev.passwordTooShort, isActive:false}}))
+        break
+      case "rePassword":
+        setErrors(prev=>({...prev, passwordsNotMatch: {...prev.passwordsNotMatch, isActive:false}}))
+        break
+      default:
+        setErrors(prev=>({...prev, serverError: {...prev.serverError, isActive:false}}))
+    }
   };
 
   return (

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
-import type {  ProfileProps, VolunteerProfileProps } from "../../interface/interfaces"
+import { useCallback, useEffect, useState } from "react"
+import type {  location, ProfileProps, VolunteerProfileProps } from "../../interface/interfaces"
 import { Button } from "../ReuseableComponents"
 import LocationSelect from "../form/LocationSelect"
 import { interestCategories } from "../interest"
@@ -8,7 +8,8 @@ import { useAlert } from "../hooks/useAlert"
 import { PageLoader } from "../icons"
 import { CloudinaryUpload } from "../CloudinaryWidget"
 
-export const EditProfile:React.FC<{onClose?:()=>void, profileProps: ProfileProps}> = ({onClose, profileProps})=>{
+export const 
+EditProfile:React.FC<{onClose?:()=>void, profileProps: ProfileProps}> = ({onClose, profileProps})=>{
 
     const [profile, setProfile] = useState<ProfileProps>({
         firstname:"",
@@ -30,13 +31,18 @@ export const EditProfile:React.FC<{onClose?:()=>void, profileProps: ProfileProps
     const [loading, setLoading] = useState(false);
     const {API} = useAuthFetch( "volunteer")
     const {alertMessage, AlertDialog}= useAlert({isOrg:false})
+
     const [selectedInterestCategory, setSelectedInterestCategory] = useState("")
+
     const handleChange = (e:React.ChangeEvent<HTMLInputElement>)=>{
         let key = e.currentTarget.name as keyof VolunteerProfileProps ;
         let value = e.currentTarget.value
         setProfile({...profile, [key]:value})
     }
 
+     const handleLocationChange = useCallback((location:location)=>{
+        setProfile(prev=>({...prev, location: location}))
+      }, [])
     const InputField:React.FC<{label:string, value:string, placeholder:string, type?:React.HTMLInputTypeAttribute, name:keyof ProfileProps}> = ({label, value, placeholder, type="text", name})=>(
         <div>
             <label htmlFor={label} className="block text-base font-semibold text-gray-700 mb-2">
@@ -116,7 +122,7 @@ export const EditProfile:React.FC<{onClose?:()=>void, profileProps: ProfileProps
             <>
                 <div>
                     <label htmlFor="location"  className="block text-base font-semibold text-gray-700 mb-2">Location</label>
-                    <LocationSelect state={profile.location?.state} lga={profile.location?.lga} onChange={()=>{}}/>
+                    <LocationSelect onChange={handleLocationChange} state={profile.location?.state} lga={profile.location?.lga} />
                 </div>
                 
                 {/* Required Skills */}

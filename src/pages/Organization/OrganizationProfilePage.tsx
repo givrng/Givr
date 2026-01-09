@@ -24,10 +24,12 @@ export const OrganizationProfilePage:React.FC<{editing?:boolean}> = ({editing = 
       contactLastname:"",
       contactMiddleName:"",
       phoneNumber:"", 
-      email:""
+      email:"",
+      emailVerified:false
     }
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [reload, setReload] = useState(false)
 
   const {API} = useAuthFetch("organization")
   
@@ -57,7 +59,7 @@ export const OrganizationProfilePage:React.FC<{editing?:boolean}> = ({editing = 
     try{
       let response = await API().patch("/profile", data)
       setProfile(response.data as OrganizationProfileProps)
-    }catch{
+    }catch {
       return Promise.reject()
     }
   }
@@ -82,6 +84,7 @@ export const OrganizationProfilePage:React.FC<{editing?:boolean}> = ({editing = 
           setIsEditing(true) 
         } }
         editOrgInfo={()=>setOrgEdit(true)}
+        reload={()=>setReload(!reload)}
       />}
 
     </div>

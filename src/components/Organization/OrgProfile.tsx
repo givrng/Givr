@@ -1,15 +1,19 @@
-import type {  OrganizationProfileProps, OrganizationProps } from "../../interface/interfaces";
+import type {  OrganizationProfileProps, OrganizationProps, OtpPurpose } from "../../interface/interfaces";
 import { Button } from "../ReuseableComponents";
 import { ChangePasswordModal, type ChangePasswordFormFields } from "../ChangePassword";
 
 import {  useState } from "react";
 import { VerifyEmailOtpModal } from "../VerifyOtpModal";
+import { PageLoader } from "../icons";
+import useAuthFetch from "../hooks/useAuthFetch";
+import { useAlert } from "../hooks/useAlert";
 
 interface OrgProfileComponentProps {
   profile: OrganizationProfileProps;
   org: OrganizationProps;
   onEditProfile: () => void;
   editOrgInfo: ()=>void;
+  reload?:()=>void;
 }
 
 
@@ -28,12 +32,76 @@ const Info = ({label, value, highlight,}: {
 
 
 
-export default function OrganizationProfile({profile, onEditProfile, editOrgInfo}: OrgProfileComponentProps) {
+export default function OrganizationProfile({profile, onEditProfile, editOrgInfo, reload}: OrgProfileComponentProps) {
 
     const [isOpen, setIsOpen] = useState(false)
+    const {API} = useAuthFetch("organization")
+    const {alertMessage, AlertDialog} = useAlert({isOrg:true})
+    const [isLoading, setIsLoading] = useState(false)
+
     const [otpIsOpen, setOtpIsOpen] = useState(false)
-    const onClick = ()=>{
-        setIsOpen(true)
+
+
+    const requestOtp = async (purpose:OtpPurpose)=>{
+      
+      try{  
+        await API().post(`/otp/request?purpose=${purpose}`)
+
+      }catch(err:any){
+        const status = err?.response?.status
+
+        switch(status){
+
+          case 400:
+            alertMessage("OTP request failed")
+            break
+          case 500:
+            alertMessage("Server error, contact support")
+            break
+          default:
+            alertMessage("Error")
+            break;
+          
+        }
+        return Promise.reject()
+      }
+    }
+
+
+    const onChangePasswordClick = async ()=>{
+        try{
+          setIsLoading(true)
+          await requestOtp("PASSWORD_UPDATE")
+          setIsLoading(false)
+          setIsOpen(true)
+        }finally{
+          setIsLoading(false)
+        }
+    }
+   
+
+    const handleVerifyEmailClick = async()=>{
+      if(otpIsOpen){
+        setOtpIsOpen(false)
+        return
+      }
+
+      try{
+        setIsLoading(true)
+        await requestOtp("EMAIL_VERIFICATION")
+        setIsLoading(false)
+        setOtpIsOpen(true)
+      }finally{
+        setIsLoading(false)
+      }
+    }
+
+    const handleEmailVerfication = async (otp:string)=>{
+        return await API().patch("/verify/email", {otp});
+    }
+
+    const handlePasswordChange = async (p:ChangePasswordFormFields)=>{
+      return await API().patch("/password/update", p)
     }
 
     const UserProfileSection = () => (
@@ -130,7 +198,8 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
 
     return (
     <div className=" grid lg:grid-cols-6 gap-8 w-full ">
-    
+      {isLoading && <PageLoader/>}
+      <AlertDialog/>
       <div className="border border-ui rounded-2xl p-6 col-span-4">
       <h2 className="text-xl text-[#323338] font-semibold mb-6">
         Profile Information
@@ -166,22 +235,27 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
                 </p>
               </div>
 
-              {false ? (
+              {profile.organizationContact.emailVerified ? (
                 <span className="text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">
                   Verified
                 </span>
               ) : (
                 <button
-                  onClick={()=>{
-                    setOtpIsOpen(!otpIsOpen)
-                  }}
+                  onClick={handleVerifyEmailClick}
                   className="text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full hover:bg-green-100"
                 >
                   {otpIsOpen? "Cancel":"Verify Email"}
+                  
                 </button>
               )}
             </div>
-            <VerifyEmailOtpModal email={profile.organizationContact.email} isOpen={otpIsOpen} onSubmit={async ()=>{}}/>
+            <VerifyEmailOtpModal email={profile.organizationContact.email} isOpen={otpIsOpen} onSubmit={handleEmailVerfication}
+            onSuccess={()=>{
+              setOtpIsOpen(false)
+              if(reload)
+                reload()
+            }}
+            />
           </div>
 
           {/* Password */}
@@ -197,16 +271,13 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
             </div>
 
             <button
-              onClick={onClick}
+              onClick={onChangePasswordClick}
               className="text-xs font-semibold text-[red] bg-red-100 px-3 py-1 rounded-full hover:bg-red-200"
             >
               Change Password
             </button>
           </div>
-          <ChangePasswordModal email={profile.organizationContact.email} isOpen={isOpen} onClose={()=>{setIsOpen(false)}} onSubmit={async (p:ChangePasswordFormFields)=>{
-            let x = p;
-            console.log(x)
-          }} />
+          <ChangePasswordModal email={profile.organizationContact.email} isOpen={isOpen} onClose={()=>{setIsOpen(false)}} onSubmit={handlePasswordChange} />
           </div>
 
           {/* Optional: 2FA placeholder */}
