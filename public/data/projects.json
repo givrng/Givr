@@ -1,0 +1,100 @@
+[
+  {
+    "id": "p001",
+    "title": "Community Health Outreach",
+    "organization": {
+    "name": "Green Earth Initiative",
+    "description": "A non-profit focused on promoting sustainable agriculture and environmental education across rural communities.",
+    "location": "Nairobi, Kenya",
+    "categories": ["Environment", "Education", "Agriculture"],
+    "status": "Verified",
+    "numOfActiveProjects": 5
+  },
+    "status": "In progress",
+    "startDate": "2025-01-20",
+    "attendanceHours": "9:00 AM - 3:00 PM",
+    "location": "Wuse District, Abuja",
+    "totalApplicants": 15,
+    "maxApplicants": 20,
+    "categories": ["Healthcare", "Community Outreach"],
+    "superVolunteer": "Amina Yusuf"
+  },
+  {
+    "id": "p002",
+    "title": "Tree Planting Drive",
+    "organization": {
+    "name": "HealthBridge Foundation",
+    "description": "Provides mobile healthcare units to underserved areas and supports local clinics with medical supplies.",
+    "location": "Lagos, Nigeria",
+    "categories": ["Health", "Community", "Outreach"],
+    "status": "Verified",
+    "numOfActiveProjects": 8
+  },
+    "status": "Completed",
+    "startDate": "2025-02-10",
+    "attendanceHours": "8:30 AM - 2:00 PM",
+    "location": "Lugbe, Abuja",
+    "totalApplicants": 12,
+    "maxApplicants": 25,
+    "categories": ["Environment", "Sustainability"]
+  },
+  {
+    "id": "p003",
+    "title": "STEM for Girls Workshop",
+    "organization": {
+    "name": "Youth Innovators Hub",
+    "description": "Empowers young entrepreneurs through mentorship programs, startup funding, and innovation challenges.",
+    "location": "Accra, Ghana",
+    "categories": ["Education", "Innovation", "Entrepreneurship"],
+    "status": "Unverified",
+    "numOfActiveProjects": 3
+  },
+    "status": "In progress",
+    "startDate": "2025-03-05",
+    "attendanceHours": "10:00 AM - 4:00 PM",
+    "location": "Garki, Abuja",
+    "totalApplicants": 7,
+    "maxApplicants": 15,
+    "categories": ["Education", "Technology"],
+    "superVolunteer": "Mary Okon"
+  },
+  {
+    "id": "p004",
+    "title": "Food Drive for IDP Camps",
+    "organization": {
+    "name": "OceanCare Alliance",
+    "description": "Dedicated to marine conservation and reducing plastic pollution along African coastlines.",
+    "location": "Cape Town, South Africa",
+    "categories": ["Environment", "Wildlife", "Awareness"],
+    "status": "Verified",
+    "numOfActiveProjects": 6
+  },
+    "status": "Pending",
+    "startDate": "2025-01-28",
+    "attendanceHours": "7:30 AM - 1:30 PM",
+    "location": "Durumi, Abuja",
+    "totalApplicants": 20,
+    "maxApplicants": 30,
+    "categories": ["Humanitarian", "Food Security"]
+  },
+  {
+    "id": "p005",
+    "title": "Youth Clean-Up Challenge",
+    "organization": {
+    "name": "Tech for Change",
+    "description": "Builds digital literacy programs and provides computer access to marginalized communities.",
+    "location": "Kampala, Uganda",
+    "categories": ["Technology", "Education", "Social Impact"],
+    "status": "Verified",
+    "numOfActiveProjects": 4
+  },
+    "status": "Completed",
+    "startDate": "2025-02-18",
+    "attendanceHours": "8:00 AM - 12:00 PM",
+    "location": "Kubwa, Abuja",
+    "totalApplicants": 10,
+    "maxApplicants": 15,
+    "categories": ["Environment", "Community Development"],
+    "superVolunteer": "Samuel Ade"
+  }
+]

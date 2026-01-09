@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Green Earth Initiative",
+    "description": "A non-profit focused on promoting sustainable agriculture and environmental education across rural communities.",
+    "location": "Nairobi, Kenya",
+    "categories": ["Environment", "Education", "Agriculture"],
+    "status": "Verified",
+    "numOfActiveProjects": 5
+  },
+  {
+    "name": "HealthBridge Foundation",
+    "description": "Provides mobile healthcare units to underserved areas and supports local clinics with medical supplies.",
+    "location": "Lagos, Nigeria",
+    "categories": ["Health", "Community", "Outreach"],
+    "status": "Verified",
+    "numOfActiveProjects": 8
+  },
+  {
+    "name": "Youth Innovators Hub",
+    "description": "Empowers young entrepreneurs through mentorship programs, startup funding, and innovation challenges.",
+    "location": "Accra, Ghana",
+    "categories": ["Education", "Innovation", "Entrepreneurship"],
+    "status": "Unverified",
+    "numOfActiveProjects": 3
+  },
+  {
+    "name": "OceanCare Alliance",
+    "description": "Dedicated to marine conservation and reducing plastic pollution along African coastlines.",
+    "location": "Cape Town, South Africa",
+    "categories": ["Environment", "Wildlife", "Awareness"],
+    "status": "Verified",
+    "numOfActiveProjects": 6
+  },
+  {
+    "name": "Tech for Change",
+    "description": "Builds digital literacy programs and provides computer access to marginalized communities.",
+    "location": "Kampala, Uganda",
+    "categories": ["Technology", "Education", "Social Impact"],
+    "status": "Verified",
+    "numOfActiveProjects": 4
+  },
+  {
+    "name": "Women Rise Network",
+    "description": "Supports women in leadership through advocacy, skill development, and microfinance initiatives.",
+    "location": "Abuja, Nigeria",
+    "categories": ["Gender Equality", "Empowerment", "Finance"],
+    "status": "Unverified",
+    "numOfActiveProjects": 2
+  },
+  {
+    "name": "Clean Water Access Project",
+    "description": "Works to provide clean and safe drinking water through solar-powered filtration systems.",
+    "location": "Addis Ababa, Ethiopia",
+    "categories": ["Health", "Infrastructure", "Environment"],
+    "status": "Verified",
+    "numOfActiveProjects": 7
+  },
+  {
+    "name": "Bright Minds Academy",
+    "description": "A volunteer-run initiative providing after-school tutoring for underprivileged children.",
+    "location": "Kigali, Rwanda",
+    "categories": ["Education", "Youth", "Community"],
+    "status": "Unverified",
+    "numOfActiveProjects": 3
+  }
+]
