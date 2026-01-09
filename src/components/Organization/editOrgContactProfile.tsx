@@ -22,7 +22,8 @@ export const EditOrgContactProfile:React.FC<{onClose?:()=>void, profileProps: Or
         contactLastname: "",
         contactMiddleName:"",
         email: "",
-        phoneNumber:""
+        phoneNumber:"",
+        emailVerified: false,
     })
 
     useEffect(()=>{
