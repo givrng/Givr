@@ -1,94 +1,41 @@
 import React from 'react';
-
 import heroImage from "../assets/hero-image.svg"
-import { BulletIcon, DigitalCertificate, FileXIcon, GivrLogoIcon, GreenCheck, LockIcon, SearchTimeIcon, ShieldIcon, StarIcon, UsersIcon, VerifiedIcon, YelloBadge } from '../components/icons';
-import { Button, FeatureCard, NavLink, PlatformCategory } from '../components/landingPageComponents';
-import type { FeatureCardProps } from '../props interface/landingPage';
+import { BulletIcon, DigitalCertificate, FileXIcon, GreenCheck, LockIcon, SearchTimeIcon, ShieldIcon, StarIcon, UsersIcon, VerifiedIcon, YelloBadge } from '../components/icons';
+import { Button, FeatureCard, PlatformCategory } from '../components/ReuseableComponents';
+import type { FeatureCardProps, BasicNatigationProps } from '../interface/interfaces';
+import { GenericHeader } from '../components/Volunteer/landingHeader';
 
 // --- Section Components ---
 
-const Header: React.FC = () => (
-  // Fixed header with slightly off-white background
-  <header className="fixed top-0 left-0 right-0 z-50 bg-[#F7FAFC] backdrop-blur-sm border-b border-gray-100">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
-      <div className="flex items-center space-x-1 font-semibold text-xl text-gray-800">
-        <GivrLogoIcon />
-      </div>
-
-      {/* Navigation Links */}
-      <nav className="hidden lg:flex space-x-8">
-        <NavLink label="Opportunities" href="#opportunities" />
-        <NavLink label="Organizations" href="#organizations" />
-        <NavLink label="Certificates" href="#certificates" />
-      </nav>
-
-      {/* Action Buttons: Sign In (Primary), Sign Up (Outline) */}
-      <div className="flex space-x-3">
-         <a
-          href="https://forms.zohopublic.com/infogi1/form/GIVROnboardingWaitlist1/formperma/yRXYzBA5-POdKVxW3N0b66loSnLvPKH1FScCtF8hPLs"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Button variant="primary" className="text-sm px-4 py-2 shadow-none">
-            Join waitlist
-          </Button>
-        </a>
-      </div>
-    </div>
-  </header>
-);
-
 // HeroSection rewritten to match the provided structure and image styling
-const HeroSection: React.FC = () => (
-  <section className="pt-32 pb-16 bg-[#F7FAFC] min-h-[85vh] flex items-center w-full">
+const HeroSection: React.FC<BasicNatigationProps> = ({ onToVolunteerSignUp, onToOrgSignUp }) => (
+  <section className="mt-21 pb-16 bg-[#F7FAFC] min-h-[85vh] flex items-center">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
       {/* Left Content Column */}
       <div className="max-w-lg">
         <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-6 text-gray-900">
           <span className="block">Welcome to Givr</span>
-          <span className="block text-[#1A73E8]">
-            Create Lasting Impact Today
-          </span>
+          <span className="block text-[#1A73E8]">Create Lasting Impact</span>
         </h1>
         <p className="text-lg text-gray-600 mb-8">
-          Whether you are volunteering or managing a project, get skill-matched
-          opportunities, seamless coordination, meaningful recognition, and a
-          smarter way to drive community service on Givr.
+          Whether you are volunteering or managing a project, get skill-matched opportunities,seamless coordination, meaningful recognition, and a smarter way to drive community service on Givr.
         </p>
 
         {/* Call to action Buttons */}
         <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
           {/* Sign up as a volunteer (Primary Button) */}
-           <a
-          href="https://forms.zohopublic.com/infogi1/form/GIVROnboardingWaitlist1/formperma/yRXYzBA5-POdKVxW3N0b66loSnLvPKH1FScCtF8hPLs"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-            <Button variant="primary" className="text-base">
-              Sign up as a volunteer
-            </Button>
-          </a>
+          <Button variant="primary" className="text-base" onClick={onToVolunteerSignUp}>Sign up as a volunteer</Button>
           {/* Post a project (Secondary/Outline Button) */}
-           <a
-          href="https://forms.zohopublic.com/infogi1/form/GIVROnboardingWaitlist1/formperma/yRXYzBA5-POdKVxW3N0b66loSnLvPKH1FScCtF8hPLs"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Button variant="secondary" className="text-base">
-            Post a project
-          </Button>
-          </a>
+          <Button variant="secondary" className="text-base" onClick={onToOrgSignUp}>Post a project</Button>
         </div>
 
         {/* Verification Badges (Styled like LabeledIcons) */}
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium">
           <div className="flex items-center text-gray-600">
-            <VerifiedIcon className="w-5 h-5 mr-1.5 m-1" /> Verified
-            Organizations
+            <VerifiedIcon className="w-5 h-5 mr-1.5 m-1" /> Verified Organizations
           </div>
           <div className="flex items-center text-gray-600">
-            <DigitalCertificate className="w-5 h-5 mr-1.5" /> Digital
-            Certificates
+            <DigitalCertificate className="w-5 h-5 mr-1.5" /> Digital Certificates
           </div>
         </div>
       </div>
@@ -100,6 +47,7 @@ const HeroSection: React.FC = () => (
           src={heroImage}
           alt="Group of volunteers shaking hands over a map"
           className="rounded-3xl shadow-2xl w-full h-auto"
+
         />
       </div>
     </div>
@@ -142,7 +90,8 @@ const ProblemSection: React.FC = () => {
           Volunteering in Nigeria needs a better system
         </h2>
         <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-16">
-          Current volunteering efforts face serious challenges that prevent meaningful impact
+          Current volunteering efforts face serious challenges that prevent
+          meaningful impact
         </p>
 
         {/* Problem Cards Grid */}
@@ -156,10 +105,14 @@ const ProblemSection: React.FC = () => {
         <div className="max-w-5xl mx-auto p-8 md:p-12 bg-white rounded-3xl shadow-2xl border border-gray-100">
           <h3 className="text-3xl font-extrabold mb-4 text-gray-900">
             Givr.ng fixes this by making volunteering <br />
-            <span className="text-[#1A73E8]">easy</span>, <span className="text-[#34A853]">credible</span>, and <span className="text-[#FBBC05]">rewarding</span>
+            <span className="text-[#1A73E8]">easy</span>,
+            <span className="text-[#34A853]">credible</span>, and
+            <span className="text-[#FBBC05]">rewarding</span>
           </h3>
           <p className="text-[#676879] max-w-2xl mx-auto">
-            Our platform connects trusted volunteers with verified organizations through a transparent, gamified system that recognizes your contributions.
+            Our platform connects trusted volunteers with verified organizations
+            through a transparent, gamified system that recognizes your
+            contributions.
           </p>
         </div>
       </div>
@@ -167,7 +120,7 @@ const ProblemSection: React.FC = () => {
   );
 };
 
-const MoreInfoSection: React.FC = () => {
+const MoreInfoSection: React.FC<BasicNatigationProps> = ({ onToOrgSignUp, onToVolunteerSignUp }) => {
 
   const platformCategories: Array<FeatureCardProps> = [
     {
@@ -179,7 +132,8 @@ const MoreInfoSection: React.FC = () => {
         "Complete service and earn digital certificates"
       ],
       color: 'blue',
-      cta: "Sign up as a volunteer"
+      cta: "Sign up as a volunteer",
+      action: onToVolunteerSignUp
     },
     {
       title: "For Organization",
@@ -190,40 +144,29 @@ const MoreInfoSection: React.FC = () => {
         "Rate volunteer and build relationships"
       ],
       color: 'green',
-      cta: "Sign up as an Organization"
+      cta: "Sign up as an Organization",
+      action: onToOrgSignUp
     }
 
   ]
 
-  return (
-    <section className="py-20 bg-white">
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-900">
-          How Givr works <br />
-        </h2>
-        <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-16">
-          Two simple pathways to make volunteering work for everyone
-        </p>
+  return (<section className="py-20 bg-white">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-900">
+        How Givr works <br />
+      </h2>
+      <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-16">
+        Two simple pathways to make volunteering work for everyone
+      </p>
 
-        {/* Feature Cards Grid */}
-        <div
-          className="grid grid-cols-1 lg:grid-cols-2
-
-"
-        >
-          {platformCategories.map((category, index) => (
-            <PlatformCategory
-              key={index}
-              color={category.color}
-              description={category.description}
-              title={category.title}
-              cta={category.cta}
-            />
-          ))}
+      {/* Feature Cards Grid */}
+      <div className="max-w-5xl mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {platformCategories.map((category, index) => <PlatformCategory key={index} {...category} />)}
         </div>
       </div>
-    </section>
-  );
+    </div>
+  </section>)
 }
 
 const CredibilitySection: React.FC = () => {
@@ -261,7 +204,7 @@ const CredibilitySection: React.FC = () => {
           We make <span className="text-[#1877F2]">credibility visible</span> and <br className="hidden sm:inline" />
           <span className="text-green-600">impact measurable</span>
         </h2>
-        <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-16">
+        <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-8">
           Built-in trust and recognition systems that reward genuine contribution
         </p>
 
@@ -281,38 +224,22 @@ const CredibilitySection: React.FC = () => {
 
 // --- New CTA Section ---
 
-const CTASection: React.FC = () => (
+const CTASection: React.FC<BasicNatigationProps> = ({ onToOrgSignUp, onToVolunteerSignUp }) => (
   <section className="bg-[#1C212A] py-8 text-center">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-white">
         Ready to get more
       </h2>
       <p className="text-lg text-gray-300 max-w-2xl mx-auto mb-10">
-        Join thousands of Nigerians making real impact in their communities.
-        Start your volunteering journey today.
+        Join thousands of Nigerians making real impact in their communities. Start your volunteering journey today.
       </p>
 
       {/* CTA Buttons */}
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center mb-8">
-        <a
-          href="https://forms.zohopublic.com/infogi1/form/GIVROnboardingWaitlist1/formperma/yRXYzBA5-POdKVxW3N0b66loSnLvPKH1FScCtF8hPLs"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Button variant="primary" className="text-base shadow-lg">
-            Sign up as a volunteer
-          </Button>
-        </a>
-         <a
-          href="https://forms.zohopublic.com/infogi1/form/GIVROnboardingWaitlist1/formperma/yRXYzBA5-POdKVxW3N0b66loSnLvPKH1FScCtF8hPLs"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Button variant="secondary" className="text-base shadow-lg">
-            Post a project
-          </Button>
-        </a>
+        <Button variant="primary" className="text-base shadow-lg" onClick={onToVolunteerSignUp}>Sign up as a volunteer</Button>
+        <Button variant="secondary" className="text-base shadow-lg" onClick={onToOrgSignUp}>Post a project</Button>
       </div>
+
 
       <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium justify-center">
         <div className="flex items-center text-gray-300">
@@ -334,7 +261,7 @@ const CTASection: React.FC = () => (
 const Footer: React.FC = () => (
   <footer className="bg-[#1C212A] pt-8 pb-8 text-white ">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
-    <hr className="border-gray-400 my-8" />
+      <hr className="border-gray-400 my-8" />
       {/* Footer Content Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-12 pb-10 ">
         {/* Column 1: Givr Info */}
@@ -377,28 +304,18 @@ const Footer: React.FC = () => (
 
 // --- Main Application Component ---
 
-export default function LandingPage() {
+export default function LandingPage(navigation: BasicNatigationProps) {
   return (
     <div className="min-h-screen font-[Inter] antialiased">
-      {/* Load Inter Font - assumed to be available or loaded via global CSS */}
-      <style>{`
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #F7FAFC; /* Match the subtle background color from the image */
-        }
-      `}</style>
-
-      <Header />
+      <GenericHeader onToSignIn={navigation.onToSignIn} onToSignUp={navigation.onToSignUp} />
       <main>
-        <HeroSection />
+        <HeroSection onToOrgSignUp={navigation.onToOrgSignUp} onToVolunteerSignUp={navigation.onToVolunteerSignUp} />
         <ProblemSection />
-        <MoreInfoSection />
+        <MoreInfoSection onToOrgSignUp={navigation.onToOrgSignUp} onToVolunteerSignUp={navigation.onToVolunteerSignUp}  />
         <CredibilitySection />
-        <CTASection/>
-        <Footer/>
+        <CTASection onToOrgSignUp={navigation.onToOrgSignUp} onToVolunteerSignUp={navigation.onToVolunteerSignUp} />
+        <Footer />
       </main>
-
-
     </div>
   );
 }
