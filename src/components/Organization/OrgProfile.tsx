@@ -165,7 +165,7 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
             }}
             className="text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full hover:bg-green-100"
           >
-            Edit Organization
+            {profile.organization.profileCompleted? "Complete profile":"Edit Organization" }
           </button>
         )}
       </div>
