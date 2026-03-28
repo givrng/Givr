@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import type { OrganizationDashboardProps, ProjectProps } from "../../interface/interfaces"
+import type { OrganizationDashboardProps, OrganizationQuickActions, ProjectProps, VerificationStatus } from "../../interface/interfaces"
 import { Button, ProjectCard, RadioButton } from "../ReuseableComponents"
 import { CreateProject } from "../Organization/createProjectForm"
 import useAuthFetch from "../hooks/useAuthFetch"
@@ -7,7 +7,7 @@ import { useAlert } from "../hooks/useAlert"
 import { useConfirmAsk } from "../hooks/useConfirm"
 import  { PageLoader } from "../icons"
 
-export const ProjectHub:React.FC<{ isOrganization?:boolean, isDisabled?:boolean}>= ({ isOrganization=false, isDisabled=false})=>{
+export const ProjectHub:React.FC<{ isOrganization?:boolean, orgTriggerAction?:(action: OrganizationQuickActions)=>void}>= ({ isOrganization=false, orgTriggerAction})=>{
     const[itemsCategories, setItemCategories] = useState<string[]>([])
     const [activeCategory, setActiveCategory] = useState<string>("All Categories")
     const [newProject, setNewProject] = useState<boolean>(false);
@@ -23,9 +23,9 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, isDisabled?:boolean}
 
     const {API} = useAuthFetch(isOrganization? "organization": "volunteer");
     const [isLoading, setIsloading] = useState(true)
+    const [verificaitonStatus, setVerificationStatus] = useState<VerificationStatus>()
+    const [isDisabled, setIsDisabled] = useState(false);
 
-
-    
     useEffect(()=>{
         if(isOrganization)
             return
@@ -42,7 +42,7 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, isDisabled?:boolean}
     }
 
     const createProject = ()=>{
-        
+
         setNewProject(true)
     }
 
@@ -56,18 +56,19 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, isDisabled?:boolean}
         }
     }
 
-    const loadDraftProjects = async (): Promise<ProjectProps[]> =>{
-        
+    const loadDraftProjects = async (): Promise<void> =>{
+
         try{
             setIsloading(true)
             let response = await API().get("/dashboard")
              const data = response.data as OrganizationDashboardProps
             setOrganizationDraftProjects(data.projects.draftProjects)
-            return data.projects.draftProjects
+            setVerificationStatus(data.status)
+            setIsDisabled(data.status != "VERIFIED")
         }finally{
             setIsloading(false)
         }
-          
+
     }
 
     const onSuccessfulProjectUpdate = (updatedProject:ProjectProps)=>{
@@ -89,7 +90,7 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, isDisabled?:boolean}
             }, ()=>alertMessage(`Failed to publish ${title} project, please try again`))
         }
 
-        
+
     }
 
     const handleDelete = async (projectId:number, title:string)=>{
@@ -111,28 +112,6 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, isDisabled?:boolean}
 
     }
 
-    useEffect(() => {
-        if (!isOrganization || !isDisabled) return;
-
-        const timeout = setTimeout(() => {
-            alertMessage("Complete organization profile to create projects");
-        }, 500);
-
-        return () => clearTimeout(timeout);
-    }, [isOrganization, isDisabled]);
-        
-    useEffect(()=>{
-
-        let timeout;
-        if(isDisabled){
-        timeout = setTimeout(()=>{
-            alertMessage("Complete organization profile to create projects")
-        }, 100)
-
-        return clearTimeout(timeout)
-    }
-    }, [])
-    
 
     useEffect(()=>{
         setIsloading(true)
@@ -148,7 +127,7 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, isDisabled?:boolean}
         setOrganizationDraftProjects(projects)
     }
 
-  
+
 
     // useEffect(()=>console.log(organizationDraftProjects), [organizationDraftProjects])
     return <div className="border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2">
@@ -180,26 +159,47 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, isDisabled?:boolean}
             }}
             handlesave={handleSave}
              />:<>
-        {isOrganization && <div>
-            <p className="text-xl font-bold text-green-800 flex justify-between">
-                <span>Project Management</span>
-                <Button variant={isDisabled?"disabled":"green"} onClick={createProject}>+ Create Project</Button>
-            </p>
+                {isOrganization && <div>
+                    <div  className="flex items-center justify-between gap-3">
+                        <span className="text-xl font-bold text-green-800">Project Management</span>
+                        <Button variant={isDisabled?"disabled":"green"} onClick={createProject}>+ Create Project</Button>
+                    </div>
 
-                <div className="text-sm font-bold text-green-800 flex flex-col justify-between">
-                    <span>Draft Projects</span>
+                        <div className="text-sm font-bold text-green-800 flex flex-col justify-between">
+                        
+                            <p className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {organizationDraftProjects.map((project, i) => <ProjectCard {...project} key={i} isOrganization={true} isDraft={true} onEdit={onSuccessfulProjectUpdate} onPublish={handlePublish} onDelete={handleDelete}/>).reverse()}
+                            </p>
+                        </div>
+                        {isDisabled && (
+                        <div className="flex items-center justify-between gap-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                            {
+                                verificaitonStatus=="UNVERIFIED" && <span>
+                            Add your <strong>organization's information</strong> to complete your profile and manage projects
+                            </span>
+                            }
+                            {
+                                verificaitonStatus == "PENDING" && <span>
+                            You <strong>organization's information</strong> is under review
+                            </span>
+                            }
+                            <button className="whitespace-nowrap font-medium underline hover:opacity-80"
+                                onClick={()=>{
+                                   if(orgTriggerAction)
+                                    orgTriggerAction("Edit Profile")
+                                }}
+                            >
+                            Update profile
+                            </button>
+                        </div>
+                        )}
+                    </div>}
 
-                    <p className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {organizationDraftProjects.map((project, i) => <ProjectCard {...project} key={i} isOrganization={true} isDraft={true} onEdit={onSuccessfulProjectUpdate} onPublish={handlePublish} onDelete={handleDelete}/>).reverse()}
-                    </p>
-                </div>
-            </div>}
+                {activeCategory=="All Categories"? (projects?.map((project, index)=> <ProjectCard {...project} key={index} isOrganization={isOrganization} manage={true}/>))
+                : (projects.filter((p)=> p.categories.includes(activeCategory)).map((p, i)=><ProjectCard {...p} key={i} manage={true}/>))}
+                </>
+                }
 
-        {activeCategory=="All Categories"? (projects?.map((project, index)=> <ProjectCard {...project} key={index} isOrganization={isOrganization} manage={true}/>))
-        : (projects.filter((p)=> p.categories.includes(activeCategory)).map((p, i)=><ProjectCard {...p} key={i} manage={true}/>))}
-        </>
-        }
-        
        </>}
     </div>
 }

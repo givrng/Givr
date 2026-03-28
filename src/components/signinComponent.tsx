@@ -1,30 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./ReuseableComponents";
 import type { BasicNatigationProps, SignInFormProps } from "../interface/interfaces";
 import backgroundImage from "../assets/sign-in-background.svg"
 import { GoogleIcon, LoadingEffect } from "./icons";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import useAuthFetch from "./hooks/useAuthFetch";
 import { useVerifyAuth } from "./Auth/AuthContext";
 
-const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toForgotPassword, isOrganization}) => {
+const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toForgotPassword, isOrganization, onSignInWithGoogle}) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
+    const [requestParams] = useSearchParams()
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
-
-        const success = await onSignInAttempt(email, password)
-        if(!success )
-            setError("Invalid email or password")
-        setIsLoading(false)   
+        const status = await onSignInAttempt(email, password)
         
+        switch(status){
+            case 409:
+                setError("Account was registed with Google sign in, click sign in with Google ")
+                break
+            default:
+                setError("Invalid email or password")
+        }
+        setIsLoading(false)      
     };
+
+    useEffect(()=>{
+        const errMsg = requestParams.get("error")
+        setError(errMsg?errMsg: "")
+    }, [])
 
     return (
         <div className="w-full max-w-md bg-white p-8 sm:p-10 rounded-xl shadow-2xl border border-gray-100">
@@ -107,7 +118,9 @@ const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toFo
             </div>
 
             {/* Continue with Google */}
-            <Button variant="secondary" className="w-full py-3 flex items-center justify-center space-x-2">
+            <Button variant="secondary" className="w-full py-3 flex items-center justify-center space-x-2"
+                onClick={onSignInWithGoogle}
+            >
                 <GoogleIcon />
                 <span>Continue with Google</span>
             </Button>
@@ -129,28 +142,28 @@ export const SignInComp: React.FC<BasicNatigationProps> = function ({ toSignUp, 
 
     const {API} = useAuthFetch(isOrganization?"organization": "volunteer")
     const verifyAuth = useVerifyAuth()
-
-    const handleSignIn = async (email: string, password: string) => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+    const handleSignIn = async (email: string, password: string):Promise<number> => {
 
         try{
-            
+                        
             let res = await API().post(`/auth/login`, {email, password}, {
                 withCredentials: true
             });
-            
-            if(res.status != 200)
-                return false
+        
+            // Allow route guard render dashboard
+            verifyAuth?.signin()
 
             if(onToDashboard)
                 onToDashboard()
-
-            // Allow route guard render dashboard
-            verifyAuth?.signin()
             
-            return true
-        }catch(err){
-            return false;
+            return res.status
+        }catch(err:any){
+            return err?.response?.status;
         }
+    }
+    const handleSignInWithGoogle = async ()=>{
+        window.location.href = `${apiBaseUrl}/${isOrganization? "organization":"volunteer"}/oauth2/authorization/${isOrganization?"google-org":"google-volunteer"}`
     }
 
     return (
@@ -171,7 +184,7 @@ export const SignInComp: React.FC<BasicNatigationProps> = function ({ toSignUp, 
                     </div>
                 </div>
 
-                <SignInForm toForgotPassword={toForgotPassword} toSignUp={toSignUp} onSignInAttempt={handleSignIn} isOrganization={isOrganization}/>
+                <SignInForm toForgotPassword={toForgotPassword} toSignUp={toSignUp} onSignInAttempt={handleSignIn} isOrganization={isOrganization} onSignInWithGoogle={handleSignInWithGoogle}/>
             </div>
         </section>
     )

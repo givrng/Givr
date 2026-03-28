@@ -15,20 +15,18 @@ export default function ProjectDetailsModal({
       >
         <div className="flex justify-between items-start">
           <div>
-            <h2 className="text-base font-semibold mb-2">{project.project?.title}</h2>
-            <p className="text-gray-700 mb-1">{project.organization?.name}</p>
+            <h2 className="text-base font-semibold mb-2">Project: {project.project?.title}</h2>
+            <p className="text-gray-700 mb-1">Organization: {project.organization?.name}</p>
             <p className="text-[#676879] text-sm mb-5">{project.project?.description}</p>
+            <h2 className="text-base font-semibold mb-2">Required Skills</h2>
+            {project.project?.requiredSkills.map((skill)=>(<p className="text-[#676879] text-sm mb-5">{skill}</p>))}
           </div>
 
           <div className="flex items-center gap-3 mb-3">
-            {(
-              <div className="flex items-center gap-1 text-white bg-(--primary-color)   px-5 rounded-3xl text-sm">
-                Applied
-              </div>
-            )}
+            
             {project.organization?.status && (
               <div className="flex items-center gap-1 text-white bg-[#00854D]   px-5 rounded-3xl   text-sm">
-                Verified
+                {project.organization.status}
               </div>
             )}
           </div>

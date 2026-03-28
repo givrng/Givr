@@ -35,8 +35,8 @@ export interface LabeledIcon {
 
 // Sign in
 export interface SignInFormProps extends BasicNatigationProps {
-    onSignInAttempt: (email: string, pass: string) => Promise<boolean>;
-
+    onSignInAttempt: (email: string, pass: string) => Promise<number>;
+    onSignInWithGoogle: ()=>Promise<void>;
 }
 
 export interface BasicNatigationProps{
@@ -94,6 +94,9 @@ export interface ProjectProps{
   requiredSkills:string[];
   createdAt:string;
   updatedAt:string;
+  address?:string;
+  broadcastEnabled?:boolean;
+  rating?:number;
   }
 
 export interface ProjectFormProps{
@@ -113,9 +116,10 @@ export interface ProjectFormProps{
     state:string;
     lga:string;
   }
+  address?:string;
   requiredSkills:string[];
   specialRequirements:string;
-  
+
 }
 
 export interface ProjectComponentProps extends ProjectProps{
@@ -128,13 +132,14 @@ export interface ProjectComponentProps extends ProjectProps{
   onEdit?:(prj:ProjectProps)=>void;
   onPublish?:(projectId:number, title:string)=>void;
 }
-
+export type IdType =  "DL"|"vNIN"|"VOTER_CARD"|"PASSPORT"
+export type VerificationStatus =  "VERIFIED" | "UNVERIFIED"| "PENDING";
 export interface OrganizationProps{
   name?: string;
   description?:string;
   location?:location;
   category?:string[];
-  status?: "VERIFIED" | "UNVERIFIED";
+  status?: VerificationStatus;
   numOfActiveProjects?:number;
   website?:string;
   address?:string;
@@ -143,6 +148,16 @@ export interface OrganizationProps{
   rating?:number;
   profileCompleted?:boolean;
   profileUrl?:string;
+  cacDocUrl?:string;
+  contactVerification?:{
+    idType?: IdType,
+    idNumber?: string;
+    docImgUrl?: string;
+    usrImgUrl?:string;
+  }
+  dateOfBirth?:string;
+  contactFirstname?:string;
+  contactLastname?:string;
 }
 
 export interface OrgContantProfileProps{
@@ -151,11 +166,17 @@ export interface OrgContantProfileProps{
   contactMiddleName:string;
   phoneNumber:string;
   email:string;
+  emailEditable: boolean;
   emailVerified:boolean;
 }
 export interface OrganizationProfileProps{
   organizationContact: OrgContantProfileProps;
   organization: OrganizationProps;
+}
+
+export type EmailExistProps = {
+  email:String;
+  exists:boolean;
 }
 
 export interface MyCertificationProps {
@@ -172,7 +193,8 @@ export interface MyVolunteeringProps {
   organization?: OrganizationProps;
   project?:ProjectProps;
   status?: "IN_PROGRESS" | "COMPLETED";
-  rating?:string;
+  rating?:number;
+  reviewable?:boolean;
 }
 
 
@@ -189,7 +211,9 @@ export interface ProfileProps {
   phoneIsVerified?: boolean;
   emailIsVerified?: boolean;
   role?: "VOLUNTEER"|"ORGANIZATION";
+  emailEditable?: boolean;
   email?:string;
+  createdAt?:string;
 };
 
 export interface BadgeProps {
@@ -201,7 +225,11 @@ export interface BadgeProps {
 
 
 export interface OrganizationComponentProps extends OrganizationProps{
-  hasVolunteered?:boolean
+  hasVolunteered?: boolean;
+  startDate?:string;
+  endDate?:string;
+  projectDescription?: string;
+  skillsRequired?: string[];
 }
 
 
@@ -209,6 +237,7 @@ export interface DashboardProps{
   metrics?: MetricProps[];
   projects?: ProjectProps[];
   className?:string
+  profileCompleted?:boolean ;
   triggerAction?:(action:VolunteerQuickActions)=>void
   orgTriggerAction?: (action: OrganizationQuickActions)=>void
   hasMounted:()=>void;
@@ -222,8 +251,8 @@ export type OrganizationNavTypes = "Dashboard"| "Project Management" | "Applicat
 export type OrganizationQuickActions = "Create New Project"| "Review pending applications"| "Edit Profile"
 
 export interface VolunteerProfileProps{
-  firstName:string;
-  lastName:string;
+  firstname:string;
+  lastname:string;
   middleName:string;
   email:string;
   location:location;
@@ -260,6 +289,7 @@ export interface VolunteerProjectApplicationProps{
 
 export interface VolunteerDashboardProps{
   firstname:string;
+  profileCompleted:boolean;
   projectApplications:VolunteerProjectApplicationProps[]
 }
 interface skillProps{
@@ -292,6 +322,16 @@ export interface VolunteerApplicationProps{
   projectApplied: VolunteerProjectApplicationProps
 }
 
+export type ParticipationStatus = "IN_PROGRESS" | "COMPLETED" | "REJECTED"
+export interface ParticipantProps{
+  id:number;
+  status: ParticipationStatus;
+  project: ProjectProps;
+  reviewable?:boolean;
+  endDate?:string;
+  volunteer: ProfileProps
+}
+
 export type organizationType = "NGO/Non profit" | "Community Group" | "Religious Group"| "Educational Institution" | "Government Agency"|"Corporate Foundation"|""
 
 export interface OrganizationSignupProps{
@@ -319,7 +359,7 @@ export interface ProjectMap {
   draftProjects: ProjectProps[];
   openProjects: ProjectProps[];
   ongoingProjects: ProjectProps[];
-  completedProjects: ProjectProps[]; 
+  completedProjects: ProjectProps[];
 }
 
 export const projectStatuses= ["DRAFT", "OPEN", "ONGOING", "COMPLETED"] as const
@@ -334,9 +374,98 @@ export interface OrganizationDashboardProps {
     numApproved:number;
     numRejected:number;
   }
-  isRestricted:boolean;
+  status:VerificationStatus;
 }
 
 export type UserTypes = "volunteer"|"organization"|"";
 
 export type OtpPurpose = "EMAIL_VERIFICATION" | "PASSWORD_UPDATE"
+
+// Qore Id verification
+
+// types/qoreid.ts
+
+export interface QoreIdApplicantData {
+  firstname?: string;
+  lastname?: string;
+  phone?: string;
+  email?: string;
+  middlename?: string;
+  [key: string]: string | undefined;
+}
+
+export interface QoreIdSuccessResponse {
+  status: 'success';
+  jobId: string;
+  customerReference: string;
+  livenessScore?: number;
+  verificationStatus?: string;
+  sessionId?: string;
+  timestamp: string;
+  // Additional fields based on product code
+  bvnData?: Record<string, unknown>;
+  documentData?: Record<string, unknown>;
+}
+
+export interface QoreIdErrorResponse {
+  status: 'error';
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
+export interface QoreIdExitResponse {
+  status: 'exit';
+  reason: 'user_closed' | 'timeout' | 'error';
+  sessionId?: string;
+}
+
+export type QoreIdCallbackResponse =
+  | QoreIdSuccessResponse
+  | QoreIdErrorResponse
+  | QoreIdExitResponse;
+
+export type QoreIdEnvironment = 'production' | 'sandbox';
+
+export interface QoreIdLivenessCheckProps {
+  clientId: string;
+  customerReference: string;
+  applicantData?: QoreIdApplicantData;
+  onSuccess?: (response: QoreIdSuccessResponse) => void;
+  onError?: (error: QoreIdErrorResponse) => void;
+  onExit?: (response: QoreIdExitResponse) => void;
+  hideButton?: boolean;
+  buttonText?: string;
+  buttonClassName?: string;
+  environment?: QoreIdEnvironment;
+  productCode?: QoreIdProductCode;
+}
+
+export type QoreIdProductCode =
+  | 'liveness'
+  | 'liveness_bvn'
+  | 'liveness_drivers_license'
+  | 'liveness_nin'
+  | 'liveness_passport'
+  | 'liveness_ocr'
+  | 'liveness_voters_card'
+  | 'liveness_nin_slip';
+
+// Extend Window interface for QoreId SDK
+declare global {
+  interface Window {
+    QoreIDWebSdk?: {
+      start: () => void;
+      stop: () => void;
+    };
+    QoreIdRegenerateSDK?: () => void;
+  }
+}
+
+export interface QoreIdSDKMessageEvent extends MessageEvent {
+  data: {
+    type: 'QOREID_SDK_CALLBACK';
+    status: 'success' | 'error' | 'exit';
+    response: QoreIdCallbackResponse;
+  };
+}

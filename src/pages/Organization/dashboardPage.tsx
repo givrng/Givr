@@ -32,7 +32,7 @@ export const DashboardPage = () => {
             numApproved: 0,
             numRejected:0
         },
-        isRestricted: false
+        status: "PENDING"
 
     });
     
@@ -76,10 +76,6 @@ export const DashboardPage = () => {
     buttons.set("Profile", "Profile")
 
 
-    // Makes requests with automatic refresh logic when access token expires
-    // const authFetch = useAuth()
-    // const projects = rawProjects as ProjectProps[]
-
     const activateNavButton = (event: React.MouseEvent<HTMLButtonElement>) => {
         let selectButtonValue = buttons.get(event.currentTarget.textContent);
         setActive(selectButtonValue ? selectButtonValue as OrganizationNavTypes : "Dashboard")
@@ -87,7 +83,7 @@ export const DashboardPage = () => {
 
 
 
-    const fetchOrganizationDashboard = async ()=>{
+    const fetchOrganizationDashboard = ()=>{
         API().get("/dashboard")
         .then((response)=>{
             setDashboard(response.data as OrganizationDashboardProps)
@@ -116,12 +112,12 @@ export const DashboardPage = () => {
     }, [dashboardIsMounted])
 
     return <>
-        <main className="">
-            <DashboardHeader isOrganization={true} />
-            {<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-15">
+        <main>
+            <DashboardHeader isOrganization={true}/>
+            {<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-15 ">
                 <UserDashboardInformation activeButton={active} buttons={[...buttons.keys()]} onClick={activateNavButton} username={dashboard.name} />
                 {active == "Dashboard" && dashboard && <Dashboard projects={[]} metrics={metrics} orgTriggerAction={quickAction} hasMounted={()=>setDashboardIsMounted(!dashboardIsMounted)} />}
-                {active == "Project Management" && <ProjectHub isOrganization={true} isDisabled={dashboard.isRestricted}/>}
+                {active == "Project Management" && <ProjectHub isOrganization={true} orgTriggerAction={quickAction}/>}
                 {active == "Applications" && <ApplicationHub/>}
                 {active == "Profile" && <OrganizationProfilePage/>}
             </div>}

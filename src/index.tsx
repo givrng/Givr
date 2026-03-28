@@ -8,8 +8,6 @@ import { PageNotFound } from "./pages/Volunteer/404 Page"
 
 import { AuthenticatedFlagProvider } from "./components/Auth/AuthContext"
 
-
-
 export const IndexPage = ()=>{
     const navigate = useNavigate()
 

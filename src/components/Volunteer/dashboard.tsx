@@ -4,7 +4,7 @@ import { Banner, MetricCard, OrganizationCard, ProjectCard, RadioButton } from "
 import useAuthFetch from "../hooks/useAuthFetch";
 // import useAuthFetch from "../hooks/useAuthFetch";
 
-const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerAction, hasMounted})=>{
+const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerAction, hasMounted, profileCompleted})=>{
     const [active, setActive] = useState("")
     const {API} = useAuthFetch(orgTriggerAction?"organization":"volunteer")
     const [projects, setProjects] = useState<ProjectProps[]>([])
@@ -132,6 +132,22 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
                         onClick={activateSelectedProjectCategory}
                         >{status}</RadioButton>)}
             </div>
+            {!profileCompleted && triggerAction && (
+                <div className="flex items-center justify-between gap-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                    <span>
+                    Add your <strong>location</strong> and <strong>interests</strong> to complete your profile and get better recommendations.
+                    </span>
+                    <button className="whitespace-nowrap font-medium underline hover:opacity-80"
+                        onClick={()=>{
+                            if(triggerAction)
+                                triggerAction("Update Profile")
+                        }}
+                    >
+                    Update profile
+                    </button>
+                </div>
+                )}
+
 
             {projects?.filter(prj=>{
                 // Display only project categories user wants to see

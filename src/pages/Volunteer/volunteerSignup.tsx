@@ -20,7 +20,7 @@ export interface FormFields {
 export const VolunteerSignup = ()=>{
     const navigate = useNavigate();
     const [step, setStep] = useState(0)
-      const [formData, setFormData] = useState<FormFields>({
+    const [formData, setFormData] = useState<FormFields>({
           firstname: "",
           middlename: "",
           lastname: "",
@@ -32,13 +32,24 @@ export const VolunteerSignup = ()=>{
           lga: "",
           profileUrl:""
         });
+      const baseUrl = import.meta.env.VITE_API_BASE_URL
 
-        const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-        
+      const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+      const submitRequest = (payload:any)=>{
+         return  fetch(`${baseUrl}/volunteer/auth/signup`, {
+            method: 'POST', 
+            headers: {
+              "Content-type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          }
+    )
+      }
+      
     return <SignupProvider>
         <>
             {step == 0 && <UserDetails formData={formData} setFormData={setFormData} next={()=>setStep(1)}/>}
-            {step == 1 && <PickInterests nav={{onToSignIn: () => navigate("/signin/volunteer")}} back={()=>setStep(0)} selectedInterests={selectedInterests} setSelectedInterests={setSelectedInterests}/>} 
+            {step == 1 && <PickInterests nav={{onToSignIn: () => navigate("/signin/volunteer")}} back={()=>setStep(0)} selectedInterests={selectedInterests} setSelectedInterests={setSelectedInterests} submitRequest={submitRequest}/>} 
         </>
         </SignupProvider>
     

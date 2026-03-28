@@ -1,12 +1,12 @@
-import type {  OrganizationProfileProps, OrganizationProps, OtpPurpose } from "../../interface/interfaces";
-import { Button } from "../ReuseableComponents";
+import type {  OrganizationProfileProps, OrganizationProps, OrgContantProfileProps, OtpPurpose } from "../../interface/interfaces";
 import { ChangePasswordModal, type ChangePasswordFormFields } from "../ChangePassword";
 
-import {  useState } from "react";
+import React, {  useState } from "react";
 import { VerifyEmailOtpModal } from "../VerifyOtpModal";
 import { PageLoader } from "../icons";
 import useAuthFetch from "../hooks/useAuthFetch";
 import { useAlert } from "../hooks/useAlert";
+import { useConfirmAsk } from "../hooks/useConfirm";
 
 interface OrgProfileComponentProps {
   profile: OrganizationProfileProps;
@@ -14,6 +14,8 @@ interface OrgProfileComponentProps {
   onEditProfile: () => void;
   editOrgInfo: ()=>void;
   reload?:()=>void;
+  emailChange: React.Dispatch<React.SetStateAction<OrganizationProfileProps>>
+  save:(data: OrgContantProfileProps)=>Promise<undefined>;
 }
 
 
@@ -32,7 +34,7 @@ const Info = ({label, value, highlight,}: {
 
 
 
-export default function OrganizationProfile({profile, onEditProfile, editOrgInfo, reload}: OrgProfileComponentProps) {
+export default function OrganizationProfile({profile, onEditProfile, editOrgInfo, reload, emailChange, save}: OrgProfileComponentProps) {
 
     const [isOpen, setIsOpen] = useState(false)
     const {API} = useAuthFetch("organization")
@@ -41,10 +43,12 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
 
     const [otpIsOpen, setOtpIsOpen] = useState(false)
 
+    const {confirmAsk, ConfirmDialog} = useConfirmAsk({isOrg:true})
 
     const requestOtp = async (purpose:OtpPurpose)=>{
       
       try{  
+        setIsLoading(true)
         await API().post(`/otp/request?purpose=${purpose}`)
 
       }catch(err:any){
@@ -64,19 +68,17 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
           
         }
         return Promise.reject()
-      }
+      }finally{
+          setIsLoading(false)
+        }
     }
 
 
     const onChangePasswordClick = async ()=>{
-        try{
-          setIsLoading(true)
-          await requestOtp("PASSWORD_UPDATE")
-          setIsLoading(false)
-          setIsOpen(true)
-        }finally{
-          setIsLoading(false)
-        }
+        await requestOtp("PASSWORD_UPDATE")
+          
+        setIsOpen(true)
+       
     }
    
 
@@ -87,7 +89,6 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
       }
 
       try{
-        setIsLoading(true)
         await requestOtp("EMAIL_VERIFICATION")
         setIsLoading(false)
         setOtpIsOpen(true)
@@ -104,6 +105,27 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
       return await API().patch("/password/update", p)
     }
 
+    const handleUpdateEmail = async (email:string)=>{
+      emailChange(prev=>({
+                ...prev, 
+                organizationContact:{
+                  ...prev.organizationContact, 
+                  email: email
+                }
+              }))
+
+            let response = await confirmAsk({
+                question: "Are you sure you want to update profile?",
+                trueAnswer: "Update",
+                falseAnswer: "Cancel"
+            })
+    
+            if(!response)
+                return 
+            
+            return save(profile.organizationContact)
+        }
+
     const UserProfileSection = () => (
         <div className="border border-ui rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
@@ -111,13 +133,13 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
               Personal Profile
             </h3>
 
-            <Button
+            {/* <Button
               variant="green"
               className="text-xs px-4 py-1"
               onClick={onEditProfile}
             >
               Edit Profile
-            </Button>
+            </Button> */}
           </div>
 
           <div className="flex items-center gap-6">
@@ -157,7 +179,7 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
           Organization Profile
         </h3>
 
-        {!profile.organization.profileCompleted && (
+        {profile.organization?.status == "UNVERIFIED" && (
           <button
             onClick={() => {
               onEditProfile()
@@ -165,7 +187,7 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
             }}
             className="text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full hover:bg-green-100"
           >
-            {profile.organization.profileCompleted? "Complete profile":"Edit Organization" }
+            {!profile.organization.profileCompleted? "Complete profile":"Edit Organization" }
           </button>
         )}
       </div>
@@ -183,7 +205,7 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
         <Info label="Website" value={profile.organization.website || "—"} />
         <Info
           label="Status"
-          value={profile.organization.status === "VERIFIED" ? "Verified" : "Not Verified"}
+          value={profile.organization.status === "VERIFIED" ? "Verified" : profile.organization.status == "PENDING"? "Pending": "Unverified"}
           highlight={profile.organization.status === "VERIFIED"}
         />
       </div>
@@ -198,6 +220,7 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
 
     return (
     <div className=" grid lg:grid-cols-6 gap-8 w-full ">
+      <ConfirmDialog/>
       {isLoading && <PageLoader/>}
       <AlertDialog/>
       <div className="border border-ui rounded-2xl p-6 col-span-4">
@@ -250,16 +273,26 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
               )}
             </div>
             <VerifyEmailOtpModal email={profile.organizationContact.email} isOpen={otpIsOpen} onSubmit={handleEmailVerfication}
+            close={()=>setOtpIsOpen(false)}
             onSuccess={()=>{
               setOtpIsOpen(false)
               if(reload)
                 reload()
             }}
+            onEmailChange={(email:string)=>{
+              if(email != profile.organizationContact.email)
+                return handleUpdateEmail(email)
+
+              return Promise.resolve()
+            }}
+            otpRequest={()=>(requestOtp("EMAIL_VERIFICATION"))}
+            
             />
           </div>
 
           {/* Password */}
-          <div className="flex flex-col gap-y-2">
+          {
+            profile.organizationContact.emailEditable && <div className="flex flex-col gap-y-2">
             <div className="flex items-center justify-between p-4 rounded-xl border border-ui">
             <div>
               <p className="text-sm font-medium text-[#323338]">
@@ -276,9 +309,10 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
             >
               Change Password
             </button>
+            </div>
+            <ChangePasswordModal email={profile.organizationContact.email} isOpen={isOpen} onClose={()=>{setIsOpen(false)}} onSubmit={handlePasswordChange} />
           </div>
-          <ChangePasswordModal email={profile.organizationContact.email} isOpen={isOpen} onClose={()=>{setIsOpen(false)}} onSubmit={handlePasswordChange} />
-          </div>
+          }
 
           {/* Optional: 2FA placeholder */}
           <div className="flex items-center justify-between p-4 rounded-xl border border-ui opacity-60">

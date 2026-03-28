@@ -15,7 +15,7 @@ export default function MyVolunteering() {
   const {API} = useAuthFetch("volunteer")
   const {confirmAsk, ConfirmDialog} = useConfirmAsk({isOrg: false})
   const {alertMessage, AlertDialog} = useAlert({isOrg:false})
-  // Simulate backend fetch
+  // Backend fetch
   useEffect(() => {
     async function fetchProjects() {
       try{
@@ -32,6 +32,22 @@ export default function MyVolunteering() {
     fetchProjects();
   }, []);
 
+   const handleRatingUpdate = async (volunteered:MyVolunteeringProps, rating:number)=>{
+    try{
+      await API().post(`volunteering/${volunteered.id}/review`, {
+        rating
+      })
+    }catch(err:any){
+      let status = err?.response?.status;
+      let errMsg = err?.response?.body?.message 
+
+      if(status == 400){
+        alertMessage(errMsg)
+      }else{
+        alertMessage("Failed to leave review")
+      }
+    }
+   }
 
   const handleCancel = async (volunteered:MyVolunteeringProps) => {
     let confirmation = await confirmAsk({
@@ -76,6 +92,7 @@ export default function MyVolunteering() {
         <div className="grid md:grid-cols-2 gap-2">
           {projects.filter(p=>p.status=="IN_PROGRESS").map((project) => (
             <VolunteeringProjectCard
+            onRateSubmit={handleRatingUpdate}
               key={project.id}
               volunteered={project}
               onCancelClick={handleCancel}
@@ -92,6 +109,7 @@ export default function MyVolunteering() {
         <div className="grid md:grid-cols-2 gap-2">
           {projects.filter(p=>p.status=="COMPLETED").map((project) => (
             <VolunteeringProjectCard
+              onRateSubmit={handleRatingUpdate}
               key={project.id}
               volunteered={project}
               onCancelClick={handleCancel}

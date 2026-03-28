@@ -7,7 +7,7 @@ import { useAlert } from "../hooks/useAlert";
 import { interestCategories } from "../interest";
 
 
-const PickInterests: React.FC<{nav: BasicNatigationProps, back:()=>void, selectedInterests:string[], setSelectedInterests:(e:React.SetStateAction<string[]>)=>void}> = ({nav, back, selectedInterests, setSelectedInterests}) => {
+const PickInterests: React.FC<{nav?: BasicNatigationProps, back?:()=>void, selectedInterests:string[], setSelectedInterests:(e:React.SetStateAction<string[]>)=>void, submitRequest:(payload:any)=>Promise<Response>}> = ({nav, back, selectedInterests, setSelectedInterests, submitRequest}) => {
   
   const usesignup = useSignup()
   const [isLoading, setIsloading] = useState(false)
@@ -25,23 +25,15 @@ const PickInterests: React.FC<{nav: BasicNatigationProps, back:()=>void, selecte
   const handleSubmit = async ()=>{
     setIsloading(true)
     // make a patch request to add interests for volunteer
-    const baseUrl = import.meta.env.VITE_API_BASE_URL
+   
     const payload = {
       ...usesignup?.formData,
       interests: selectedInterests
     }
 
-    const response = await fetch(`${baseUrl}/volunteer/auth/signup`, {
-      method: 'POST', 
-      headers: {
-        "Content-type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    }
-    )
-    console.log(payload)
+    const response = await submitRequest(payload)
   
-    if(response.ok && nav.onToSignIn){
+    if(response.ok && nav?.onToSignIn){
       nav.onToSignIn()
     }else{
       alertMessage("Account Creation failed, please try again")
@@ -123,7 +115,6 @@ const PickInterests: React.FC<{nav: BasicNatigationProps, back:()=>void, selecte
           variant={selectedInterests.length == 0? "disabled":"primary"}
           className="text-sm px-4 py-2 sm:w-60 w-full "
           onClick={handleSubmit}
-
         >
           {isLoading? <LoadingEffect message="Creating Account..."/>: "Create Account"}
         </Button>

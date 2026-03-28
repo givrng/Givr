@@ -180,19 +180,19 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
 
   const input1: inputProps[] = [
     {
-      label: "Contact Firstname",
+      label: "Contact First Name",
       type: "text",
       name: "contactFirstname",
       placeholder: "John",
     },
     {
-      label: "Contact Middle name",
+      label: "Contact Middle Name",
       type: "text",
       name: "contactMiddleName",
       placeholder: "Doe",
     },
     {
-      label: "Contact Lastname",
+      label: "Contact Last Name",
       type: "text",
       name: "contactLastname",
       placeholder: "***",

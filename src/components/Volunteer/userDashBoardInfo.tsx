@@ -27,7 +27,7 @@ const UserDashboardInformation:React.FC<{username?:string; buttons:Array<string>
         return (
             <div className="w-full flex justify-center mb-3">
                 <nav className="w-full bg-[#E7E9EF] rounded-xl shadow-inner-sm">
-                    <div className="flex justify-evenly gap-x-1">
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:flex sm:justify-evenly sm:gap-x-1">
                         {buttons.map((label) => (
                         <RadioButton
                             key={label}
