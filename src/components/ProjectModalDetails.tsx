@@ -29,7 +29,7 @@ const ProjectDetailsModal:React.FC<{project: ProjectProps}> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col items-center gap-4">
           {project.address && (
             <p className="text-[#676879] text-sm flex items-center gap-1 mb-2">
               <span className="text-(--primary-color) text-sm ">Address:</span>
