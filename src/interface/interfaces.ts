@@ -462,10 +462,19 @@ declare global {
   }
 }
 
+
 export interface QoreIdSDKMessageEvent extends MessageEvent {
   data: {
     type: 'QOREID_SDK_CALLBACK';
     status: 'success' | 'error' | 'exit';
     response: QoreIdCallbackResponse;
   };
+}
+
+export interface ComingSoonProps {
+  title?: string;
+  subtitle?: string;
+  primaryColor?: string;
+  dashboardPath?: string;
+  buttonLabel?: string;
 }

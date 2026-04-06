@@ -13,8 +13,8 @@ export const GenericHeader: React.FC<BasicNatigationProps> = ({ onToSignIn, onTo
 
       {/* Navigation Links */}
       <nav className="hidden md:flex space-x-8">
-        <NavLink to={"certs"}>Opportunities</NavLink>
-        <NavLink to={"organization"}>Organizations</NavLink>
+        <NavLink to={"opportunities"}>Opportunities</NavLink>
+        <NavLink to={"organizations"}>Organizations</NavLink>
         <NavLink to={"certificates"}>Certificates</NavLink>
       </nav>
       {/* Action Buttons: Sign In (Primary), Sign Up (Outline) */}
