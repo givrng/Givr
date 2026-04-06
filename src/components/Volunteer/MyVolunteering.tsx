@@ -71,7 +71,7 @@ export default function MyVolunteering() {
     }
   };
 
-  const handleViewDetailsClick = (project: MyVolunteeringProps) => {
+  const handleViewDetailsClick = ({project }: MyVolunteeringProps) => {
     modal(<ProjectDetailsModal project={project}/>)
   };
 

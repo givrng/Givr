@@ -92,8 +92,8 @@ export interface ProjectProps{
   description?:string;
   specialRequirements:string;
   requiredSkills:string[];
-  createdAt:string;
-  updatedAt:string;
+  createdAt?:string;
+  updatedAt?:string;
   address?:string;
   broadcastEnabled?:boolean;
   rating?:number;
@@ -191,7 +191,7 @@ export interface MyCertificationProps {
 export interface MyVolunteeringProps {
   id?: string;
   organization?: OrganizationProps;
-  project?:ProjectProps;
+  project:ProjectProps;
   status?: "IN_PROGRESS" | "COMPLETED";
   rating?:number;
   reviewable?:boolean;
@@ -226,10 +226,7 @@ export interface BadgeProps {
 
 export interface OrganizationComponentProps extends OrganizationProps{
   hasVolunteered?: boolean;
-  startDate?:string;
-  endDate?:string;
-  projectDescription?: string;
-  skillsRequired?: string[];
+  
 }
 
 

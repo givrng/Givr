@@ -1,11 +1,12 @@
 import { useState, type ReactNode} from "react";
-import type { ButtonProps, FeatureCardProps, MetricComponentProps, NavLinkProps, OrganizationComponentProps, ProjectComponentProps, ProjectFormProps } from "../interface/interfaces"
+import type { ButtonProps, FeatureCardProps, MetricComponentProps, NavLinkProps, OrganizationComponentProps, ProjectComponentProps, ProjectFormProps, ProjectProps } from "../interface/interfaces"
 import { ArrowIcon, CalendarIcon, ClockIcon, DeleteBinIcon, GroupIcon, LocationIcon } from "./icons";
 import { useConfirmAsk } from "./hooks/useConfirm";
 import { useAlert } from "./hooks/useAlert";
 import { useModal } from "./hooks/useModal";
 import useAuthFetch from "./hooks/useAuthFetch";
 import { CreateProject } from "./Organization/createProjectForm";
+import ProjectDetailsModal from "./ProjectModalDetails";
 
 // --- Reusable Components ---
 
@@ -178,7 +179,7 @@ export const InfoCell:React.FC<{icon:ReactNode, info:string}> = ({icon, info})=>
 )
 
 /**Displays an organization's information */
-export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, description, numOfActiveProjects,location, category, status, hasVolunteered=false, startDate, endDate, projectDescription, skillsRequired})=>{
+export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, description, category, status, hasVolunteered=false})=>{
   const {confirmAsk, ConfirmDialog} = useConfirmAsk({})
   const {alertMessage, AlertDialog} = useAlert({isOrg:true})
 
@@ -219,34 +220,6 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, de
         </div>
       </div>
 
-      <div className="text-sm text-gray-700 space-y-2 mb-4">
-        <p>
-          <span className="font-semibold text-blue-600">Address: </span>
-          {`${location?.lga}, ${location?.state}`}
-        </p>
-        <p>
-          <span className="font-semibold text-blue-600">Active Projects: </span>
-          {numOfActiveProjects ? numOfActiveProjects : 0}
-        </p>
-        <p>
-          <span className="font-semibold text-blue-600">
-            projectDescription:{" "}
-          </span>
-          {projectDescription || "N/A"}
-        </p>
-        <p>
-          <span className="font-semibold text-blue-600">Skills Required: </span>
-          {skillsRequired?.join(", ") || "N/A"}
-        </p>
-        <p>
-          <span className="font-semibold text-blue-600">Start Date: </span>
-          {startDate || "N/A"}
-        </p>
-        <p>
-          <span className="font-semibold text-blue-600">End Date: </span>
-          {endDate || "N/A"}
-        </p>
-      </div>
 
       <div className="flex justify-between items-end">
         <div className="flex space-x-2">
@@ -269,15 +242,24 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, de
 }
 
 /**Displays details of a project */
-export const ProjectCard:React.FC<ProjectComponentProps> = ({id, title, organization, specialRequirements,applicationDeadline,description,categories, attendanceHours, location,address,requiredSkills, maxVolunteers, startDate, endDate,status, totalApplicants, superVolunteer, manage=false, applied=false, isOrganization=false, isDraft=false, onEdit, onDelete, onPublish})=>{
+export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organization, specialRequirements,applicationDeadline,description,categories, attendanceHours, location,address,requiredSkills, maxVolunteers, startDate, endDate,status, totalApplicants, superVolunteer, manage=false, applied=false, isOrganization=false, isDraft=false, onEdit, onDelete, onPublish})=>{
 
   const [displayForm, setDisplayForm] = useState(false)
   const {modal, DisplayModal} = useModal()
   const [isEditing, setIsEditing] = useState(false)
 
+  const project:ProjectProps = {
+    id,
+    title, organization, 
+    specialRequirements,applicationDeadline,
+    description,categories, attendanceHours, 
+    location,address,requiredSkills, maxVolunteers, 
+    startDate, endDate,status, totalApplicants, 
+    superVolunteer
+  }
   // Makes request to backend to get organization information
   const handleView = ()=>{
-    modal(<OrganizationCard {...organization} description={organization?.description!}  hasVolunteered={false} />)
+    modal(<ProjectDetailsModal project={project}/>)
 
   }
   // const {state, lga} = location
@@ -285,6 +267,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({id, title, organiza
   const closeEditing = ()=>{
     setIsEditing(false);
   }
+  
 
   // Project data to prepopulate when editing
   const projectData:ProjectFormProps = {
@@ -302,6 +285,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({id, title, organiza
     requiredSkills: requiredSkills,
     specialRequirements: specialRequirements,
   }
+  
 
   return <div className="relative bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full">
     {isEditing?<CreateProject onClose={closeEditing} projectData={projectData} isCreating={false} onSuccessfulEdit={onEdit}/>:<>
