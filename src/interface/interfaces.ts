@@ -327,7 +327,8 @@ export interface ParticipantProps{
   project: ProjectProps;
   reviewable?:boolean;
   endDate?:string;
-  volunteer: ProfileProps
+  volunteer: ProfileProps;
+  reason:string;
 }
 
 export type organizationType = "NGO/Non profit" | "Community Group" | "Religious Group"| "Educational Institution" | "Government Agency"|"Corporate Foundation"|""

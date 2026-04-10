@@ -96,12 +96,13 @@ export const ParticipantCard: React.FC<ParticipantCardComponentProps> = ({ parti
             <div className="flex items-center text-sm text-gray-500 gap-3">
               <span className="flex items-center">
                 <MapPin size={14} className="mr-1" />
-                {volunteer.location?.lga || "Remote"}
+                {volunteer.location?.state || ""}
               </span>
               <span className="flex items-center">
                 <Calendar size={14} className="mr-1" />
                 Joined {volunteer?.createdAt &&formatDate(volunteer?.createdAt)}
               </span>
+
             </div>
           </div>
         </div>
@@ -125,12 +126,16 @@ export const ParticipantCard: React.FC<ParticipantCardComponentProps> = ({ parti
               <span className="font-medium mr-1 text-gray-700">Duration:</span>
               {formatDate(project.startDate)} - {formatDate(project.endDate)}
            </div>
+           <div className="flex items-center">
+              <span className="font-medium mr-1 text-gray-700">Reason for joining:</span>
+              {participant.reason}
+           </div>
         </div>
       </div>
 
       {/* Skills Tags */}
       <div className="mb-6">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Volunteer Expertise</p>
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Volunteer Skills</p>
         <div className="flex flex-wrap gap-2">
           {volunteer.skills?.slice(0, 4).map((skill, index) => (
             <span 
