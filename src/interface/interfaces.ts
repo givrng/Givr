@@ -316,6 +316,7 @@ export interface VolunteerApplicationProps{
   firstname:string;
   lastname:string;
   skills:string[];
+  reason:string;
   projectApplied: VolunteerProjectApplicationProps
 }
 

@@ -257,7 +257,7 @@ export const ProjectGroupHeader:React.FC<{project:ProjectProps, count:number, on
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
             <span className="flex items-center gap-1">
-              <MapPin size={14} /> {project.location?.lga || "Remote"}
+              <MapPin size={14} /> {project.location.state}
             </span>
             <span className="flex items-center gap-1">
               <Calendar size={14} /> {new Date(project?.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}

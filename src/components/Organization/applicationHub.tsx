@@ -45,6 +45,10 @@ const VolunteerCard:React.FC<{applicant:VolunteerApplicationProps, onApprove: (a
                 <p className="text-sm text-gray-600 leading-relaxed">
                     Appplied for: {applicant.projectApplied?.title}
                 </p>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                    Reason: {applicant.reason}
+                </p>
+
             </div>
 
             <div className="flex-shrink-0 flex space-x-2"> 
