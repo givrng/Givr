@@ -1,4 +1,4 @@
-import {  useNavigate } from "react-router-dom"
+import {  useNavigate, useSearchParams } from "react-router-dom"
 import { SignupProvider } from "../../components/Volunteer/sign-up/SignupContext"
 import UserDetails from "../../components/sign-up/UserDetails"
 import PickInterests from "../../components/sign-up/PickInterests"
@@ -45,11 +45,14 @@ export const VolunteerSignup = ()=>{
           }
     )
       }
+    const [param] = useSearchParams()
+    const redirect = param.get("redirect")
+    const signinPath = redirect? `/signin/volunteer?redirect=${redirect}`: "/signin/volunteer"
       
     return <SignupProvider>
         <>
-            {step == 0 && <UserDetails formData={formData} setFormData={setFormData} next={()=>setStep(1)}/>}
-            {step == 1 && <PickInterests nav={{onToSignIn: () => navigate("/signin/volunteer")}} back={()=>setStep(0)} selectedInterests={selectedInterests} setSelectedInterests={setSelectedInterests} submitRequest={submitRequest}/>} 
+            {step == 0 && <UserDetails redirect={redirect} formData={formData} setFormData={setFormData} next={()=>setStep(1)}/>}
+            {step == 1 && <PickInterests nav={{onToSignIn: () => navigate(signinPath)}} back={()=>setStep(0)} selectedInterests={selectedInterests} setSelectedInterests={setSelectedInterests} submitRequest={submitRequest}/>} 
         </>
         </SignupProvider>
     

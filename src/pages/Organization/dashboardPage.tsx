@@ -11,7 +11,6 @@ import { ApplicationHub } from "../../components/Organization/applicationHub";
 import useAuthFetch from "../../components/hooks/useAuthFetch";
 import OrganizationProfilePage from "./OrganizationProfilePage";
 
-
 export const DashboardPage = () => {
 
     const [active, setActive] = useState<OrganizationNavTypes>("Dashboard");
@@ -80,9 +79,7 @@ export const DashboardPage = () => {
         let selectButtonValue = buttons.get(event.currentTarget.textContent);
         setActive(selectButtonValue ? selectButtonValue as OrganizationNavTypes : "Dashboard")
     }
-
-
-
+    
     const fetchOrganizationDashboard = ()=>{
         API().get("/dashboard")
         .then((response)=>{
@@ -110,7 +107,6 @@ export const DashboardPage = () => {
             await fetchOrganizationDashboard()  
         })()
     }, [dashboardIsMounted])
-
     return <>
         <main>
             <DashboardHeader isOrganization={true}/>

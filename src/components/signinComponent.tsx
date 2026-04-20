@@ -7,7 +7,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import useAuthFetch from "./hooks/useAuthFetch";
 import { useVerifyAuth } from "./Auth/AuthContext";
 
-const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toForgotPassword, isOrganization, onSignInWithGoogle}) => {
+const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toForgotPassword, isOrganization, onSignInWithGoogle, redirect}) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
@@ -122,14 +122,14 @@ const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toFo
                 onClick={onSignInWithGoogle}
             >
                 <GoogleIcon />
-                <span>Continue with Google</span>
+                <span>Sign-in / Sign-up with Google</span>
             </Button>
 
             {/* Sign Up Link */}
             <p className="mt-8 text-center text-sm text-gray-600">
-                Don't have an account?
-                <Link className={`font-semibold text-[#${isOrganization? "34A853":"1877F2"}] hover:underline ml-1`} to={toSignUp ? toSignUp : "/"}>
-                    Sign Up here
+                No Gmail account?
+                <Link className={`font-semibold text-[#${isOrganization? "34A853":"1877F2"}] hover:underline ml-1`} to={toSignUp ? redirect?`${toSignUp}?redirect=${redirect}`:toSignUp : "/"}>
+                    Sign Up manually here
                 </Link>
             </p>
         </div>
@@ -143,8 +143,10 @@ export const SignInComp: React.FC<BasicNatigationProps> = function ({ toSignUp, 
     const {API} = useAuthFetch(isOrganization?"organization": "volunteer")
     const verifyAuth = useVerifyAuth()
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+    const [requestParam] = useSearchParams()
+    const redirect = requestParam.get("redirect");
     const handleSignIn = async (email: string, password: string):Promise<number> => {
-
+    
         try{
                         
             let res = await API().post(`/auth/login`, {email, password}, {
@@ -163,7 +165,12 @@ export const SignInComp: React.FC<BasicNatigationProps> = function ({ toSignUp, 
         }
     }
     const handleSignInWithGoogle = async ()=>{
-        window.location.href = `${apiBaseUrl}/${isOrganization? "organization":"volunteer"}/oauth2/authorization/${isOrganization?"google-org":"google-volunteer"}`
+        // include redirection when signing in with google
+        let path = !redirect? `${apiBaseUrl}/${isOrganization? "organization":"volunteer"}/oauth2/authorization/${isOrganization?"google-org":"google-volunteer"}`
+            :`${apiBaseUrl}/${isOrganization? "organization":"volunteer"}/oauth2/authorization/${isOrganization?"google-org":"google-volunteer"}?redirect=${redirect}`
+
+       window.location.href = path
+        
     }
 
     return (
@@ -184,7 +191,8 @@ export const SignInComp: React.FC<BasicNatigationProps> = function ({ toSignUp, 
                     </div>
                 </div>
 
-                <SignInForm toForgotPassword={toForgotPassword} toSignUp={toSignUp} onSignInAttempt={handleSignIn} isOrganization={isOrganization} onSignInWithGoogle={handleSignInWithGoogle}/>
+                <SignInForm toForgotPassword={toForgotPassword} toSignUp={toSignUp} onSignInAttempt={handleSignIn} 
+                    isOrganization={isOrganization} onSignInWithGoogle={handleSignInWithGoogle} redirect={redirect}/>
             </div>
         </section>
     )

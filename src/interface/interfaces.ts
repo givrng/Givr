@@ -37,6 +37,7 @@ export interface LabeledIcon {
 export interface SignInFormProps extends BasicNatigationProps {
     onSignInAttempt: (email: string, pass: string) => Promise<number>;
     onSignInWithGoogle: ()=>Promise<void>;
+    redirect?:string|null;
 }
 
 export interface BasicNatigationProps{
@@ -51,7 +52,6 @@ export interface BasicNatigationProps{
   toVolunteerDetails?:string;
   toDashBoard?:string;
   toOppurtunities?:string;
-
   isOrganization?:boolean;
 }
 export interface MetricProps{

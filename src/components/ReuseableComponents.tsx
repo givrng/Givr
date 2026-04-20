@@ -1,12 +1,14 @@
 import { useState, type ReactNode} from "react";
 import type { ButtonProps, FeatureCardProps, MetricComponentProps, NavLinkProps, OrganizationComponentProps, ProjectComponentProps, ProjectFormProps, ProjectProps } from "../interface/interfaces"
-import { ArrowIcon, CalendarIcon, ClockIcon, DeleteBinIcon, GroupIcon, LocationIcon } from "./icons";
+import { ArrowIcon, CalendarIcon, ClockIcon, DeleteBinIcon, GroupIcon, LocationIcon, PageLoader } from "./icons";
 import { useConfirmAsk } from "./hooks/useConfirm";
 import { useAlert } from "./hooks/useAlert";
 import { useModal } from "./hooks/useModal";
 import useAuthFetch from "./hooks/useAuthFetch";
 import { CreateProject } from "./Organization/createProjectForm";
 import ProjectDetailsModal from "./ProjectModalDetails";
+import { LucideShare2 } from "lucide-react";
+import  { useShareModal } from "./shareModal";
 
 // --- Reusable Components ---
 
@@ -247,6 +249,8 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
   const [displayForm, setDisplayForm] = useState(false)
   const {modal, DisplayModal} = useModal()
   const [isEditing, setIsEditing] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const {API} = useAuthFetch(isOrganization? "organization": "volunteer")
 
   const project:ProjectProps = {
     id,
@@ -257,6 +261,9 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
     startDate, endDate,status, totalApplicants, 
     superVolunteer
   }
+
+  const {openShare, ShareModalComponent} = useShareModal()
+  const {alertMessage, AlertDialog} = useAlert({isOrg: isOrganization})
   // Makes request to backend to get organization information
   const handleView = ()=>{
     modal(<ProjectDetailsModal project={project}/>)
@@ -269,6 +276,25 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
   }
   
 
+  const handleShareProject = async ()=>{
+    try{
+      setIsLoading(true)
+      let response = await API().get(`/share/project/${project.id}`);
+      let url = response.data as string
+
+      // Open share modal only when there's a link
+      openShare({
+        text: "",
+        title: project.title, 
+        url
+      })
+      
+    }catch(err){
+      await alertMessage("Failed to create link")
+    }finally{
+      setIsLoading(false)
+    }
+  }
   // Project data to prepopulate when editing
   const projectData:ProjectFormProps = {
     id: id,
@@ -288,6 +314,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
   
 
   return <div className="relative bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full">
+    {isLoading && <PageLoader/>}
     {isEditing?<CreateProject onClose={closeEditing} projectData={projectData} isCreating={false} onSuccessfulEdit={onEdit}/>:<>
       {isDraft&&<button
       className="absolute top-0 right-0 m-1
@@ -310,10 +337,16 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
               <h3 className="text-xl font-bold text-gray-800">{title?title: "Community Health Screening"}</h3>
               {!isOrganization && <p className="text-sm font-medium text-gray-500">{organization? organization.name: "Abuja Health Initiative"}</p>}
           </div>
-
-          <span className={`${status=="OPEN"? "bg-green-600": "bg-red-600 "} text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider`}>
-              {status? status: "Verified"}
-          </span>
+          <div className="flex justify-between gap-x-2">
+            <span className={`${status=="OPEN"? "bg-green-600": "bg-red-600 "} text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider`}>
+                {status? status: "Verified"}
+            </span>
+            {
+              status != "DRAFT" && <button onClick={handleShareProject}>
+              <LucideShare2 className={`${isOrganization? 'hover:text-green-500':'hover:text-blue-500'}`}/> 
+            </button>
+            }
+          </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-6 py-4 border-y border-gray-200">
@@ -356,7 +389,8 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
       {(displayForm && (!manage || !applied))&& <ApplicationForm organization={organization?.name} onCancel={()=>setDisplayForm(false)} projectId={id}/>}
       <DisplayModal/>
     </>}
-
+    <ShareModalComponent/>
+    <AlertDialog/>
 </div>
 }
 
@@ -466,7 +500,7 @@ export const ApplicationForm:React.FC<{onCancel:()=>void, organization?:string, 
         <label htmlFor="availability" className="block text-base font-semibold text-gray-700 mb-2">Confirm you availability</label>
         <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800" type="text" name="availability" placeholder="e.g available all day" value={applicationForm.availableDays} onChange={e=>setApplicationForm({...applicationForm, availableDays: e.currentTarget.value})} required/>
 
-        <div className="flex justify-between pt-2 space-x-4">
+        <div className="flex justify-between pt-2 space-x-1">
           <Button variant="primary" className="w-full">Submit application</Button>
            <Button variant="outline"  className="w-full" onClick={onCancel}>Cancel</Button>
         </div>

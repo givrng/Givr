@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import type { BasicNatigationProps, organizationType } from "../../interface/interfaces";
 import Input from "../../components/form/Input";
 import { Button } from "../../components/ReuseableComponents";
-import { LoadingEffect } from "../../components/icons";
+import { GoogleIcon, LoadingEffect } from "../../components/icons";
 import { useAlert } from "../../components/hooks/useAlert";
 import useAuthFetch from "../../components/hooks/useAuthFetch";
 
@@ -219,6 +219,14 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
       autoComplete: "new-password",
     }
   ];
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+   const handleSignInWithGoogle = async ()=>{
+        // include redirection when signing in with google
+        let path = `${apiBaseUrl}/organization/oauth2/authorization/google-org`
+            
+       window.location.href = path
+        
+    }
 
   return (
     <div className="bg-gray-300 flex place-items-center w-full p-8 min-h-screen h-full">
@@ -286,12 +294,19 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
               
               </div>
              </div>
-              <Button
+              <div className="flex flex-col gap-y-2">
+                <Button
                   variant="green"
                   className="text-sm px-4 py-2 shadow-none mt-4 w-full"
                 >
                   {isLoading ? <LoadingEffect message="Creating Account..." /> : "Create Account"}
                 </Button>
+
+                <Button variant="outline" className="w-full py-3 flex items-center justify-center space-x-2" onClick={handleSignInWithGoogle}>
+                  <GoogleIcon />
+                  Continue With Google
+                </Button>
+              </div>
             </form>
           </> 
         }

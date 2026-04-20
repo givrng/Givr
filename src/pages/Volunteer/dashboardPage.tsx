@@ -3,12 +3,16 @@ import React, { useEffect, useState } from "react";
 import UserDashboardInformation from "../../components/Volunteer/userDashBoardInfo";
 import Dashboard from "../../components/Volunteer/dashboard";
 
-import type { MetricProps, NavTypes, VolunteerQuickActions, VolunteerDashboardProps } from "../../interface/interfaces";
+import type { MetricProps, NavTypes, VolunteerQuickActions, VolunteerDashboardProps, ProjectProps } from "../../interface/interfaces";
 import { DashboardHeader } from "../../components/dashboardHeader";
 import useAuthFetch from "../../components/hooks/useAuthFetch";
 import MyVolunteering from "../../components/Volunteer/MyVolunteering";
 import ProfilePage from "../../components/Profile";
 import { ProjectHub } from "../../components/Volunteer/projectHub";
+import { useSearchParams } from "react-router-dom";
+import { ProjectCard } from "../../components/ReuseableComponents";
+import { useGenericModal } from "../../components/hooks/useGenericModal";
+import { useAlert } from "../../components/hooks/useAlert";
 
 export const DashboardPage = () => {
     const [active, setActive] = useState<NavTypes>("Dashboard");
@@ -105,7 +109,6 @@ export const DashboardPage = () => {
     useEffect(() => {
         (() => {
             loadUserProfile()
-
         })()
     }, [dashboardIsMounted])
 
@@ -147,6 +150,28 @@ export const DashboardPage = () => {
         }))
     }, [volunteerDashboard])
 
+    const [searchParams, setSearchParams] = useSearchParams()
+    const {openModal, ModalComponent} = useGenericModal()
+    const {alertMessage, AlertDialog} = useAlert({isOrg: false})
+    useEffect(()=>{
+       ( async ()=>{
+            let projectId = searchParams.get("project")
+            if(!projectId)
+                return
+            try{
+                const response = await API().get(`/projects/${projectId}`)
+                let project = response.data as ProjectProps
+                openModal(<ProjectCard {...project}/>, ()=>{
+                    searchParams.delete("project")
+                    setSearchParams(searchParams)
+                })
+            }catch{
+                alertMessage("Failed to fetch project")
+            }
+        })()
+
+    }, [])
+
     return <>
         <main className="">
             <DashboardHeader />
@@ -157,6 +182,8 @@ export const DashboardPage = () => {
                 {active == "My Volunteering" && <MyVolunteering/>}
                 {active == "Profile & Achievements" && <ProfilePage/>}
             </div>
+            <ModalComponent/>
+            <AlertDialog/>
         </main>
     </>
 }

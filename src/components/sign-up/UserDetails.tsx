@@ -6,6 +6,7 @@ import LocationSelect from "../form/LocationSelect";
 import { useSignup } from "../Volunteer/sign-up/SignupContext";
 import { CloudinaryUpload } from "../CloudinaryWidget";
 import type { FormFields } from "../../pages/Volunteer/volunteerSignup";
+import { GoogleIcon } from "../icons";
 
 
 type inputProps = {
@@ -24,7 +25,7 @@ type inputProps = {
  * Define a local interface for the form state to avoid colliding with the DOM's FormData type.
  */
 
-const UserDetails:React.FC<{formData:FormFields; setFormData:(d: React.SetStateAction<FormFields>)=>void, next:()=>void}> =({formData, setFormData, next}) => {
+const UserDetails:React.FC<{formData:FormFields; setFormData:(d: React.SetStateAction<FormFields>)=>void, next:()=>void, redirect?:string|null}> =({formData, setFormData, next, redirect}) => {
   const setFormPayload = useSignup()
  
     const handleLocationChange = useCallback(
@@ -187,6 +188,17 @@ const UserDetails:React.FC<{formData:FormFields; setFormData:(d: React.SetStateA
        },
 
      ];
+
+     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+      const handleSignInWithGoogle = async ()=>{
+
+        // include redirection when signing in with google
+        let path = !redirect? `${apiBaseUrl}/volunteer/oauth2/authorization/google-volunteer`
+            :`${apiBaseUrl}/volunteer/oauth2/authorization/google-volunteer?redirect=${redirect}`
+
+       window.location.href = path
+        
+    }
     return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-200 to-gray-300 place-items-center w-full p-8">
       <div className="bg-[#F3FAFA] rounded-2xl shadow-xl flex flex-col min-h-screen max-w-4xl p-8 sm:p-10 mx-auto w-full">
@@ -259,12 +271,18 @@ const UserDetails:React.FC<{formData:FormFields; setFormData:(d: React.SetStateA
               error={{ state: errors.state, lga: errors.lga }}
             />
           </div>
-          <Button
+          <div className="flex flex-col gap-y-2">
+            <Button
             variant="primary"
             className="text-sm px-4 py-3 shadow-md w-full mt-6 hover:shadow-lg transition"
           >
             Next
           </Button>
+          <Button variant="outline" className="w-full py-3 flex items-center justify-center space-x-2" onClick={handleSignInWithGoogle}>
+            <GoogleIcon />
+            Continue With Google
+          </Button>
+          </div>
         </form>
       </div>
     </div>

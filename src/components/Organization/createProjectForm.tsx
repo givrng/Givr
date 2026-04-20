@@ -11,6 +11,7 @@ import { LoadingEffect } from "../icons";
 export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updProject: ProjectProps)=>void, projectData?:ProjectFormProps, isCreating?:boolean, handlesave?: (projects:ProjectProps[])=>Promise<void>}> = ({onClose, projectData, isCreating=true, onSuccessfulEdit, handlesave})=>{
 
     const {confirmAsk, ConfirmDialog} = useConfirmAsk({isOrg:true})
+    const [errors, setErrors] = useState<Partial<ProjectFormProps>>();
     const {alertMessage, AlertDialog} = useAlert({
         isOrg:true
     })
@@ -70,6 +71,9 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
     }
 
     const handleCreate = async ()=>{
+        if(!validateForm())
+            return;
+
         let userConfirm = await confirmAsk({
             question: "Are you sure you want to create this project?",
             trueAnswer: "Create",
@@ -104,6 +108,8 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
     }
 
     const handleUpdate = async ()=>{
+        if(!validateForm())
+            return;
         let userConfirm = await confirmAsk({
             question: "Are you sure you want to update this project?",
             trueAnswer: "Update",
@@ -130,7 +136,58 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
         
     }
 
+    const validateForm = ()=>{
+          const newErrors: Partial<ProjectFormProps> = {}
     
+          if (!formFields.title) {
+            newErrors.title = "Project title is required";
+          }
+    
+          if(!formFields.description){
+            newErrors.description = "Project description is required"
+          }
+          if (!formFields.category) {
+            newErrors.category="Project category is required";
+          }
+          if (!formFields.address || !formFields.location.lga || !formFields.location.state) {
+            newErrors.address = "Address, LGA, and state are required";
+          }
+    
+    
+          if(!formFields.applicationDeadline )
+            newErrors.applicationDeadline = "Project deadline is required"
+    
+          if (!formFields.startDate) newErrors.startDate = "Required";
+      
+          if(!formFields.endDate){
+            newErrors.startDate = "Required"
+          }
+          if(formFields.attendanceHours ){
+            if(!formFields.attendanceHours.from){
+                newErrors.attendanceHours = {
+                    from: "Required",
+                    to: ""
+                }
+            }
+
+            if(!formFields.attendanceHours.to){
+                newErrors.attendanceHours = {
+                    from: "",
+                    to: "Required"
+                }
+            }
+          }
+          if(!formFields.maxVolunteers)
+            newErrors.specialRequirements = "Maximum participants is required"           
+    
+          setErrors(newErrors);
+          return Object.keys(newErrors).length === 0;
+      }
+    useEffect(()=>{
+        setErrors({
+            title: ""
+        })
+    }, [formFields])
     return <>
         {<ConfirmDialog />}
         <AlertDialog/>
@@ -148,7 +205,12 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                 <div>
                     <label htmlFor="projectTitle" className="block text-base font-semibold text-gray-700 mb-2">
                         Project title
+                        <span className="text-red-700">*</span>
                     </label>
+                    <p className="text-red-500 text-sm mt-1">
+                        {errors?.title}
+                    </p>
+                    
                     <input type="text" id="projectTitle" placeholder="e.g, Community Health Screening" 
                         className="w-full px-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800"
                         value={formFields.title}
@@ -159,7 +221,13 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                         }))}/>
                 </div>  
                 {/* Description */}          
-                <textarea
+                <div>
+                    <label className="block text-base font-semibold text-gray-700 mb-2">Description<span className="text-red-700">*</span></label>
+                    <p className="text-red-500 text-sm mt-1">
+                        {errors?.description}
+                    </p>
+                    
+                    <textarea
                     id="description"
                     rows={4}
                     maxLength={MAX_CHARS}
@@ -177,6 +245,7 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                         setCharCount(value.length);
                     }}
                 />
+                </div>
 
                 <div className="mt-1 text-sm flex justify-end">
                     <span
@@ -198,7 +267,11 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                     <div>
                         <label htmlFor="category" className="block text-base font-semibold text-gray-700 mb-2">
                             Category
+                            <span className="text-red-700">*</span>
                         </label>
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors?.category}
+                        </p>
                         <select id="category" 
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800 appearance-none bg-white pr-8"
                                 value={formFields.category}
@@ -207,7 +280,7 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                                         ...prev,
                                         category:e.target.value
                                     }))
-                                }}>
+                                }} required >
                             <option>Select Category</option>
                             <option>Healthcare</option>
                             <option>Community Outreach</option>
@@ -223,7 +296,12 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                     <div>
                         <label htmlFor="maxVolunteers" className="block text-base font-semibold text-gray-700 mb-2">
                             Max volunteers
+                            <span className="text-red-700">*</span>
                         </label>
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors?.specialRequirements}
+                        </p>
+                        
                         <input type="number" id="maxVolunteers" placeholder="20" value={formFields.maxVolunteers}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800"
                             onChange={e=>{
@@ -240,7 +318,12 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                     <div>
                         <label htmlFor="startDate" className="block text-base font-semibold text-gray-700 mb-2">
                             Start Date
+                            <span className="text-red-700">*</span>
                         </label>
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors?.startDate}
+                        </p>
+                        
                         <input type="date" id="startDate" placeholder="dd/mm/yyyy" 
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800"
                             value={formFields.startDate}
@@ -254,7 +337,11 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                     <div>
                         <label htmlFor="endDate" className="block text-base font-semibold text-gray-700 mb-2">
                             End Date
+                            <span className="text-red-700">*</span>
                         </label>
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors?.endDate}
+                        </p>
                         <input type="date" id="endDate" placeholder="dd/mm/yyyy" 
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800"
                             value={formFields.endDate}
@@ -263,15 +350,18 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                                     ...prev,
                                     endDate:e.target.value
                                 }))
-                            }}/>
+                            }} />
                     </div>
                 </div>
                 {/**Attendance hours */}
                 <div>
                     <label htmlFor="attendanceHours" className="block text-base font-semibold text-gray-700 mb-2">
                         Attendance Hours
+                        <span className="text-red-700">*</span>
                     </label>
-
+                    <p className="text-red-500 text-sm mt-1">
+                        {errors?.attendanceHours?.from}
+                    </p>
                     <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2">
                         <div className="flex gap-x-2">
                 
@@ -310,7 +400,10 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                        
 
                         <div className="flex gap-x-2 items-center">
-                            <label htmlFor="to" className="font-semibold">To: </label>
+                            <label htmlFor="to" className="font-semibold">To:<span className="text-red-700">*</span> </label>
+                            <p className="text-red-500 text-sm mt-1">
+                                {errors?.attendanceHours?.to}
+                            </p>
                             <input type="time" id="attendanceHours" placeholder="3:00" 
                             className="sm:w-full px-2 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800"
                             value={formFields.attendanceHours.to.split(" ")[0]}
@@ -349,7 +442,11 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                     <div>
                         <label htmlFor="applicationDeadline" className="block text-base font-semibold text-gray-700 mb-2">
                             Application Deadline
+                            <span className="text-red-700">*</span>
                         </label>
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors?.applicationDeadline}
+                        </p>
                         <input type="date" id="applicationDeadline" placeholder="dd/mm/yyyy" 
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800"
                             value={formFields.applicationDeadline}
@@ -365,17 +462,25 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
 
                 {/* Location */}
                 <div>
+                    
                     <LocationSelect
                     onChange={handleLocationChange}
                     state={projectData?.location.state}
                     lga={projectData?.location.lga}
                     />
+                    <p className="text-red-500 text-sm mt-1">
+                        {errors?.address}
+                    </p>
                 </div>
                 {/* Address */}
                 <div>
                     <label htmlFor="address" className="block text-base font-semibold text-gray-700 mb-2">
                         Address
+                        <span className="text-red-700">*</span>
                     </label>
+                    <p className="text-red-500 text-sm mt-1">
+                        {errors?.address}
+                    </p>
                     <input type="text" id="address" placeholder="e.g, 13, First streat" 
                         className="w-full px-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800"
                         value={formFields.address}
