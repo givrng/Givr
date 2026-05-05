@@ -1,14 +1,15 @@
 import { useState, type ReactNode} from "react";
-import type { ButtonProps, FeatureCardProps, MetricComponentProps, NavLinkProps, OrganizationComponentProps, ProjectComponentProps, ProjectFormProps, ProjectProps } from "../interface/interfaces"
-import { ArrowIcon, CalendarIcon, ClockIcon, DeleteBinIcon, GroupIcon, LocationIcon, PageLoader } from "./icons";
+import type { ButtonProps, FeatureCardProps, MetricComponentProps, NavLinkProps, OrganizationComponentProps,  ProjectComponentProps, ProjectFormProps, ProjectProps } from "../interface/interfaces"
+import { ArrowIcon, CalendarIcon, DeleteBinIcon, GroupIcon, LocationIcon, PageLoader } from "./icons";
 import { useConfirmAsk } from "./hooks/useConfirm";
 import { useAlert } from "./hooks/useAlert";
 import { useModal } from "./hooks/useModal";
 import useAuthFetch from "./hooks/useAuthFetch";
 import { CreateProject } from "./Organization/createProjectForm";
 import ProjectDetailsModal from "./ProjectModalDetails";
-import { LucideShare2 } from "lucide-react";
+import { Hourglass, LucideShare2 } from "lucide-react";
 import  { useShareModal } from "./shareModal";
+import { useApplicationForm } from "./Volunteer/ApplicationForm";
 
 // --- Reusable Components ---
 
@@ -181,13 +182,12 @@ export const InfoCell:React.FC<{icon:ReactNode, info:string}> = ({icon, info})=>
 )
 
 /**Displays an organization's information */
-export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, description, category, status, hasVolunteered=false})=>{
+export const OrganizationCard: React.FC<OrganizationComponentProps> = (orgComponentProps)=>{
   const {confirmAsk, ConfirmDialog} = useConfirmAsk({})
   const {alertMessage, AlertDialog} = useAlert({isOrg:true})
 
-
   const handleApplication = async ()=>{
-    const ok = hasVolunteered? await confirmAsk({
+    const ok = orgComponentProps.hasVolunteered? await confirmAsk({
       question: "Are you sure you want to cancel your application for this particular project?",
       trueAnswer: "Proceed",
       falseAnswer: "Cancel"
@@ -198,7 +198,7 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, de
     })
 
     if(ok){
-      let message =hasVolunteered?`Your application to ${name} has been cancelled`:`Your application to ${name} has been submitted`
+      let message = orgComponentProps.hasVolunteered?`Your application to ${name} has been cancelled`:`Your application to ${name} has been submitted`
       await alertMessage(message)
     }
   }
@@ -207,30 +207,35 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, de
     <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full ">
       <div className="flex justify-between items-start mb-4">
         <div className="flex flex-col pr-4">
-          <h3 className="text-xl font-bold text-gray-900 mb-1">{name}</h3>
-          <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
+          <h3 className="text-xl font-bold text-gray-900 mb-1">{orgComponentProps.name}</h3>
+          <p className="text-sm text-gray-600 leading-relaxed">{orgComponentProps.description}</p>
         </div>
         <div className="flex-shrink-0 flex space-x-2">
           {/* <span className="bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
                 Applied
             </span> */}
           <span
-            className={`${status == "VERIFIED" ? "bg-green-600" : "bg-red-600"} text-white text-xs font-semibold px-3 py-1 rounded-full`}
+            className={`${orgComponentProps.status == "VERIFIED" ? "bg-green-600" : "bg-red-600"} text-white text-xs font-semibold px-3 py-1 rounded-full`}
           >
-            {status}
+            {orgComponentProps.status}
           </span>
         </div>
       </div>
 
 
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col justify-between gap-y-2">
         <div className="flex space-x-2">
           <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">
-            {category}
+            {orgComponentProps.organizationType}
           </span>
         </div>
-        <Button variant="primary">View Projects</Button>
-        {hasVolunteered ? (
+        <div className="flex gap-x-2 justify-end">
+          <Button variant="outline" onClick={()=>{
+              // Only call if method is not null
+              orgComponentProps.showOrganizationDetails && orgComponentProps.showOrganizationDetails({...orgComponentProps})
+          }}>View</Button>
+        </div>
+        {orgComponentProps.hasVolunteered ? (
           <Button variant="outline" onClick={handleApplication}>
             {" "}
             Cancel Application
@@ -252,6 +257,8 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
   const [isLoading, setIsLoading] = useState(false)
   const {API} = useAuthFetch(isOrganization? "organization": "volunteer")
 
+  const duration = (Date.parse(endDate) - Date.parse(startDate))/(1000 * 60 * 60 *24)
+ 
   const project:ProjectProps = {
     id,
     title, organization, 
@@ -301,7 +308,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
     title: title,
     startDate: startDate.split(",")[0].split("/").reverse().join("-"),
     attendanceHours: attendanceHours,
-    category: categories[0],
+    categories: categories,
     applicationDeadline: applicationDeadline.split(",")[0].split("/").reverse().join("-"),
     description: description?description:"",
     endDate: endDate.split(",")[0].split("/").reverse().join("-"),
@@ -311,8 +318,18 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
     requiredSkills: requiredSkills,
     specialRequirements: specialRequirements,
   }
-  
 
+  const {openApplicationForm, ApplicationModal} = useApplicationForm()
+  
+  const handleApply = ()=>{
+    setDisplayForm(true)
+
+    openApplicationForm({
+      onCancel: ()=>setDisplayForm(false),
+      projectId: id,
+      organization: organization?.name
+    })
+  }
   return <div className="relative bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full">
     {isLoading && <PageLoader/>}
     {isEditing?<CreateProject onClose={closeEditing} projectData={projectData} isCreating={false} onSuccessfulEdit={onEdit}/>:<>
@@ -351,15 +368,16 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-6 py-4 border-y border-gray-200">
           <InfoCell icon={<CalendarIcon/>} info={startDate? startDate.split(",")[0]: "Jan 20, 2025"}/>
-          <InfoCell icon={<ClockIcon color="#676879" className="w-6 w-6"/>} info={attendanceHours && typeof attendanceHours !="string"? `${attendanceHours.from.toUpperCase()}-${attendanceHours.to.toUpperCase()}`: "9:00 AM - 3:00 PM"}/>
+          {/* <InfoCell icon={<ClockIcon color="#676879" className="w-6 w-6"/>} info={attendanceHours && `${attendanceHours.from.toUpperCase()}-${attendanceHours.to.toUpperCase()}`}/> */}
+          <InfoCell icon= {<Hourglass/>} info={`${duration} days`}/>
           <InfoCell icon={<LocationIcon/>} info={address? `${address}`: "Wuse District, Abuja"}/>
           <InfoCell icon={<GroupIcon/>} info={`${totalApplicants?totalApplicants: 0 }/${maxVolunteers?maxVolunteers: 20}` }/>
       </div>
 
       <div className="flex flex-col justify-between pt-4 gap-y-2">
 
-          <div className="flex flex-col space-y-3">
-            <div className="flex space-x-2">
+          <div className="flex flex-col space-y-3 box-border">
+            <div className="flex space-x-2 justify-start">
                 {categories? categories.map((cat, i)=>(<span key= {i} className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{cat}</span>)): <>
                 <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">Healthcare</span>
                 <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">Community Outreach</span>
@@ -371,11 +389,10 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
           {!isOrganization?
         <div className="flex gap-x-2 self-end">
               {manage && <Button variant="outline" onClick={handleView}>View details</Button>}
-              {!applied?(<Button variant="primary" onClick={()=>setDisplayForm(true)}>Apply Now</Button>): <Button variant="disabled">Applied</Button>}
+              {!applied?(<Button variant="primary" onClick={handleApply}>Apply Now</Button>): <Button variant="disabled">Applied</Button>}
           </div>:
           <div className="flex gap-x-2 self-end">
             {status!="COMPLETED" &&<Button variant="outline" onClick={()=>setIsEditing(true)}>Edit</Button>}
-              {status!="COMPLETED" &&manage&&<Button variant="outline" > Manage Volunteers</Button>}
               {isDraft && <Button variant="green" onClick={()=>{
                 if(onPublish)
                   onPublish(id, title)
@@ -386,7 +403,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
       </div>
 
       {/* Volunteer can views details of an organization after applying, therefore, application form should not be shown */}
-      {(displayForm && (!manage || !applied))&& <ApplicationForm organization={organization?.name} onCancel={()=>setDisplayForm(false)} projectId={id}/>}
+      {(displayForm && (!manage || !applied))&& <ApplicationModal/>}
       <DisplayModal/>
     </>}
     <ShareModalComponent/>
@@ -419,97 +436,156 @@ export const RadioButton: React.FC<{children: React.ReactNode;  value?:string; a
     );
 };
 
-/**Promts volunteer to provide their reason for applying for a project before application */
-export const ApplicationForm:React.FC<{onCancel:()=>void, organization?:string, projectId:number}> = ({onCancel, organization, projectId})=>{
-  interface ApplicationFields {
-    projectId:number;
-    reason: string;
-    availableDays:string
-  }
-  const [applicationForm, setApplicationForm] = useState<ApplicationFields>({
-    projectId: projectId,
-    reason: "",
-    availableDays: ""
-  })
 
-  const {API} = useAuthFetch("volunteer")
+// /**
+//  * Prompts volunteer to provide their reason for applying for a project before application.
+//  * Optimized for a compact and stylish UI.
+//  */
+// export const ApplicationForm = ({ onCancel, organization, projectId }) => {
+//   // Using the structure from your original component
+//   const [applicationForm, setApplicationForm] = useState({
+//     projectId: projectId,
+//     aboutMe: "",
+//     reason: "",
+//     mySkills: "",
+//     isAvailable: null,
+//     additionalInfo: ""
+//   });
 
-  let {confirmAsk, ConfirmDialog}= useConfirmAsk({})
-  let {alertMessage, AlertDialog} = useAlert({isOrg:false})
+//   // Mocking the hooks from your environment
+//   // const { API } = useAuthFetch("volunteer");
+//   // let { confirmAsk, ConfirmDialog } = useConfirmAsk({});
+//   // let { alertMessage, AlertDialog } = useAlert({ isOrg: false });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>)=>{
-    e.preventDefault()
-    console.log(applicationForm)
-    // Prompt the volunteer to confirm their application
-    const ok = await confirmAsk({
-      question: "Are you sure you want to apply for this particular project?",
-      trueAnswer: "Apply",
-      falseAnswer: "Cancel"
-    })
-    if(ok){
-      let message = `Thank you for Applying! ${organization} will reach out to you if you fit the selection criteria`
-      try{
-        await API().post("/projects/apply", applicationForm )
-        await alertMessage(message)
-      }catch(err:any){
-        let status = err?.response?.status
-        let data = err?.response?.data?.message;
-        if(status == 400){
-          await alertMessage(data)
-        }else{
-          await alertMessage(`Application ${organization}'s project failed. Please try again`)
-        }
-      }
+//   const MAX_CHARS = 500;
 
-    }
+//   const handleInputChange = (field, value) => {
+//     setApplicationForm(prev => ({ ...prev, [field]: value }));
+//   };
 
-    onCancel()
-  }
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+    
+//     // In a real scenario, you'd use your confirmAsk hook here
+//     const confirmed = window.confirm("Are you sure you want to apply for this project?");
+    
+//     if (confirmed) {
+//       try {
+//         console.log("Submitting:", applicationForm);
+//         // await API().post("/projects/apply", applicationForm);
+//         // await alertMessage(`Thank you for Applying! ${organization} will reach out soon.`);
+//         onCancel();
+//       } catch (err) {
+//         console.error(err);
+//       }
+//     }
+//   };
 
-  const MAX_CHARS = 500
-  const [charCount, setCharCount] = useState(0)
+//   // Configuration for the text areas to avoid repetition
+//   const textFields = [
+//     { id: 'aboutMe', label: 'Tell us about yourself', placeholder: 'Share a brief background...' },
+//     { id: 'reason', label: 'Why do you want to volunteer for this project?', placeholder: 'What motivates you to join?' },
+//     { id: 'mySkills', label: 'Any relevant skills you want us to know about?', placeholder: 'List skills relevant to this project...' },
+//     { id: 'additionalInfo', label: 'Any additional information?', placeholder: 'Optional details...' },
+//   ];
 
-  return <>
-    <div className="bg-white p-8 rounded-xl mt-2 shadow-2xl w-full max-full">
-      {/* <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-6 leading-tight">Appply for {project}</h2> */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+//   return (
+//     <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+//       {/* Header */}
+//       <div className="bg-slate-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+//         <div>
+//           <h2 className="text-lg font-bold text-gray-900 leading-tight">Project Application</h2>
+//           <p className="text-xs text-gray-500 mt-0.5">Applying to {organization || 'this project'}</p>
+//         </div>
+//         <button 
+//           onClick={onCancel}
+//           className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+//         >
+//           <LucideX size={20} />
+//         </button>
+//       </div>
 
-        <label htmlFor="reason" className="block text-base font-semibold text-gray-700 mb-2">Why do you want to volunteer for this project?</label>
+//       <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        
+//         {/* Dynamic Text Fields */}
+//         {textFields.map((field) => (
+//           <div key={field.id} className="space-y-1.5">
+//             <label htmlFor={field.id} className="block text-sm font-bold text-gray-700">
+//               {field.label}
+//             </label>
+//             <textarea
+//               id={field.id}
+//               rows={3}
+//               value={applicationForm[field.id]}
+//               onChange={(e) => handleInputChange(field.id, e.target.value)}
+//               maxLength={MAX_CHARS}
+//               placeholder={field.placeholder}
+//               className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-200 resize-none text-sm text-gray-800 outline-none"
+//               required={field.id !== 'additionalInfo'}
+//             />
+//             <div className="flex justify-end">
+//               <span className={`text-[10px] font-medium ${applicationForm[field.id].length >= MAX_CHARS ? 'text-red-500' : 'text-gray-400'}`}>
+//                 {applicationForm[field.id].length} / {MAX_CHARS}
+//               </span>
+//             </div>
+//           </div>
+//         ))}
 
-        <textarea name="reason" rows={5}  value={applicationForm["reason"]}
-        onChange={(e)=>{
-          const value = e.currentTarget.value
-          setApplicationForm({...applicationForm, reason:value })
-          setCharCount(value.length)
-        }}
-        maxLength={MAX_CHARS}
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 resize-y text-gray-800" required></textarea>
-        <div className="mt-1 text-sm flex justify-end">
-            <span
-                className={
-                charCount >= MAX_CHARS
-                    ? "text-red-600"
-                    : charCount > 900
-                    ? "text-yellow-600"
-                    : "text-gray-500"
-                }
-            >
-                {charCount}/{MAX_CHARS} characters
-            </span>
-        </div>
-        <label htmlFor="availability" className="block text-base font-semibold text-gray-700 mb-2">Confirm you availability</label>
-        <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800" type="text" name="availability" placeholder="e.g available all day" value={applicationForm.availableDays} onChange={e=>setApplicationForm({...applicationForm, availableDays: e.currentTarget.value})} required/>
+//         {/* Availability Toggle */}
+//         <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+//           <label className="block text-sm font-bold text-blue-900 mb-3 text-center">
+//             Are you available for the duration of the project?
+//           </label>
+//           <div className="flex p-1 bg-gray-200/50 rounded-lg max-w-[240px] mx-auto">
+//             <button
+//               type="button"
+//               onClick={() => handleInputChange('isAvailable', true)}
+//               className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${
+//                 applicationForm.isAvailable === true 
+//                   ? 'bg-white text-blue-600 shadow-sm' 
+//                   : 'text-gray-500 hover:text-gray-700'
+//               }`}
+//             >
+//               Yes
+//             </button>
+//             <button
+//               type="button"
+//               onClick={() => handleInputChange('isAvailable', false)}
+//               className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${
+//                 applicationForm.isAvailable === false 
+//                   ? 'bg-white text-red-600 shadow-sm' 
+//                   : 'text-gray-500 hover:text-gray-700'
+//               }`}
+//             >
+//               No
+//             </button>
+//           </div>
+//         </div>
 
-        <div className="flex justify-between pt-2 space-x-1">
-          <Button variant="primary" className="w-full">Submit application</Button>
-           <Button variant="outline"  className="w-full" onClick={onCancel}>Cancel</Button>
-        </div>
-      </form>
-      <ConfirmDialog/>
-      <AlertDialog/>
-    </div>
-  </>
-}
+//         {/* Form Actions */}
+//         <div className="flex items-center gap-3 pt-2">
+//           <button
+//             type="button"
+//             onClick={onCancel}
+//             className="flex-1 px-4 py-3 text-sm font-bold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 active:scale-95 transition-all"
+//           >
+//             Cancel
+//           </button>
+//           <button
+//             type="submit"
+//             disabled={applicationForm.isAvailable === null}
+//             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+//           >
+//             <LucideSend size={16} />
+//             Submit Application
+//           </button>
+//         </div>
+//       </form>
+//     </div>
+//   );
+// // };
+
+// export default ApplicationForm;
 
 
 

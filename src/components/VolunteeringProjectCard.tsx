@@ -99,7 +99,7 @@ export default function VolunteeringProjectCard({volunteered, onCancelClick, onV
           <span>
             {volunteered.project?.address 
               ? `${volunteered.project.address}` 
-              : "Remote"}
+              : volunteered.project.location.state}
           </span>
         </div>
         <div className="text-gray-500 text-xs flex items-center gap-1">

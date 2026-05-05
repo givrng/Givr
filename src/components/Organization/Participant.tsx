@@ -39,7 +39,7 @@ export const ParticipantCard: React.FC<ParticipantCardComponentProps> = ({ parti
   const statusConfig = {
     IN_PROGRESS: {
       label: 'In Progress',
-      classes: 'bg-blue-50 text-blue-700 border-blue-200',
+      classes: 'bg-green-50 text-green-700 border-green-200',
       icon: <Clock size={14} className="mr-1" />
     },
     COMPLETED: {
@@ -78,7 +78,7 @@ export const ParticipantCard: React.FC<ParticipantCardComponentProps> = ({ parti
     const {daysRemaining} = isReviewable(project.endDate)
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full hover:border-blue-300 transition-colors duration-200">
+    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full hover:border-green-300 transition-colors duration-200">
       {/* Top Header Section */}
       <div className="flex justify-between items-start mb-5">
         <div className="flex gap-4">
@@ -248,15 +248,15 @@ export const ProjectGroupHeader:React.FC<{project:ProjectProps, count:number, on
   };
 
   return (
-    <div className="flex flex-col mb-4 mt-8 first:mt-0 bg-white border-l-4 border-indigo-500 rounded-r-xl shadow-sm overflow-hidden">
+    <div className="flex flex-col mb-4 mt-8 first:mt-0 bg-white border-l-4 border-green-500 rounded-r-xl shadow-sm overflow-hidden">
 
       {/* Main Header Content */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 mt-8 first:mt-0 p-4 bg-white border-l-4 border-indigo-500 rounded-r-xl shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 mt-8 first:mt-0 p-4 bg-white border-l-4 border-green-500 rounded-r-xl shadow-sm">
         <div className="flex flex-col">
           <div className="flex items-center gap-2 mb-1">
-            <Layers size={18} className="text-indigo-500" />
+            <Layers size={18} className="text-green-500" />
             <h2 className="text-lg font-extrabold text-gray-900">{project?.title}</h2>
-            <span className="ml-2 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-md">
+            <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-black rounded-md">
               {count} {count === 1 ? 'PARTICIPANT' : 'PARTICIPANTS'}
             </span>
           </div>
@@ -274,12 +274,13 @@ export const ProjectGroupHeader:React.FC<{project:ProjectProps, count:number, on
         </div>
 
         <div className="flex justify-end gap-3 w-full">
-          <button 
+          {
+            project.broadcastEnabled &&<button 
             onClick={() => setIsBroadcasting(!isBroadcasting)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${
               isBroadcasting 
                 ? 'bg-gray-100 text-gray-600' 
-                : 'text-indigo-600 hover:bg-indigo-50'
+                : 'text-orange-600 hover:bg-indigo-50'
             }`}
           >
             {isBroadcasting ? (
@@ -288,6 +289,7 @@ export const ProjectGroupHeader:React.FC<{project:ProjectProps, count:number, on
               <><Megaphone size={16} /> Broadcast</>
             )}
           </button>
+          }
 
           {
               project.status == "COMPLETED"? <Button
@@ -296,7 +298,7 @@ export const ProjectGroupHeader:React.FC<{project:ProjectProps, count:number, on
               >
               <CheckCircle size={32} className="mr-2" />
             </Button>:<Button
-              variant='primary' 
+              variant='green' 
               className='w-auto'
               onClick={()=>onComplete(project)}
             >
@@ -335,7 +337,7 @@ export const ProjectGroupHeader:React.FC<{project:ProjectProps, count:number, on
               <button
                 disabled={(!message.trim() || status !== 'idle') && project.broadcastEnabled}
                 onClick={handleBroadcast}
-                className="flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white text-xs font-black rounded-lg transition-all shadow-md shadow-indigo-200 active:scale-95"
+                className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white text-xs font-black rounded-lg transition-all shadow-md shadow-green-200 active:scale-95"
               >
                 {status === 'sending' ? (
                   <Loader2 size={14} className="animate-spin" />

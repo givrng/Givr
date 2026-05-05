@@ -6,6 +6,17 @@ import useAuthFetch from "../hooks/useAuthFetch"
 import { ParticipantCard, ProjectGroupHeader } from "./Participant"
 import { PageLoader } from "../icons"
 import {  Filter, Inbox, Search, Users } from "lucide-react"
+import { 
+  ChevronDown, 
+  ChevronUp, 
+  CheckCircle, 
+  XCircle, 
+  User, 
+  Briefcase,
+  FileText,
+  Clock
+} from 'lucide-react';
+import { parseZonedDateTime } from "../hooks/ParseDate"
 
 interface GroupedData {
     [projectId: number]: {
@@ -13,67 +24,186 @@ interface GroupedData {
     members: ParticipantProps[];
   };
 }
-const VolunteerCard:React.FC<{applicant:VolunteerApplicationProps, onApprove: (applicant:VolunteerApplicationProps, perm:boolean)=>void, onDecline: (applicant:VolunteerApplicationProps, perm:boolean)=>void}> = ({applicant, onApprove, onDecline})=>{
-    const {confirmAsk, ConfirmDialog} = useConfirmAsk({})
-    
-    const date = new Date(applicant.projectApplied.appliedAt)
-    const months = ["Jan", "Feb", "March", "Apr", "May","June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
-    
-    const approve = async ()=>{
-        let response = await confirmAsk({
+
+/**
+ * Enhanced Volunteer Card Component
+ * Features:
+ * - Professional layout with profile image placeholder
+ * - Expandable "View More" section for deep-dive info
+ * - Clear action buttons
+ * - Responsive design with Tailwind CSS
+ */
+
+const VolunteerCard:React.FC<{applicant:VolunteerApplicationProps, onApprove: (applicant:VolunteerApplicationProps, perm:boolean)=>void, onDecline: (applicant:VolunteerApplicationProps, perm:boolean)=>void}> = ({ applicant, onApprove, onDecline }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Custom hooks mock (as referenced in your snippet)
+  // Assuming these are provided by your environment or custom library
+  const { confirmAsk, ConfirmDialog } = useConfirmAsk({});
+
+  const formattedDate = parseZonedDateTime(applicant.projectApplied.appliedAt)
+  const handleApprove = async () => {
+    let response = await confirmAsk({
             question: "Are you sure you want to approve this applicant?",
             trueAnswer: "Approve",
             falseAnswer: "Cancel"
         })
-        
-        onApprove(applicant, response)
-    }
+    if(response)
+        onApprove(applicant, true);
+  };
 
-    const decline = async ()=>{
-        let response = await confirmAsk({
+  const handleDecline = async () => {
+    let response = await confirmAsk({
             question: "Are you sure you want to decline this applicant?",
             trueAnswer: "Decline",
             falseAnswer: "Cancel"
         })
-        
-        onDecline(applicant, response)
-    }
-    return <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full ">
-        <div className="flex justify-between items-start mb-4">
-            <div className="flex flex-col pr-4"> 
-                <h3 className="text-xl font-bold text-gray-900 mb-1">{`${applicant.firstname} ${applicant.lastname}`}</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                    Appplied for: {applicant.projectApplied?.title}
-                </p>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                    Reason: {applicant.reason}
-                </p>
 
-            </div>
+    if(response)
+        onDecline(applicant, true);
+  };
 
-            <div className="flex-shrink-0 flex space-x-2"> 
-                <span className="text-sm text-gray-600 leading-relaxed">
-                    Applied {`${months[date.getMonth()-1]} ${date.getDay()}, ${date.getFullYear()}`}
-                </span>
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md w-full">
+      <div className="p-6">
+        {/* Header Section: Avatar and Basic Info */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <div className="h-14 w-14 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+              {applicant.profileUrl ? (
+                <img 
+                  src={applicant.profileUrl} 
+                  alt={applicant.firstname} 
+                  className="h-full w-full rounded-full object-cover"
+                />
+              ) : (
+                <User size={28} />
+              )}
             </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                {applicant.firstname} {applicant.lastname}
+              </h3>
+              <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                <Briefcase size={14} />
+                <span>Applying for: <span className="font-medium text-gray-700">{applicant.projectApplied?.title}</span></span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg self-start md:self-center border border-gray-100">
+            <Clock size={14} className="text-gray-400" />
+            <span className="text-xs font-medium text-gray-600 uppercase tracking-wider">
+              Applied {formattedDate}
+            </span>
+          </div>
         </div>
 
-        <div className="text-sm text-gray-700 space-y-2 mb-4">
-            <span className="font-semibold">Skills & Interests </span> 
-            <div className="flex space-x-2">
-                {applicant.skills?.map((category)=><span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{category}</span>)}
-            </div>
+        {/* Core Reason Preview */}
+        <div className="mb-6">
+          <p className="text-gray-700 leading-relaxed italic text-sm border-l-4 border-blue-200 pl-4 py-1">
+            "{applicant.reason}"
+          </p>
         </div>
 
-        <div className="flex gap-x-2">
-            <Button variant="primary" onClick={approve}>Approve</Button>
-            <Button variant="outline" onClick={decline}> Decline</Button>
-            {/* <Button variant="outline">View Profile</Button> */}
+        {/* Skills Tags */}
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-2">
+            {applicant.specialSkills?.map((skill, idx) => (
+              <span 
+                key={idx} 
+                className="text-[11px] font-semibold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-md uppercase tracking-wide border border-indigo-100"
+              >
+                {skill}
+              </span>
+            ))}
+            {applicant.isAvailable && (
+              <span className="text-[11px] font-semibold px-2.5 py-1 bg-green-50 text-green-700 rounded-md uppercase tracking-wide border border-green-100">
+                Immediate Start
+              </span>
+            )}
+          </div>
         </div>
-        <ConfirmDialog/>
-        
+
+        {/* Expanded Content Section */}
+        {isExpanded && (
+          <div className="mt-6 pt-6 border-t border-gray-100 space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+            {/* About Section */}
+            <div>
+              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                <FileText size={14} /> About Volunteer
+              </h4>
+              <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-xl">
+                {applicant.aboutVolunteer || "No detailed bio provided."}
+              </p>
+            </div>
+            
+
+            {/* Special Skills / Additional Info Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {(applicant.specialSkills) && (
+                <div>
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Technical Proficiencies</h4>
+                  <p className="text-sm text-gray-600">Applicant Skills: {applicant.skills.join(", ").toLocaleLowerCase()}</p>
+                </div>
+              )}
+
+              {(applicant.specialSkills) && (
+                <div>
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Technical Proficiencies</h4>
+                  <p className="text-sm text-gray-600">Additional Skills: {applicant.specialSkills.join(", ").toLocaleLowerCase()}</p>
+                </div>
+              )}
+              {applicant.additionalInfo && (
+                <div>
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Additional Context</h4>
+                  <p className="text-sm text-gray-600">{applicant.additionalInfo}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Footer Actions */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <button 
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors py-2"
+          >
+            {isExpanded ? (
+              <>Hide Details <ChevronUp size={18} /></>
+            ) : (
+              <>View Full Application <ChevronDown size={18} /></>
+            )}
+          </button>
+
+          <div className="flex gap-3 w-full sm:w-auto">
+            <Button 
+                variant="outline"
+              onClick={handleDecline}
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all"
+            >
+              <XCircle size={18} className="text-red-500" />
+              Decline
+            </Button>
+            <Button 
+            variant="primary"
+              onClick={handleApprove}
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 rounded-xl text-sm font-bold text-white hover:bg-blue-700 shadow-sm shadow-blue-200 active:scale-95 transition-all"
+            >
+              <CheckCircle size={18} />
+              Approve
+            </Button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Optional: Status bar or progress line */}
+      <div className="h-1 w-full bg-gradient-to-r from-blue-400 to-indigo-500 opacity-20"></div>
+      <ConfirmDialog/>
     </div>
-}
+  );
+};
 
 export const ApplicationHub = ()=>{
     const [applicants, setApplications] = useState<VolunteerApplicationProps[]>()
@@ -173,10 +303,11 @@ export const ApplicationHub = ()=>{
             falseAnswer: "Cancel", 
             trueAnswer: "Proceed"
         })
-        project.status = "COMPLETED"
+        
 
         if(response){
             await API().patch(`/projects/${project.id}`, {...project})
+            project.status = "COMPLETED"
         }
     }
 
@@ -217,7 +348,7 @@ export const ApplicationHub = ()=>{
              <div className="p-1">
                 {(applicants && applicants.length > 0) ? (
                   <div className="grid grid-cols-1 divide-y divide-gray-100">
-                    {applicants?.map((applicant: any, index: number) => (
+                    {applicants?.map((applicant: VolunteerApplicationProps, index: number) => (
                       <VolunteerCard applicant={{...applicant}} key={index} onApprove={onApprove} onDecline={onDecline}/>
                     ))}
                   </div>

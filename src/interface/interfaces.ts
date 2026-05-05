@@ -103,7 +103,7 @@ export interface ProjectFormProps{
   id?:number;
   title:string;
   description:string;
-  category:string;
+  categories:string[];
   maxVolunteers:number;
   startDate:string;
   endDate:string;
@@ -135,6 +135,7 @@ export interface ProjectComponentProps extends ProjectProps{
 export type IdType =  "DL"|"vNIN"|"VOTER_CARD"|"PASSPORT"
 export type VerificationStatus =  "VERIFIED" | "UNVERIFIED"| "PENDING";
 export interface OrganizationProps{
+  organizationId?:string;
   name?: string;
   description?:string;
   location?:location;
@@ -226,7 +227,8 @@ export interface BadgeProps {
 
 export interface OrganizationComponentProps extends OrganizationProps{
   hasVolunteered?: boolean;
-  
+  organizationType?:string;
+  showOrganizationDetails?: (organization: OrganizationProps)=>void;
 }
 
 
@@ -276,9 +278,9 @@ export interface FormDataProps{
 
 
 export interface VolunteerProjectApplicationProps{
-  id:number;
-  volunteer:number;
-  project:number;
+  id?:number;
+  volunteer?:number;
+  project?:number;
   status:'APPLIED'|"APPROVED"|"REJECTED";
   title?:string;
   appliedAt:string;
@@ -317,6 +319,11 @@ export interface VolunteerApplicationProps{
   lastname:string;
   skills:string[];
   reason:string;
+  isAvailable?: boolean;
+  specialSkills?:string[];
+  aboutVolunteer?: string;
+  additionalInfo?:string;
+  profileUrl?:string;
   projectApplied: VolunteerProjectApplicationProps
 }
 

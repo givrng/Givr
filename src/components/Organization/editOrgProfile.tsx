@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Input from "../form/Input";
 import type { location, OrganizationProps, organizationType } from "../../interface/interfaces";
 import { Button } from "../ReuseableComponents";
@@ -19,18 +19,30 @@ type EditOrgProfileModalProps = {
 };
 
 export const EditOrgProfileModal = ({org, onSave,onClose}: EditOrgProfileModalProps) => {
-  const [form, setForm] = useState(org);
+  const sessionKey = `user_profile_${org.organizationId}`
+  const [form, setForm] = useState<OrganizationProps>(()=>{
+    const data = sessionStorage.getItem(sessionKey)
+
+    return data? JSON.parse(data) as OrganizationProps : org
+  });
   const [loading, setLoading] = useState(false);
  
   const {alertMessage, AlertDialog} = useAlert({isOrg:true})
   const [errors, setErrors] = useState<Partial<OrganizationProps>>({})
 
+  
   // Error for Id Input widget
   const [idError, setIdError] = useState({
     active: false,
     errMsg: ''
   })
 
+
+  // Save Organization Profile informatoin to session
+  useEffect(()=>{
+    sessionStorage.setItem(sessionKey, JSON.stringify(form))
+    
+  }, [form])
   const [locationError, setLocationerror] = useState("");
   const [orgType, setOrgType] = useState("")
   const {confirmAsk, ConfirmDialog} = useConfirmAsk({isOrg:true})
@@ -52,6 +64,7 @@ export const EditOrgProfileModal = ({org, onSave,onClose}: EditOrgProfileModalPr
     try{
         setLoading(true);
         await onSave(form);
+        sessionStorage.removeItem(sessionKey)
         onClose()
     }catch (err:any){
         const status = err?.response?.status;

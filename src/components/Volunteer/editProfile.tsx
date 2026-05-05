@@ -161,7 +161,7 @@ export const EditProfile:React.FC<{onClose?:()=>void, profileProps: ProfileProps
         if (!profile.location?.lga) newErrors.lga = "LGA is required";
     
         if(profile.skills?.length < 1){
-            newErrors.interests = "Pick atleast 1 interest"
+            newErrors.interests = "Please select atleast 1 interest or skill"
         }
           return newErrors;
         };
@@ -221,7 +221,7 @@ export const EditProfile:React.FC<{onClose?:()=>void, profileProps: ProfileProps
         {
             <>
                 <div>
-                    <label htmlFor="location"  className="block text-base font-semibold text-gray-700 mb-2">Location <span className="text-red-500 ml-1">*</span></label>
+                    <label htmlFor="location"  className="block text-base font-semibold text-gray-700 mb-2">Location (State of residence) <span className="text-red-500 ml-1">*</span></label>
                     {errors?.state && <ErrorMsg error={errors?.state}/>}
                     <LocationSelect onChange={handleLocationChange} state={profile.location?.state} lga={profile.location?.lga} />
                     {errors?.lga && <ErrorMsg error={errors?.lga}/>}
@@ -233,6 +233,7 @@ export const EditProfile:React.FC<{onClose?:()=>void, profileProps: ProfileProps
                     <label htmlFor="requiredSkills" className="block text-base font-semibold text-gray-700 mb-2">
                         Interests<span className="text-red-500 ml-1">*</span>
                     </label>
+                    {errors?.interests && <ErrorMsg error={errors?.interests}/>}
                     <div className="grid grid-cols-2 gap-6">
                         <select 
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800 appearance-none bg-white pr-8"

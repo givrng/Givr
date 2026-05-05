@@ -47,6 +47,10 @@ const ProjectDetailsModal:React.FC<{project: ProjectProps}> = ({
               {project.endDate}
             </p>
 
+            <p className="text-[#676879] text-sm flex items-center gap-1 mb-2">
+              <span className="text-(--primary-color) text-sm ">Attendance Hours:</span>
+              {`${project.attendanceHours.from.toUpperCase()}-${project.attendanceHours.to.toUpperCase()}`}
+            </p>
           {project.organization?.numOfActiveProjects !== undefined && (
             <p className="text-[#676879] text-sm mb-2">
               <span className="text-(--primary-color) text-sm ">

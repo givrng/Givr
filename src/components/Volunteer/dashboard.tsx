@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { projectStatuses, type DashboardProps, type OrganizationProps, type OrganizationQuickActions, type ProjectProps, type VolunteerQuickActions } from "../../interface/interfaces";
 import { Banner, MetricCard, OrganizationCard, ProjectCard, RadioButton } from "../ReuseableComponents";
 import useAuthFetch from "../hooks/useAuthFetch";
+import { useOrganizationView } from "./ViewOrganization";
 // import useAuthFetch from "../hooks/useAuthFetch";
 
 const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerAction, hasMounted, profileCompleted})=>{
@@ -9,9 +10,13 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
     const {API} = useAuthFetch(orgTriggerAction?"organization":"volunteer")
     const [projects, setProjects] = useState<ProjectProps[]>([])
     const [organizations, setOrganizations] = useState<OrganizationProps[]>([])
-
     const [selectedProjectCategory, setSelectedProjectCategory]= useState("")
 
+    // ------------- View organization properties start ----------------
+    // Hook to render the details of a specific organization
+    const {OpenOrganizationView, OrganizationViewModal} = useOrganizationView()
+    const [viewOpen, setViewOpen] = useState(false)
+    // --------- View organization properties end ---------
 
     useEffect(()=>{
         // Fetch projects when component is mounted
@@ -91,12 +96,32 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
             })
     }
 
-    const renderContent = () => {
-      
+    const handleOpenViewOrganization = (organization: OrganizationProps)=>{
+        setViewOpen(true)
+        OpenOrganizationView(organization, ()=>setViewOpen(false))
+    }
 
+    useEffect(() => {
+    const handleBack = () => {
+        // unmount logic (e.g. set state)
+        if(viewOpen)
+            setViewOpen(false);
+    };
+
+    window.addEventListener("popstate", handleBack);
+
+    return () => {
+        window.removeEventListener("popstate", handleBack);
+    };
+    }, []);
+
+    
+    const renderContent = () => {
         if (organizations && active === "View Organizations") {
+        
             return (
-            <div className="border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2">
+                <>
+                {viewOpen? <OrganizationViewModal/>: <div className="border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2">
                 <p className="text-xl font-bold text-gray-800">Organizations</p>
                 <span className="text-sm font-medium text-gray-500">
                 Based on your skills and location
@@ -105,9 +130,11 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
                 <OrganizationCard
                     {...organization}
                     key={`${organization.name}-${index}`}
+                    showOrganizationDetails={handleOpenViewOrganization}
                 />
                 ))}
-            </div>
+            </div>}
+                </>
             );
         }
 
@@ -155,7 +182,7 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
                     return prj.status == selectedProjectCategory
                 return true
             }).map((project, index) => (
-                <ProjectCard {...project} key={index} isOrganization={orgTriggerAction&&true}/>
+                <ProjectCard {...project} key={index} isOrganization={orgTriggerAction&&true} manage={true}/>
             ))}
 
             </div>

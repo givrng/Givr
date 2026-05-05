@@ -60,9 +60,6 @@ export const IdentityVerificationWidget = ({  formData, setForm, errors, disable
     }}));
   };
 
-  useEffect(()=>{
-    console.log(formData.contactFirstname)
-  }, [formData])
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
       <div className="p-6 space-y-6">
