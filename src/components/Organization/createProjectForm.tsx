@@ -577,8 +577,15 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                                     ...prev,
                                     specialRequirements:e.target.value
                                 }))
-                            }}>
+                            }}
+                            maxLength={300}
+                            >
                     </textarea>
+                    <div className="flex justify-end">
+                    <span className={`text-[10px] font-medium ${formFields.specialRequirements.length >= 300 ? 'text-red-500' : 'text-gray-400'}`}>
+                        {formFields.specialRequirements.length} / 300
+                    </span>
+                </div>
                 </div>
 
                 {/* Action Buttons */}

@@ -16,6 +16,7 @@ interface VolunteerUpdateErrors  {
     middlename:string;
     state:string;
     lga:string;
+    phoneNumber:string;
     interests:string;
 }
 const InputField:React.FC<{label:string, isRequired?:boolean, 
@@ -148,6 +149,11 @@ export const EditProfile:React.FC<{onClose?:()=>void, profileProps: ProfileProps
             newErrors.lastname = "Last name must be at least 2 characters";
           }
     
+          if(!profile.phoneNumber?.trim()){
+            newErrors.phoneNumber = "Phone number is required"
+          }else if(profile.phoneNumber.length < 11 || profile.phoneNumber.length > 13){
+            newErrors.phoneNumber = "WhatsApp number must be 11-13 digits";
+          }
           // Email validation
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (!profile.email) {
@@ -216,6 +222,8 @@ export const EditProfile:React.FC<{onClose?:()=>void, profileProps: ProfileProps
         <InputField label={"Last Name"} name="lastname" value={profile.lastname || ""} placeholder="Doe" error={errors?.lastname} handleChange={handleChange}/>
          {errors?.lastname && <ErrorMsg error={errors?.lastname}/>}
         <InputField label={"Email"} name="email" value={profile.email || ""} placeholder="johndoe@gmail.com" type="email" isDisabled={!profile.emailEditable} error={errors?.email} handleChange={handleChange}/>
+         {errors?.email && <ErrorMsg error={errors?.email}/>}
+         <InputField label={"WhatsApp Number"} name="phoneNumber" value={profile.phoneNumber || ""} placeholder="09000000000" type="tel" error={errors?.phoneNumber} handleChange={handleChange}/>
          {errors?.email && <ErrorMsg error={errors?.email}/>}
         
         {

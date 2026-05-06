@@ -166,7 +166,7 @@ const UserDetails:React.FC<{formData:FormFields; setFormData:(d: React.SetStateA
          autoComplete: "email",
        },
        {
-         label: "Phone Number",
+         label: "WhatsApp Number",
          type: "tel",
          name: "phone",
          placeholder: "08123456789",

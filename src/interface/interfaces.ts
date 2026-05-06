@@ -209,6 +209,7 @@ export interface ProfileProps {
   rating?: string | number | undefined;
   skills: string[];
   interests?: string[];
+  phoneNumber?:string;
   phoneIsVerified?: boolean;
   emailIsVerified?: boolean;
   role?: "VOLUNTEER"|"ORGANIZATION";
