@@ -31,11 +31,11 @@ export const EditOrgProfileModal = ({org, onSave,onClose}: EditOrgProfileModalPr
   const [errors, setErrors] = useState<Partial<OrganizationProps>>({})
 
   
-  // Error for Id Input widget
-  const [idError, setIdError] = useState({
-    active: false,
-    errMsg: ''
-  })
+  // // Error for Id Input widget
+  // const [idError, setIdError] = useState({
+  //   active: false,
+  //   errMsg: ''
+  // })
 
 
   // Save Organization Profile informatoin to session
@@ -68,16 +68,14 @@ export const EditOrgProfileModal = ({org, onSave,onClose}: EditOrgProfileModalPr
         onClose()
     }catch (err:any){
         const status = err?.response?.status;
-        const errMsg = err?.response?.body?.message
+        const errMsg = err?.response?.data?.message
         if(status == 400){
-          alertMessage("You signed in with Google, email cannot be modified")
+          await alertMessage("You signed in with Google, email cannot be modified")
         }else if(status == 409){
-          setIdError({
-            active: true,
-            errMsg
-          })
+          
+          await alertMessage(errMsg||"Duplicate account")
         }else
-          alertMessage("Unexpected error, failed to update profile")
+          await alertMessage("Unexpected error, failed to update profile")
     }
     finally{
         setLoading(false);   
@@ -134,14 +132,6 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>,name: keyof Organiz
 
       if (!form.address) newErrors.address = "Required";
   
-      if(!form.contactVerification?.idNumber){
-        setIdError({
-          active: true,
-          errMsg: "Identification is required"
-      })
-
-      newErrors.website = "ID Required"
-      }
         
 
       setErrors(newErrors);
@@ -154,7 +144,7 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>,name: keyof Organiz
 
   return (
     <div className="bg-white rounded-2xl w-full p-6">
-    <AlertDialog/>
+    
     <ConfirmDialog/>
     {loading && <PageLoader/>}
       <h3 className="text-lg font-semibold mb-4">
@@ -211,7 +201,6 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>,name: keyof Organiz
             formData={form}
             setForm={setForm}
             disabled={false}
-            errors={idError}
           />
         </div>
         <div>
@@ -369,7 +358,7 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>,name: keyof Organiz
           </Button>
         </div>
       </form>
-      
+      <AlertDialog/>
     </div>
   );
 };

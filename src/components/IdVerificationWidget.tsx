@@ -7,14 +7,11 @@ import { IDCardInput } from "./IDCardInput";
 type IdentityVerificationWidgetProps = {
     formData: OrganizationProps;
     setForm: React.Dispatch<React.SetStateAction<OrganizationProps>>;
-    errors:{
-        active:boolean;
-        errMsg:string;
-    };
+    
     disabled:boolean;
 }
 
-export const IdentityVerificationWidget = ({  formData, setForm, errors, disabled = false }: IdentityVerificationWidgetProps) => {
+export const IdentityVerificationWidget = ({  formData, setForm,  disabled = false }: IdentityVerificationWidgetProps) => {
 
   // Set a default value for the IdType when component is loaded
   useEffect(()=>{
@@ -63,12 +60,12 @@ export const IdentityVerificationWidget = ({  formData, setForm, errors, disable
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
       <div className="p-6 space-y-6">
-        <h3 className="text-lg font-bold text-gray-900">1. Select & Enter ID Details </h3>
+        <h3 className="text-lg font-bold text-gray-900">1. Select & Enter ID Details <span className="text-red-500">(optional)</span> </h3>
         <p className="text-sm text-gray-500">Please provide valid identification details</p>
           
         <IDCardInput 
             onChange={handleInputChange}
-            errors={errors}
+            
             onTypeChange={handleTypeChange}
             disabled={disabled}
             idType={formData.contactVerification?.idType}
@@ -79,7 +76,7 @@ export const IdentityVerificationWidget = ({  formData, setForm, errors, disable
         
         {/* Section 2: Contact Person name */}
         <div className="space-y-4">
-           <h3 className="text-lg font-bold text-gray-900">2. User information</h3>
+           <h3 className="text-lg font-bold text-gray-900">2. User information<span className="text-red-500">*</span></h3>
            <p className="text-sm text-gray-500">Please provide your details</p>
 
            <p className="md:flex gap-x-2">
@@ -95,7 +92,7 @@ export const IdentityVerificationWidget = ({  formData, setForm, errors, disable
         </div>
         {/* Section 2: Contact Person Image Upload */}
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-gray-900">3. User Image Capture</h3>
+          <h3 className="text-lg font-bold text-gray-900">3. User Image Capture<span className="text-red-500">*</span></h3>
           <p className="text-sm text-gray-500">Please provide a clear passport photograph for verification</p>
           
           {!formData.contactVerification?.usrImgUrl ? (

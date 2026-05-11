@@ -13,14 +13,11 @@ type IDCardInputProps = {
   idType?:IdType, 
   onTypeChange: (id:IdType)=>void, 
   onChange: (e: React.ChangeEvent<HTMLInputElement>, key: keyof OrganizationProps)=>void, 
-  errors:{
-    active:boolean;
-    errMsg:string;
-  }, 
+   
   disabled:boolean 
 }
 
-export const IDCardInput = ({ value, idType, dobValue, onTypeChange, onChange, errors, disabled = false }: IDCardInputProps) => {
+export const IDCardInput = ({ value, idType, dobValue, onTypeChange, onChange,  disabled = false }: IDCardInputProps) => {
   
     type IdProps= {
         id: IdType;
@@ -96,7 +93,7 @@ export const IDCardInput = ({ value, idType, dobValue, onTypeChange, onChange, e
           className={`
             w-full pl-4 pr-4 py-3 border rounded-lg transition duration-150 text-gray-800
             focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none
-            ${errors?.active ? 'border-red-500 bg-red-50' : 'border-gray-300'}
+            
             ${disabled ? 'bg-gray-50 cursor-not-allowed text-gray-400' : 'bg-white'}
           `}
         />
@@ -115,7 +112,7 @@ export const IDCardInput = ({ value, idType, dobValue, onTypeChange, onChange, e
           className={`
             w-full pl-4 pr-4 py-3 border rounded-lg transition duration-150 text-gray-800
             focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none
-            ${errors?.active ? 'border-red-500 bg-red-50' : 'border-gray-300'}
+           
             ${disabled ? 'bg-gray-50 cursor-not-allowed text-gray-400' : 'bg-white'}
           `}
         />
@@ -123,13 +120,13 @@ export const IDCardInput = ({ value, idType, dobValue, onTypeChange, onChange, e
         </div>
       </div>
 
-      {/* Error Message */}
+      {/* Error Message
       {errors?.active && (
         <p className="text-sm text-red-500 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
           <span className="inline-block w-1 h-1 rounded-full bg-red-500 mr-1" />
           {errors.errMsg}
         </p>
-      )}
+      )} */}
     </div>
   );
 };
