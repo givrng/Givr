@@ -147,7 +147,23 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                 }
             }
        }catch(err:any){
-            await alertMessage( `Failed to update project`)
+           
+        let status = err.response?.status
+
+        switch(status){
+            case 400: {
+                let errMsg = err.response.data.message 
+                if(errMsg)
+                    await alertMessage( errMsg)
+                else
+                    await alertMessage( `Failed to update project, contact admin for support`)
+                break;
+            }
+
+            default:{
+                await alertMessage( `Failed to update project`)
+            }
+        }
             
        }finally{
             setIsLoading(false)

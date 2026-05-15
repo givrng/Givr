@@ -182,7 +182,9 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
                     return prj.status == selectedProjectCategory
                 return true
             }).map((project, index) => (
-                <ProjectCard {...project} key={index} isOrganization={orgTriggerAction&&true} manage={true}/>
+                <ProjectCard {...project} key={index} isOrganization={orgTriggerAction&&true} manage={true} onEdit={(project)=>{
+                    setProjects(prev =>[project, ...prev.filter(prj=>prj.id != project.id)])
+                }}/>
             ))}
 
             </div>
