@@ -4,18 +4,37 @@ import { RadioButton } from "../ReuseableComponents";
 const UserDashboardInformation:React.FC<{username?:string; buttons:Array<string>; activeButton:string; 
     onClick: (event: React.MouseEvent<HTMLButtonElement>)=>void;
     isOrganization?:boolean
-}> = ({username, buttons,activeButton, onClick, isOrganization=false})=>{
+    notificationCount:number
+}> = ({username, buttons,activeButton, onClick, isOrganization=false, notificationCount})=>{
+
 
     {/* Displays welcome message */}
     const WelcomeBanner = ()=><>
     <div className="p-4 flex gap-2"> 
         <div className="flex flex-col mb-2">
             <h1 className="text-4xl font-extrabold text-gray-900 leading-tight">
-                {isOrganization&& "Welcome back,"} <span className="text-gray-900">Welcome, {username}!</span>
+                <span className="text-gray-900">Welcome back, {username}!</span>
             </h1>
             <p className="text-lg text-gray-600">{!isOrganization? "Ready to make some impact today?": "Manage your volunteering projects and community impact"}</p>
+        
+             {notificationCount > 0 && (
+        <div className="mt-3">
+          <div className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">
+
+            <span className="h-2 w-2 rounded-full bg-gray-500" />
+
+            <span>
+              {notificationCount} new{" "}
+              {isOrganization ? "application" : "volunteering"}{" "}
+              {notificationCount > 1 ? "updates" : "update"}
+            </span>
+
+          </div>
+        </div>
+      )}
         </div>
         
+
         <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 p-1">
             <GivrRoundLogo/>
         </div>
@@ -28,15 +47,17 @@ const UserDashboardInformation:React.FC<{username?:string; buttons:Array<string>
             <div className="w-full flex justify-center mb-3">
                 <nav className="w-full bg-[#E7E9EF] rounded-xl shadow-inner-sm">
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:flex sm:justify-evenly sm:gap-x-1">
-                        {buttons.map((label) => (
-                        <RadioButton
+                        {buttons.map((label) => {
+            
+                            return <RadioButton
                             key={label}
                             active={active === label}
                             onClick={onclick}
                         >
                             {label}
                         </RadioButton>
-                        ))}
+                        
+                        })}
                     </div>
                 </nav>
             </div>

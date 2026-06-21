@@ -89,7 +89,7 @@ export const useApplicationForm = ()=>{
         if(!aboutMe){
             newErrors.aboutMe = "Organizations want to know more about you"
         }
-        if(!isAvailable){
+        if(isAvailable == null){
             newErrors.isAvailable = true
         }
         if(!reason){
@@ -123,8 +123,13 @@ export const useApplicationForm = ()=>{
             await API().post("/projects/apply", applicationForm);
             sessionStorage.removeItem(sessionId)
             onCancel();
-        } catch (err: unknown) {
-            alertMessage("Application Submission failed")
+        } catch (err: any) {
+            let status = err?.response?.status
+            let errMsg = err?.response?.data?.message
+            if(status == 400){
+                alertMessage(errMsg)
+            }else
+                alertMessage("Application Submission failed")
             
         }
         }

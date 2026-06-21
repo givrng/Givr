@@ -3,7 +3,7 @@ import type { ParticipantProps,  ParticipationStatus,  ProjectProps, VolunteerAp
 import { useConfirmAsk } from "../hooks/useConfirm"
 import { Button } from "../ReuseableComponents"
 import useAuthFetch from "../hooks/useAuthFetch"
-import { ParticipantCard, ProjectGroupHeader } from "./Participant"
+import {  ProjectGroupHeader } from "./Participant"
 import { PageLoader } from "../icons"
 import {  Filter, Inbox, Search, Users } from "lucide-react"
 import { 
@@ -373,23 +373,8 @@ export const ApplicationHub = ()=>{
                 {Object.values(groupedParticipants).length > 0 ? (
                     Object.values(groupedParticipants).map(({ project, members }) => (
                         <div key={project.id} className="mb-14">
-                        <ProjectGroupHeader project={project} count={members.length}  onComplete={markProjectCompleted}/>
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                            {members.map((member:ParticipantProps) => (
-                            <ParticipantCard 
-                                key={member.id} 
-                                participant={member}
-                                onComplete={() =>{ 
-                                    updatestatus(member, "COMPLETED")
-                                }
-                                    
-                                }
-                                onReject={() => {
-                                    updatestatus(member, "REJECTED")
-                                }}
-                            />
-                            ))}
-                        </div>
+                        <ProjectGroupHeader project={project} members={members}  
+                          onComplete={markProjectCompleted} updatestatus={updatestatus}/>
                         </div>
                     ))
                     ) : (

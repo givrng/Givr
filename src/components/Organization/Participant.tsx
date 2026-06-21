@@ -6,17 +6,15 @@ import {
   MapPin, 
   User, 
   Calendar,
-  
   Layers,
   Info,
-  Loader2,
-  Send,
-  Megaphone,
-  X
+ 
 } from 'lucide-react';
-import type { ParticipantProps, ProjectProps } from '../../interface/interfaces';
+import type { ParticipantProps, ParticipationStatus, ProjectProps } from '../../interface/interfaces';
 import { Button } from '../ReuseableComponents';
-import useAuthFetch from '../hooks/useAuthFetch';
+import useMessageThread from '../Chat/MessageThread';
+import { ChatNavItem } from '../ChatNavItem';
+import { useSocketConnection } from '../Chat/socketConnection';
 
 export interface ParticipantCardComponentProps{
     participant: ParticipantProps;
@@ -209,147 +207,117 @@ export const ParticipantCard: React.FC<ParticipantCardComponentProps> = ({ parti
   );
 };
 
+// ProjectGroupHeader props interface
+interface ProjectGroupHeaderProps{
+  project:ProjectProps, 
+  members:ParticipantProps[], 
+  onComplete:(project: ProjectProps)=>Promise<void>, 
+  updatestatus: (participant:ParticipantProps, status: ParticipationStatus)=>Promise<void>
+}
 
 /**
  * ProjectGroupHeader Component
  * Displays the shared project information for a group of participants.
  */
-export const ProjectGroupHeader:React.FC<{project:ProjectProps, count:number, onComplete:(project: ProjectProps)=>Promise<void>}> = ({ project, count, onComplete }) => {
+export const ProjectGroupHeader:React.FC<ProjectGroupHeaderProps> = ({ project, members, onComplete, updatestatus }) => {
   const [isBroadcasting, setIsBroadcasting] = useState(false);
-  const [message, setMessage] = useState("");
-  const [status, setStatus] = useState('idle'); // 'idle' | 'sending' | 'success'
+  let count = members.length
+  const {openGroupMessage, GroupMessageComp} = useMessageThread()
 
-  const {API} = useAuthFetch('organization')
-
-  const handleBroadcast = async () => {
-    if (!message.trim()) return;
-
-    setStatus('sending');
-    try {
-      // Logic for your backend call goes here:
-      // await api.sendBroadcast(project.id, message);
-      
-      await API().post("/projects/broadcast", {
-        projectId: project.id,
-        message
-      })
-      
-      setStatus('success');
-
-      setTimeout(() => {
-        setIsBroadcasting(false);
-        setMessage("");
-        setStatus('idle');
-      }, 500);
-
-    } catch (error) {
-      setStatus('idle');
-    }
-  };
-
+  const unreadCount = useSocketConnection()?.unreadCount?.get(project.id)
   return (
-    <div className="flex flex-col mb-4 mt-8 first:mt-0 bg-white border-l-4 border-green-500 rounded-r-xl shadow-sm overflow-hidden">
+    <div className="flex flex-col h-svh mb-4 mt-8 first:mt-0 bg-white border-l-4 border-green-500 rounded-r-xl shadow-sm overflow-hidden">
 
-      {/* Main Header Content */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 mt-8 first:mt-0 p-4 bg-white border-l-4 border-green-500 rounded-r-xl shadow-sm">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2 mb-1">
-            <Layers size={18} className="text-green-500" />
-            <h2 className="text-lg font-extrabold text-gray-900">{project?.title}</h2>
-            <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-black rounded-md">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 mt-8 first:mt-0 px-5 py-4 bg-white border-l-4 border-emerald-500 rounded-r-xl shadow-sm">
+
+        {/* Left — project info */}
+        <div className="flex flex-col gap-2 min-w-0">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <Layers size={15} className="text-emerald-500 flex-shrink-0" />
+            <h2 className="text-base font-bold text-slate-900 tracking-tight truncate">
+              {project?.title}
+            </h2>
+            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-black tracking-widest rounded-md border border-emerald-100">
               {count} {count === 1 ? 'PARTICIPANT' : 'PARTICIPANTS'}
             </span>
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
-            <span className="flex items-center gap-1">
-              <MapPin size={14} /> {project.location.state}
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span className="flex items-center gap-1.5 text-xs text-slate-500">
+              <MapPin size={12} className="text-slate-400" />
+              {project.location.state}
             </span>
-            <span className="flex items-center gap-1">
-              <Calendar size={14} /> {new Date(project?.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}
+            <span className="flex items-center gap-1.5 text-xs text-slate-500">
+              <Calendar size={12} className="text-slate-400" />
+              {new Date(project?.startDate).toLocaleDateString()} – {new Date(project.endDate).toLocaleDateString()}
             </span>
-            <span className="flex items-center gap-1">
-              <Clock size={14} /> {project.attendanceHours?.from} - {project.attendanceHours?.to}
+            <span className="flex items-center gap-1.5 text-xs text-slate-500">
+              <Clock size={12} className="text-slate-400" />
+              {project.attendanceHours?.from} – {project.attendanceHours?.to}
             </span>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 w-full">
-          {
-            project.broadcastEnabled &&<button 
-            onClick={() => setIsBroadcasting(!isBroadcasting)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${
-              isBroadcasting 
-                ? 'bg-gray-100 text-gray-600' 
-                : 'text-orange-600 hover:bg-indigo-50'
+        {/* Right — actions */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+
+          {/* Chat toggle */}
+          {!isBroadcasting && <button
+            onClick={() => {
+              setIsBroadcasting(true)
+              
+              openGroupMessage(project, "organization", ()=>setIsBroadcasting(false))
+            }}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 active:scale-95 ${
+              isBroadcasting
+                ? 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                : ''
             }`}
           >
-            {isBroadcasting ? (
-              <><X size={16} /> Close</>
-            ) : (
-              <><Megaphone size={16} /> Broadcast</>
-            )}
-          </button>
-          }
+             <><ChatNavItem unreadCount={unreadCount}/></>
+          </button>}
 
-          {
-              project.status == "COMPLETED"? <Button
-              variant='disabled' 
-              className='w-auto'
-              >
-              <CheckCircle size={32} className="mr-2" />
-            </Button>:<Button
-              variant='green' 
-              className='w-auto'
-              onClick={()=>onComplete(project)}
+          {/* Complete button */}
+          {project.status === 'COMPLETED' ? (
+            <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-100 text-slate-400 text-xs font-semibold cursor-not-allowed select-none">
+              <CheckCircle size={15} />
+              Completed
+            </div>
+          ) : (
+            <button
+              onClick={() => onComplete(project)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold transition-all duration-200 active:scale-95 shadow-sm hover:shadow-md"
             >
-              <CheckCircle size={32} className="mr-2" />
-            </Button>
-            }
+              <CheckCircle size={15} />
+              Complete
+            </button>
+          )}
+
         </div>
       </div>
 
       {/* Broadcast Input Area */}
-      {isBroadcasting && (
-        <div className="px-4 pb-4 pt-2 border-t border-gray-100 bg-gray-50/50 animate-in slide-in-from-top-2 duration-200">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                Message to all participants
-              </label>
-              {status === 'success' && (
-                <span className="text-[11px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">
-                  MESSAGE SENT SUCCESSFULLY
-                </span>
-              )}
-            </div>
-            
-            <textarea
-              autoFocus
-              className="w-full p-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder:text-gray-400 resize-none shadow-inner"
-              placeholder="Type your message here... (e.g. Schedule update for tomorrow)"
-              rows={3}
-              value={message}
-              disabled={status !== 'idle'}
-              onChange={(e) => setMessage(e.target.value)}
-            />
+      {isBroadcasting && <GroupMessageComp/>}
 
-            <div className="flex justify-end items-center gap-3">
-              <button
-                disabled={(!message.trim() || status !== 'idle') && project.broadcastEnabled}
-                onClick={handleBroadcast}
-                className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white text-xs font-black rounded-lg transition-all shadow-md shadow-green-200 active:scale-95"
-              >
-                {status === 'sending' ? (
-                  <Loader2 size={14} className="animate-spin" />
-                ) : (
-                  <Send size={14} />
-                )}
-                {status === 'sending' ? 'SENDING...' : 'SEND BROADCAST'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      {
+        !isBroadcasting && <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 m-2">
+          {members.map((member:ParticipantProps) => (
+          <ParticipantCard 
+              key={member.id} 
+              participant={member}
+              onComplete={() =>{ 
+                  updatestatus(member, "COMPLETED")
+              }
+                  
+              }
+              onReject={() => {
+                  updatestatus(member, "REJECTED")
+              }}
+          />
+          ))}               
+      </div>
+      }
+       
+</div>
   );
 };

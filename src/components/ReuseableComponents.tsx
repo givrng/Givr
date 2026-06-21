@@ -413,7 +413,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
 
 
 {/*Highlights only active button, used for navigation, allowing user toggle*/}
-export const RadioButton: React.FC<{children: React.ReactNode;  value?:string; activeSyle?:string; inActiveStyle?:string; active?: boolean; onClick?: (event:React.MouseEvent<HTMLButtonElement>) => void;}> = ({ children, active, onClick, activeSyle, inActiveStyle, value}) => {
+export const RadioButton: React.FC<{children: React.ReactNode;  value?:string; activeSyle?:string; inActiveStyle?:string; active?: boolean; onClick?: (event:React.MouseEvent<HTMLButtonElement>) => void; notificationCount?:number}> = ({ children, active, onClick, activeSyle, inActiveStyle, value}) => {
   let activeStyle_ = activeSyle;
   let notActiveStyle = inActiveStyle;
 
@@ -425,173 +425,15 @@ export const RadioButton: React.FC<{children: React.ReactNode;  value?:string; a
   return (
         <button
         onClick={onClick}
-        className={`font-semibold text-sm  px-4 relative z-10 transition-all
+        className={`relative z-10 flex w-full items-center justify-center gap-2 px-4 text-sm font-semibold transition-all
             ${active
             ? activeStyle_
             : notActiveStyle}`}
         value={value}
         >
-        {children}
+        <span>{children}</span>
+
+        
         </button>
     );
 };
-
-
-// /**
-//  * Prompts volunteer to provide their reason for applying for a project before application.
-//  * Optimized for a compact and stylish UI.
-//  */
-// export const ApplicationForm = ({ onCancel, organization, projectId }) => {
-//   // Using the structure from your original component
-//   const [applicationForm, setApplicationForm] = useState({
-//     projectId: projectId,
-//     aboutMe: "",
-//     reason: "",
-//     mySkills: "",
-//     isAvailable: null,
-//     additionalInfo: ""
-//   });
-
-//   // Mocking the hooks from your environment
-//   // const { API } = useAuthFetch("volunteer");
-//   // let { confirmAsk, ConfirmDialog } = useConfirmAsk({});
-//   // let { alertMessage, AlertDialog } = useAlert({ isOrg: false });
-
-//   const MAX_CHARS = 500;
-
-//   const handleInputChange = (field, value) => {
-//     setApplicationForm(prev => ({ ...prev, [field]: value }));
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-    
-//     // In a real scenario, you'd use your confirmAsk hook here
-//     const confirmed = window.confirm("Are you sure you want to apply for this project?");
-    
-//     if (confirmed) {
-//       try {
-//         console.log("Submitting:", applicationForm);
-//         // await API().post("/projects/apply", applicationForm);
-//         // await alertMessage(`Thank you for Applying! ${organization} will reach out soon.`);
-//         onCancel();
-//       } catch (err) {
-//         console.error(err);
-//       }
-//     }
-//   };
-
-//   // Configuration for the text areas to avoid repetition
-//   const textFields = [
-//     { id: 'aboutMe', label: 'Tell us about yourself', placeholder: 'Share a brief background...' },
-//     { id: 'reason', label: 'Why do you want to volunteer for this project?', placeholder: 'What motivates you to join?' },
-//     { id: 'mySkills', label: 'Any relevant skills you want us to know about?', placeholder: 'List skills relevant to this project...' },
-//     { id: 'additionalInfo', label: 'Any additional information?', placeholder: 'Optional details...' },
-//   ];
-
-//   return (
-//     <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-//       {/* Header */}
-//       <div className="bg-slate-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-//         <div>
-//           <h2 className="text-lg font-bold text-gray-900 leading-tight">Project Application</h2>
-//           <p className="text-xs text-gray-500 mt-0.5">Applying to {organization || 'this project'}</p>
-//         </div>
-//         <button 
-//           onClick={onCancel}
-//           className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-400 hover:text-gray-600"
-//         >
-//           <LucideX size={20} />
-//         </button>
-//       </div>
-
-//       <form onSubmit={handleSubmit} className="p-6 space-y-5">
-        
-//         {/* Dynamic Text Fields */}
-//         {textFields.map((field) => (
-//           <div key={field.id} className="space-y-1.5">
-//             <label htmlFor={field.id} className="block text-sm font-bold text-gray-700">
-//               {field.label}
-//             </label>
-//             <textarea
-//               id={field.id}
-//               rows={3}
-//               value={applicationForm[field.id]}
-//               onChange={(e) => handleInputChange(field.id, e.target.value)}
-//               maxLength={MAX_CHARS}
-//               placeholder={field.placeholder}
-//               className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-200 resize-none text-sm text-gray-800 outline-none"
-//               required={field.id !== 'additionalInfo'}
-//             />
-//             <div className="flex justify-end">
-//               <span className={`text-[10px] font-medium ${applicationForm[field.id].length >= MAX_CHARS ? 'text-red-500' : 'text-gray-400'}`}>
-//                 {applicationForm[field.id].length} / {MAX_CHARS}
-//               </span>
-//             </div>
-//           </div>
-//         ))}
-
-//         {/* Availability Toggle */}
-//         <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-//           <label className="block text-sm font-bold text-blue-900 mb-3 text-center">
-//             Are you available for the duration of the project?
-//           </label>
-//           <div className="flex p-1 bg-gray-200/50 rounded-lg max-w-[240px] mx-auto">
-//             <button
-//               type="button"
-//               onClick={() => handleInputChange('isAvailable', true)}
-//               className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${
-//                 applicationForm.isAvailable === true 
-//                   ? 'bg-white text-blue-600 shadow-sm' 
-//                   : 'text-gray-500 hover:text-gray-700'
-//               }`}
-//             >
-//               Yes
-//             </button>
-//             <button
-//               type="button"
-//               onClick={() => handleInputChange('isAvailable', false)}
-//               className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${
-//                 applicationForm.isAvailable === false 
-//                   ? 'bg-white text-red-600 shadow-sm' 
-//                   : 'text-gray-500 hover:text-gray-700'
-//               }`}
-//             >
-//               No
-//             </button>
-//           </div>
-//         </div>
-
-//         {/* Form Actions */}
-//         <div className="flex items-center gap-3 pt-2">
-//           <button
-//             type="button"
-//             onClick={onCancel}
-//             className="flex-1 px-4 py-3 text-sm font-bold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 active:scale-95 transition-all"
-//           >
-//             Cancel
-//           </button>
-//           <button
-//             type="submit"
-//             disabled={applicationForm.isAvailable === null}
-//             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
-//           >
-//             <LucideSend size={16} />
-//             Submit Application
-//           </button>
-//         </div>
-//       </form>
-//     </div>
-//   );
-// // };
-
-// export default ApplicationForm;
-
-
-
-
-// // Runtime validation function using regex
-// function isValidAttendanceHours(hours: string): hours is AttendanceHours {
-//     const regex = /^(1[0-2]|[1-9])(Am|Pm) - (1[0-2]|[1-9])(Am|Pm)$/;
-//     return regex.test(hours);
-// }

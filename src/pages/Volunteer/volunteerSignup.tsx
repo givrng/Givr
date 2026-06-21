@@ -41,7 +41,8 @@ export const VolunteerSignup = ()=>{
             headers: {
               "Content-type": "application/json"
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload), 
+            signal: AbortSignal.timeout(7000)
           }
     )
       }
