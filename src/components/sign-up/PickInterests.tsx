@@ -5,16 +5,15 @@ import { useSignup } from "../Volunteer/sign-up/SignupContext";
 import { LoadingEffect } from "../icons";
 import { useAlert } from "../hooks/useAlert";
 import { interestCategories } from "../interest";
-import useAuthFetch from "../hooks/useAuthFetch";
 
 
-const PickInterests: React.FC<{nav?: BasicNatigationProps, back?:()=>void, selectedInterests:string[], setSelectedInterests:(e:React.SetStateAction<string[]>)=>void, submitRequest:(payload:any)=>Promise<Response>}> = ({nav, back, selectedInterests, setSelectedInterests, submitRequest}) => {
+const PickInterests: React.FC<{nav?: BasicNatigationProps, back?:()=>void, selectedInterests:string[], setSelectedInterests:(e:React.SetStateAction<string[]>)=>void}> = ({nav, back, selectedInterests, setSelectedInterests}) => {
   
   const usesignup = useSignup()
   const [isLoading, setIsloading] = useState(false)
   const {alertMessage, AlertDialog} = useAlert({})
 
-  const {API} = useAuthFetch("volunteer")
+ 
   // Toggle selection
   const handleSelect = (item: string): void => {
     setSelectedInterests(

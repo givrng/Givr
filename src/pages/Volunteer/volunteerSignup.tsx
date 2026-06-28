@@ -32,20 +32,9 @@ export const VolunteerSignup = ()=>{
           lga: "",
           profileUrl:""
         });
-      const baseUrl = import.meta.env.VITE_API_BASE_URL
-
+      
       const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-      const submitRequest = (payload:any)=>{
-         return  fetch(`${baseUrl}/volunteer/auth/signup`, {
-            method: 'POST', 
-            headers: {
-              "Content-type": "application/json"
-            },
-            body: JSON.stringify(payload), 
-            signal: AbortSignal.timeout(7000)
-          }
-    )
-      }
+    
     const [param] = useSearchParams()
     const redirect = param.get("redirect")
     const signinPath = redirect? `/signin/volunteer?redirect=${redirect}`: "/signin/volunteer"
@@ -53,7 +42,7 @@ export const VolunteerSignup = ()=>{
     return <SignupProvider>
         <>
             {step == 0 && <UserDetails redirect={redirect} formData={formData} setFormData={setFormData} next={()=>setStep(1)}/>}
-            {step == 1 && <PickInterests nav={{onToSignIn: () => navigate(signinPath)}} back={()=>setStep(0)} selectedInterests={selectedInterests} setSelectedInterests={setSelectedInterests} submitRequest={submitRequest}/>} 
+            {step == 1 && <PickInterests nav={{onToSignIn: () => navigate(signinPath)}} back={()=>setStep(0)} selectedInterests={selectedInterests} setSelectedInterests={setSelectedInterests} />} 
         </>
         </SignupProvider>
     
