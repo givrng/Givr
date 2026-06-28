@@ -5,6 +5,7 @@ import { useSignup } from "../Volunteer/sign-up/SignupContext";
 import { LoadingEffect } from "../icons";
 import { useAlert } from "../hooks/useAlert";
 import { interestCategories } from "../interest";
+import useAuthFetch from "../hooks/useAuthFetch";
 
 
 const PickInterests: React.FC<{nav?: BasicNatigationProps, back?:()=>void, selectedInterests:string[], setSelectedInterests:(e:React.SetStateAction<string[]>)=>void, submitRequest:(payload:any)=>Promise<Response>}> = ({nav, back, selectedInterests, setSelectedInterests, submitRequest}) => {
@@ -13,6 +14,7 @@ const PickInterests: React.FC<{nav?: BasicNatigationProps, back?:()=>void, selec
   const [isLoading, setIsloading] = useState(false)
   const {alertMessage, AlertDialog} = useAlert({})
 
+  const {API} = useAuthFetch("volunteer")
   // Toggle selection
   const handleSelect = (item: string): void => {
     setSelectedInterests(
@@ -31,12 +33,35 @@ const PickInterests: React.FC<{nav?: BasicNatigationProps, back?:()=>void, selec
       interests: selectedInterests
     }
 
-    const response = await submitRequest(payload)
-  
-    if(response.ok && nav?.onToSignIn){
-      nav.onToSignIn()
-    }else{
-      alertMessage("Account Creation failed, please try again")
+    try{
+      const baseUrl = import.meta.env.VITE_API_BASE_URL
+
+      let response = await fetch(`${baseUrl}/volunteer/auth/signup`, {
+            method: 'POST', 
+            headers: {
+              "Content-type": "application/json"
+            },
+            body: JSON.stringify(payload), 
+            signal: AbortSignal.timeout(7000)
+          }
+    )
+    
+      if(response.ok && nav?.onToSignIn){
+        nav.onToSignIn()
+      }else{
+        let status = response.status
+        
+        if(status == 409){
+          alertMessage("This account exists already, login instead")
+        }else if(status >= 500){
+          alertMessage("Server error, please contact admin");
+        }else{
+        alertMessage("Account Creation failed, please try again")
+        }
+
+      }
+      
+    }finally{
       setIsloading(false) 
     }
     

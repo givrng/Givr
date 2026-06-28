@@ -3,6 +3,8 @@ import { LucidePlus, LucideSend, LucideX } from 'lucide-react';
 import { useConfirmAsk } from '../hooks/useConfirm';
 import useAuthFetch from '../hooks/useAuthFetch';
 import { useAlert } from '../hooks/useAlert';
+import { LoadingEffect } from '../icons';
+import useScrollLock from '../hooks/scrollLock';
 
 /**
  * Interface for the component props
@@ -62,8 +64,9 @@ export const useApplicationForm = ()=>{
 
     const {confirmAsk, ConfirmDialog} = useConfirmAsk({isOrg: false})
     const {alertMessage, AlertDialog} = useAlert({isOrg: false})
+    const [isLoading, setIsLoading] = useState(false)
     const {API} = useAuthFetch("volunteer")
-
+    
     const maxCharsByField: Record<keyof Omit<ApplicationFields, 'isAvailable'|'projectId' >, number> = {
         aboutMe: 300,
         additionalInfo: 200,
@@ -116,21 +119,28 @@ export const useApplicationForm = ()=>{
             falseAnswer: "Cancel"
         });
         
+        useScrollLock(true)
+        setIsLoading(true)
         if (confirmed) {
         try {
-            console.log("Submitting:", applicationForm);
             // Note: Replace with your actual API call logic
             await API().post("/projects/apply", applicationForm);
             sessionStorage.removeItem(sessionId)
+            await alertMessage("Your aplication has been submitted successfully")
             onCancel();
         } catch (err: any) {
             let status = err?.response?.status
             let errMsg = err?.response?.data?.message
             if(status == 400){
                 alertMessage(errMsg)
+            }else if (status == 409){
+                alertMessage("Your application has been submitted already")
             }else
-                alertMessage("Application Submission failed")
+                alertMessage("Your application Submission failed")
             
+        }finally{
+            setIsLoading(false)
+            useScrollLock(false)
         }
         }
     };
@@ -170,6 +180,7 @@ export const useApplicationForm = ()=>{
 
     return (
         <div className="max-w-5xl mt-2 mx-auto bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+           {isLoading &&  <LoadingEffect message='Submitting your application'/>}
         {/* Header */}
         <div className="bg-slate-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
             <div>

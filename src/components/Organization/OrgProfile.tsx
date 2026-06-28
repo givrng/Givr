@@ -7,6 +7,7 @@ import { PageLoader } from "../icons";
 import useAuthFetch from "../hooks/useAuthFetch";
 import { useAlert } from "../hooks/useAlert";
 import { useConfirmAsk } from "../hooks/useConfirm";
+import { CloudinaryUpload } from "../CloudinaryWidget";
 
 interface OrgProfileComponentProps {
   profile: OrganizationProfileProps;
@@ -14,8 +15,8 @@ interface OrgProfileComponentProps {
   onEditProfile: () => void;
   editOrgInfo: ()=>void;
   reload?:()=>void;
-  emailChange: React.Dispatch<React.SetStateAction<OrganizationProfileProps>>
-  save:(data: OrgContantProfileProps)=>Promise<undefined>;
+  updateProfile: React.Dispatch<React.SetStateAction<OrganizationProfileProps>>
+  save:(data: OrgContantProfileProps |OrganizationProps)=>Promise<undefined>;
 }
 
 
@@ -34,7 +35,7 @@ const Info = ({label, value, highlight,}: {
 
 
 
-export default function OrganizationProfile({profile, onEditProfile, editOrgInfo, reload, emailChange, save}: OrgProfileComponentProps) {
+export default function OrganizationProfile({profile, onEditProfile, editOrgInfo, reload, updateProfile, save}: OrgProfileComponentProps) {
 
     const [isOpen, setIsOpen] = useState(false)
     const {API} = useAuthFetch("organization")
@@ -106,7 +107,7 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
     }
 
     const handleUpdateEmail = async (email:string)=>{
-      emailChange(prev=>({
+      updateProfile(prev=>({
                 ...prev, 
                 organizationContact:{
                   ...prev.organizationContact, 
@@ -126,6 +127,16 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
             return save(profile.organizationContact)
         }
 
+    const handleLogoUpdate = (url:string)=>{
+      updateProfile(prev=>({
+        ...prev,
+        organization:{
+          ...prev.organization,
+          profileUrl: url
+        }
+      }))
+    }
+
     const UserProfileSection = () => (
         <div className="border border-ui rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
@@ -133,18 +144,11 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
               Personal Profile
             </h3>
 
-            {/* <Button
-              variant="green"
-              className="text-xs px-4 py-1"
-              onClick={onEditProfile}
-            >
-              Edit Profile
-            </Button> */}
           </div>
 
           <div className="flex items-center gap-6">
             <img
-              src={profile.organization.profileUrl || `https://avatar.iran.liara.run/username?username=${profile.organizationContact.contactFirstname}+${profile.organizationContact.contactLastname}`}
+              src={profile.organizationContact.contactPersonProfileUrl || `https://avatar.iran.liara.run/username?username=${profile.organizationContact.contactFirstname}+${profile.organizationContact.contactLastname}`}
               alt={profile.organizationContact.contactFirstname}
               className="w-24 h-24 rounded-full object-cover border"
             />
@@ -172,51 +176,88 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
         </div>
       );
 
-      const OrganizationProfileSection = () => (
-    <div className="border border-ui rounded-2xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold text-[#323338]">
-          Organization Profile
-        </h3>
+      const OrganizationProfileSection = () => {
 
-        {profile.organization?.status == "UNVERIFIED" && (
-          <button
-            onClick={() => {
-              onEditProfile()
-              editOrgInfo()
-            }}
-            className="text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full hover:bg-green-100"
-          >
-            {!profile.organization.profileCompleted? "Complete profile":"Edit Organization" }
-          </button>
-        )}
-      </div>
+        const org = profile.organization;
 
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <Info label="Organization Name" value={profile.organization.name || "—"} />
-        <Info
-          label="Organization Type"
-          value={profile.organization.category?.[0] || "—"}
-        />
-        <Info
-          label="CAC Number"
-          value={profile.organization.cacRegNumber || "—"}
-        />
-        <Info label="Website" value={profile.organization.website || "—"} />
-        <Info
-          label="Status"
-          value={profile.organization.status === "VERIFIED" ? "Verified" : profile.organization.status == "PENDING"? "Pending": "Unverified"}
-          highlight={profile.organization.status === "VERIFIED"}
-        />
-      </div>
+        const initials = org.name? org.name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase(): "?";
+      
+        return (<div className="border border-ui rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold text-[#323338]">
+              Organization Profile
+            </h3>
 
-      {profile.organization.status === "VERIFIED" && (
-        <p className="text-xs text-gray-500 mt-4">
-          Organization details are locked after CAC verification.
-        </p>
-      )}
-    </div>
-);
+            {profile.organization?.status == "UNVERIFIED" && (
+              <button
+                onClick={() => {
+                  onEditProfile()
+                  editOrgInfo()
+                }}
+                className="text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full hover:bg-green-100"
+              >
+                {!profile.organization.profileCompleted? "Complete profile":"Edit Organization" }
+              </button>
+            )}
+          </div>
+
+          {/* Logo + Fields */}
+          <div className="flex gap-5 items-start">
+            {/* Logo column */}
+            <div className="flex-shrink-0 flex flex-col items-center gap-2">
+              {/* Avatar */}
+              <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-ui bg-gray-100 flex items-center justify-center">
+                {org.profileUrl ? (
+                  <img
+                    src={org.profileUrl}
+                    alt={`${org.name} logo`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-2xl font-bold text-gray-400">{initials}</span>
+                )}
+              </div>
+            </div> 
+
+             {/* Upload button — shown for any non-locked org */}
+                <CloudinaryUpload
+                  onUploadSuccess={(url:string, _:string)=>{
+                    handleLogoUpdate(url)
+                    API().patch("/profile", {profileUrl:url})
+                  }}
+                  buttonText={org.profileUrl ? "Change logo" : "Add logo"}
+                  folder="organization-logos"
+                  sources={["local", "camera"]}
+                  max_size_MB={2}
+                  className="!text-xs !px-2 !py-1 w-full text-center"
+              />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <Info label="Organization Name" value={profile.organization.name || "—"} />
+            <Info
+              label="Organization Type"
+              value={profile.organization.category?.[0] || "—"}
+            />
+            <Info
+              label="CAC Number"
+              value={profile.organization.cacRegNumber || "—"}
+            />
+            <Info label="Website" value={profile.organization.website || "—"} />
+            <Info
+              label="Status"
+              value={profile.organization.status === "VERIFIED" ? "Verified" : profile.organization.status == "PENDING"? "Pending": "Unverified"}
+              highlight={profile.organization.status === "VERIFIED"}
+            />
+          </div>
+
+          {profile.organization.status === "VERIFIED" && (
+            <p className="text-xs text-gray-500 mt-4">
+              Organization details are locked after CAC verification.
+            </p>
+          )}
+        </div>)
+      };
 
     return (
     <div className=" grid lg:grid-cols-6 gap-8 w-full ">

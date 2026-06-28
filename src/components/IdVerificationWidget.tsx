@@ -35,7 +35,7 @@ export const IdentityVerificationWidget = ({  formData, setForm,  disabled = fal
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, key: keyof OrganizationProps ) => {
     let val = e.target.value;
     // Basic numeric sanitization for BVN/NIN
-    if ((formData.contactVerification?.idType === 'vNIN' && key=="contactVerification")) {
+    if ((formData.contactVerification?.idType === 'NIN' && key=="contactVerification")) {
         val = val.replace(/\D/g, '').slice(0, 11);
     }
     

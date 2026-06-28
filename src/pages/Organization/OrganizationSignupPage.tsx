@@ -150,9 +150,9 @@ export const OrganizationSignup: React.FC<BasicNatigationProps> = ({ onToSignIn 
     setIsLoading(true)
     
     try{
-        await API().post(`/auth/signup`, formData)
+       await API().post(`/auth/signup`, formData)
         if(onToSignIn)
-          onToSignIn()
+          onToSignIn()  
     }catch(err:any){
       const status = err?.response?.status;
 

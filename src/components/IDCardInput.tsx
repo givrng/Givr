@@ -27,7 +27,7 @@ export const IDCardInput = ({ value, idType, dobValue, onTypeChange, onChange,  
 
     const idOptions: IdProps[] = [
     { id: 'DL', label: 'Driver\'s License', icon: <ShieldCheck size={16} /> },
-    { id: 'vNIN', label: 'vNIN', icon: <FileText size={16} /> },
+    { id: 'NIN', label: 'NIN', icon: <FileText size={16} /> },
     { id: 'VOTER_CARD', label: 'Voter\'s card', icon: <ShieldCheck size={12} /> },
     { id: 'PASSPORT', label: 'Passport', icon: <Lock size={16} /> },
   ];
@@ -36,7 +36,7 @@ export const IDCardInput = ({ value, idType, dobValue, onTypeChange, onChange,  
   const getPlaceholder = () => {
     switch (selected) {
       case 'DL': return '10 Alphanumberic Driver\'s License Number';
-      case 'vNIN': return '16 digit Virtual NIN generated on the NIMC app';
+      case 'NIN': return '11 digit Virtual NIN generated on the NIMC app';
       case 'PASSPORT': return 'Enter International Passport Number';
       case "VOTER_CARD": return 'Enter Voter\'s identification number'
       default: return 'Enter ID Number';

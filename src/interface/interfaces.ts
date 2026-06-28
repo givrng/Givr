@@ -132,7 +132,7 @@ export interface ProjectComponentProps extends ProjectProps{
   onEdit?:(prj:ProjectProps)=>void;
   onPublish?:(projectId:number, title:string)=>void;
 }
-export type IdType =  "DL"|"vNIN"|"VOTER_CARD"|"PASSPORT"
+export type IdType =  "DL"|"NIN"|"VOTER_CARD"|"PASSPORT"
 export type VerificationStatus =  "VERIFIED" | "UNVERIFIED"| "PENDING";
 export interface OrganizationProps{
   organizationId?:string;
@@ -166,6 +166,7 @@ export interface OrgContantProfileProps{
   contactLastname:string;
   contactMiddleName:string;
   phoneNumber:string;
+  contactPersonProfileUrl: string;
   email:string;
   emailEditable: boolean;
   emailVerified:boolean;
