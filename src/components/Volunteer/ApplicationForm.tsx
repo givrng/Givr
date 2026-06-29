@@ -4,7 +4,6 @@ import { useConfirmAsk } from '../hooks/useConfirm';
 import useAuthFetch from '../hooks/useAuthFetch';
 import { useAlert } from '../hooks/useAlert';
 import { LoadingEffect } from '../icons';
-import useScrollLock from '../hooks/scrollLock';
 
 /**
  * Interface for the component props
@@ -119,29 +118,29 @@ export const useApplicationForm = ()=>{
             falseAnswer: "Cancel"
         });
         
-        useScrollLock(true)
         setIsLoading(true)
+
         if (confirmed) {
-        try {
-            // Note: Replace with your actual API call logic
-            await API().post("/projects/apply", applicationForm);
-            sessionStorage.removeItem(sessionId)
-            await alertMessage("Your aplication has been submitted successfully")
-            onCancel();
-        } catch (err: any) {
-            let status = err?.response?.status
-            let errMsg = err?.response?.data?.message
-            if(status == 400){
-                alertMessage(errMsg)
-            }else if (status == 409){
-                alertMessage("Your application has been submitted already")
-            }else
-                alertMessage("Your application Submission failed")
-            
-        }finally{
-            setIsLoading(false)
-            useScrollLock(false)
-        }
+            try {
+                // Note: Replace with your actual API call logic
+                await API().post("/projects/apply", applicationForm);
+                sessionStorage.removeItem(sessionId)
+                await alertMessage("Your aplication has been submitted successfully")
+                onCancel();
+            } catch (err: any) {
+                let status = err?.response?.status
+                let errMsg = err?.response?.data?.message
+                if(status == 400){
+                    alertMessage(errMsg)
+                }else if (status == 409){
+                    alertMessage("Your application has been submitted already")
+                }else
+                    alertMessage("Your application Submission failed")
+                
+            }finally{
+                setIsLoading(false)
+                
+            }
         }
     };
 

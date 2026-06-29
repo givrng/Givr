@@ -377,7 +377,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
       <div className="flex flex-col justify-between pt-4 gap-y-2">
 
           <div className="flex flex-col space-y-3 box-border">
-            <div className="flex space-x-2 justify-start">
+            <div className="flex flex-wrap gap-2 justify-start">
                 {categories? categories.map((cat, i)=>(<span key= {i} className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{cat}</span>)): <>
                 <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">Healthcare</span>
                 <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">Community Outreach</span>
