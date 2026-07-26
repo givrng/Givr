@@ -10,7 +10,6 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
     const {API} = useAuthFetch(orgTriggerAction?"organization":"volunteer")
     const [projects, setProjects] = useState<ProjectProps[]>([])
     const [organizations, setOrganizations] = useState<OrganizationProps[]>([])
-    const [selectedProjectCategory, setSelectedProjectCategory]= useState("")
 
     // ------------- View organization properties start ----------------
     // Hook to render the details of a specific organization
@@ -163,12 +162,7 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
                 </div>
                 )}
 
-            {!orgTriggerAction && projects?.filter(prj=>{
-                // Display only project categories user wants to see
-                if(selectedProjectCategory != "")
-                    return prj.status == selectedProjectCategory
-                return true
-            }).map((project, index) => (
+            {!orgTriggerAction && projects?.map((project, index) => (
                 <ProjectCard {...project} key={index} isOrganization={false} manage={true}  onEdit={(project)=>{
                     setProjects(prev =>[project, ...prev.filter(prj=>prj.id != project.id)])
                 }}/>
