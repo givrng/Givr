@@ -300,7 +300,7 @@ export const ProjectGroupHeader:React.FC<ProjectGroupHeaderProps> = ({ project, 
       {isBroadcasting && <GroupMessageComp/>}
 
       {
-        !isBroadcasting && <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 m-2">
+        !isBroadcasting && <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 m-2 overflow-y-auto flex-1 min-h-0">
           {members.map((member:ParticipantProps) => (
           <ParticipantCard 
               key={member.id} 
