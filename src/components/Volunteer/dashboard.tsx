@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { projectStatuses, type DashboardProps, type OrganizationProps, type OrganizationQuickActions, type ProjectProps, type VolunteerQuickActions } from "../../interface/interfaces";
+import { type DashboardProps, type OrganizationProps, type OrganizationQuickActions, type ProjectProps, type VolunteerQuickActions } from "../../interface/interfaces";
 import { Banner, MetricCard, OrganizationCard, ProjectCard, RadioButton } from "../ReuseableComponents";
 import useAuthFetch from "../hooks/useAuthFetch";
 import { useOrganizationView } from "./ViewOrganization";
@@ -138,11 +138,6 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
             );
         }
 
-    const activateSelectedProjectCategory = (event: React.MouseEvent<HTMLButtonElement>)=>{
-        let selectButtonValue = event.currentTarget.textContent;
-    
-        setSelectedProjectCategory(selectButtonValue != selectedProjectCategory? selectButtonValue : "")
-    }
         // Default (List of projects) — for volunteers only; orgs see projects in Project Management tab
         return (
             <div className={`border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2 `}>
