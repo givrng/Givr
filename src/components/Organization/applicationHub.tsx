@@ -278,22 +278,28 @@ export const ApplicationHub = ()=>{
     }
 
     const updatestatus = async (participant:ParticipantProps, status: ParticipationStatus)=>{
+        // Guard: don't allow completion if not reviewable
+        if(!participant.reviewable && status === "COMPLETED")
+            return
+
         let response = await confirmAsk({
             question: `Are you sure you want to mark participant as ${status == "REJECTED"? 'rejected': 'completed'}. This cannot be undone`,
             falseAnswer: "Cancel",
             trueAnswer: "Confirm"
         })
-        if(!participant.reviewable && status == "COMPLETED")
-            return
+
+        if(!response) return
 
         try{
             setIsLoading(true)
-           if(response){
-             await API().patch("/projects/participant", {
+            await API().patch("/projects/participant", {
                 id:participant.id,
                 status
             })
-           }
+            // Immediately update local state so UI reflects the change
+            setParticipants(prev => prev.map(p => 
+                p.id === participant.id ? { ...p, status } : p
+            ))
         }finally{
             setIsLoading(false)
         }
