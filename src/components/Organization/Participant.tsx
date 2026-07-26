@@ -211,6 +211,7 @@ export const ParticipantCard: React.FC<ParticipantCardComponentProps> = ({ parti
 interface ProjectGroupHeaderProps{
   project:ProjectProps, 
   members:ParticipantProps[], 
+  onComplete:(project: ProjectProps)=>Promise<void>, 
   updatestatus: (participant:ParticipantProps, status: ParticipationStatus)=>Promise<void>
 }
 
@@ -218,7 +219,7 @@ interface ProjectGroupHeaderProps{
  * ProjectGroupHeader Component
  * Displays the shared project information for a group of participants.
  */
-export const ProjectGroupHeader:React.FC<ProjectGroupHeaderProps> = ({ project, members, updatestatus }) => {
+export const ProjectGroupHeader:React.FC<ProjectGroupHeaderProps> = ({ project, members, onComplete, updatestatus }) => {
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   let count = members.length
   const {openGroupMessage, GroupMessageComp} = useMessageThread()
@@ -275,6 +276,22 @@ export const ProjectGroupHeader:React.FC<ProjectGroupHeaderProps> = ({ project, 
           >
              <><ChatNavItem unreadCount={unreadCount}/></>
           </button>}
+
+          {/* Complete button */}
+          {project.status === 'COMPLETED' ? (
+            <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-100 text-slate-400 text-xs font-semibold cursor-not-allowed select-none">
+              <CheckCircle size={15} />
+              Completed
+            </div>
+          ) : (
+            <button
+              onClick={() => onComplete(project)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold transition-all duration-200 active:scale-95 shadow-sm hover:shadow-md"
+            >
+              <CheckCircle size={15} />
+              Complete
+            </button>
+          )}
 
         </div>
       </div>

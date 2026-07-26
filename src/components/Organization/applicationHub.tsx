@@ -299,6 +299,20 @@ export const ApplicationHub = ()=>{
         }
     }
 
+    const markProjectCompleted = async (project: ProjectProps)=>{
+        let response = await confirmAsk({
+            question: `Are you sure you want to close this project? Project will be marked completed`, 
+            falseAnswer: "Cancel", 
+            trueAnswer: "Proceed"
+        })
+        
+
+        if(response){
+            await API().patch(`/projects/${project.id}`, {...project, status: "COMPLETED"})
+            setParticipants(prev => prev.filter(p => p.project.id !== project.id))
+        }
+    }
+
     return <div className="min-h-screen bg-[#F8FAFC] font-sans pb-20">
         {isLoading && <PageLoader/>}
         <ConfirmDialog/>
@@ -362,7 +376,7 @@ export const ApplicationHub = ()=>{
                     Object.values(groupedParticipants).map(({ project, members }) => (
                         <div key={project.id} className="mb-14">
                         <ProjectGroupHeader project={project} members={members}  
-                          updatestatus={updatestatus}/>
+                          onComplete={markProjectCompleted} updatestatus={updatestatus}/>
                         </div>
                     ))
                     ) : (

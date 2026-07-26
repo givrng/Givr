@@ -171,7 +171,7 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, orgTriggerAction?:(a
                 {isOrganization && <div>
                     <div  className="flex items-center justify-between gap-3">
                         <span className="text-xl font-bold text-green-800">Project Management</span>
-                        <Button variant="green" onClick={createProject}>+ Create Project</Button>
+<Button variant={isDisabled?"disabled":"green"} onClick={createProject}>+ Create Project</Button>
                     </div>
 
                         {/* Draft Projects Section */}
