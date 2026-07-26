@@ -248,9 +248,11 @@ export const ApplicationHub = ()=>{
     // Mock
     const [participants, setParticipants] = useState<ParticipantProps[]>([])
 
-    // Group participants by project ID
+    // Group participants by project ID, filtering out COMPLETED projects
     const groupedParticipants = useMemo<GroupedData>(() => {
-        return participants.reduce((acc: GroupedData, curr:ParticipantProps) => {
+        return participants
+        .filter(p => p.project.status !== 'COMPLETED')
+        .reduce((acc: GroupedData, curr:ParticipantProps) => {
         const projectId = curr.project.id;
         if (!acc[projectId]) {
             acc[projectId] = {
@@ -277,7 +279,7 @@ export const ApplicationHub = ()=>{
 
     const updatestatus = async (participant:ParticipantProps, status: ParticipationStatus)=>{
         let response = await confirmAsk({
-            question: `Are you sure you want to mark pariticipant as ${status == "REJECTED"? 'rejected': 'completed'}. This cannot be undone`,
+            question: `Are you sure you want to mark participant as ${status == "REJECTED"? 'rejected': 'completed'}. This cannot be undone`,
             falseAnswer: "Cancel",
             trueAnswer: "Confirm"
         })
@@ -297,20 +299,6 @@ export const ApplicationHub = ()=>{
         }
     }
 
-    const markProjectCompleted = async (project: ProjectProps)=>{
-        let response = await confirmAsk({
-            question: `Are you sure you want to close this project? Project will be marked completed`, 
-            falseAnswer: "Cancel", 
-            trueAnswer: "Proceed"
-        })
-        
-
-        if(response){
-            await API().patch(`/projects/${project.id}`, {...project})
-            project.status = "COMPLETED"
-        }
-    }
-
     return <div className="min-h-screen bg-[#F8FAFC] font-sans pb-20">
         {isLoading && <PageLoader/>}
         <ConfirmDialog/>
@@ -318,7 +306,7 @@ export const ApplicationHub = ()=>{
         <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Application Management Hub</h1>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Volunteer Management</h1>
           </div>
           <div className="flex items-center gap-4">
              <div className="hidden md:flex items-center bg-gray-100 rounded-full px-3 py-1.5 border border-gray-200">
@@ -374,7 +362,7 @@ export const ApplicationHub = ()=>{
                     Object.values(groupedParticipants).map(({ project, members }) => (
                         <div key={project.id} className="mb-14">
                         <ProjectGroupHeader project={project} members={members}  
-                          onComplete={markProjectCompleted} updatestatus={updatestatus}/>
+                          updatestatus={updatestatus}/>
                         </div>
                     ))
                     ) : (
@@ -389,4 +377,3 @@ export const ApplicationHub = ()=>{
       </main>
 </div>
 }
-
