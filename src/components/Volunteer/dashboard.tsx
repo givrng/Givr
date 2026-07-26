@@ -143,22 +143,15 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
     
         setSelectedProjectCategory(selectButtonValue != selectedProjectCategory? selectButtonValue : "")
     }
-        // Default (List of projects)
+        // Default (List of projects) — for volunteers only; orgs see projects in Project Management tab
         return (
             <div className={`border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2 `}>
+            {!orgTriggerAction && <>
             <p className="text-xl font-bold text-gray-800">{triggerAction? "Recommended for you": "Your Projects"}</p>
             <span className="text-sm font-medium text-gray-500">
                 {triggerAction && "Based on your skills and location"}
             </span>
-            <div className="flex gap-x-2">
-                {orgTriggerAction&&projectStatuses.filter(p=>p!="DRAFT")
-                    .map((status, index)=><RadioButton 
-                        key={index}
-                        active={selectedProjectCategory == status}
-                        value={status}
-                        onClick={activateSelectedProjectCategory}
-                        >{status}</RadioButton>)}
-            </div>
+            </>}
             {!profileCompleted && triggerAction && (
                 <div className="flex items-center justify-between gap-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
                     <span>
@@ -175,14 +168,13 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
                 </div>
                 )}
 
-
-            {projects?.filter(prj=>{
+            {!orgTriggerAction && projects?.filter(prj=>{
                 // Display only project categories user wants to see
                 if(selectedProjectCategory != "")
                     return prj.status == selectedProjectCategory
                 return true
             }).map((project, index) => (
-                <ProjectCard {...project} key={index} isOrganization={orgTriggerAction&&true} manage={true}  onEdit={(project)=>{
+                <ProjectCard {...project} key={index} isOrganization={false} manage={true}  onEdit={(project)=>{
                     setProjects(prev =>[project, ...prev.filter(prj=>prj.id != project.id)])
                 }}/>
             ))}
