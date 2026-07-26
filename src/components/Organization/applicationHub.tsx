@@ -248,9 +248,11 @@ export const ApplicationHub = ()=>{
     // Mock
     const [participants, setParticipants] = useState<ParticipantProps[]>([])
 
-    // Group participants by project ID
+    // Group participants by project ID, filtering out COMPLETED projects
     const groupedParticipants = useMemo<GroupedData>(() => {
-        return participants.reduce((acc: GroupedData, curr:ParticipantProps) => {
+        return participants
+        .filter(p => p.project.status !== 'COMPLETED')
+        .reduce((acc: GroupedData, curr:ParticipantProps) => {
         const projectId = curr.project.id;
         if (!acc[projectId]) {
             acc[projectId] = {
@@ -276,22 +278,28 @@ export const ApplicationHub = ()=>{
     }
 
     const updatestatus = async (participant:ParticipantProps, status: ParticipationStatus)=>{
+        // Guard: don't allow completion if not reviewable
+        if(!participant.reviewable && status === "COMPLETED")
+            return
+
         let response = await confirmAsk({
-            question: `Are you sure you want to mark pariticipant as ${status == "REJECTED"? 'rejected': 'completed'}. This cannot be undone`,
+            question: `Are you sure you want to mark participant as ${status == "REJECTED"? 'rejected': 'completed'}. This cannot be undone`,
             falseAnswer: "Cancel",
             trueAnswer: "Confirm"
         })
-        if(!participant.reviewable && status == "COMPLETED")
-            return
+
+        if(!response) return
 
         try{
             setIsLoading(true)
-           if(response){
-             await API().patch("/projects/participant", {
+            await API().patch("/projects/participant", {
                 id:participant.id,
                 status
             })
-           }
+            // Immediately update local state so UI reflects the change
+            setParticipants(prev => prev.map(p => 
+                p.id === participant.id ? { ...p, status } : p
+            ))
         }finally{
             setIsLoading(false)
         }
@@ -306,8 +314,8 @@ export const ApplicationHub = ()=>{
         
 
         if(response){
-            await API().patch(`/projects/${project.id}`, {...project})
-            project.status = "COMPLETED"
+            await API().patch(`/projects/${project.id}`, {...project, status: "COMPLETED"})
+            setParticipants(prev => prev.filter(p => p.project.id !== project.id))
         }
     }
 
@@ -318,7 +326,7 @@ export const ApplicationHub = ()=>{
         <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Application Management Hub</h1>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Volunteer Management</h1>
           </div>
           <div className="flex items-center gap-4">
              <div className="hidden md:flex items-center bg-gray-100 rounded-full px-3 py-1.5 border border-gray-200">
@@ -389,4 +397,3 @@ export const ApplicationHub = ()=>{
       </main>
 </div>
 }
-

@@ -10,7 +10,7 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
     const {API} = useAuthFetch(orgTriggerAction?"organization":"volunteer")
     const [projects, setProjects] = useState<ProjectProps[]>([])
     const [organizations, setOrganizations] = useState<OrganizationProps[]>([])
-    const [selectedProjectCategory, setSelectedProjectCategory]= useState("")
+    const [selectedProjectCategory, setSelectedProjectCategory] = useState("")
 
     // ------------- View organization properties start ----------------
     // Hook to render the details of a specific organization
@@ -143,15 +143,21 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
     
         setSelectedProjectCategory(selectButtonValue != selectedProjectCategory? selectButtonValue : "")
     }
-        // Default (List of projects)
+
+        // Organization dashboard: no project cards here (moved to Project Management tab)
+        if (orgTriggerAction) {
+            return null;
+        }
+
+        // Volunteer dashboard: show projects with recommendations
         return (
-            <div className={`border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2 `}>
+            <div className="border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2">
             <p className="text-xl font-bold text-gray-800">{triggerAction? "Recommended for you": "Your Projects"}</p>
             <span className="text-sm font-medium text-gray-500">
                 {triggerAction && "Based on your skills and location"}
             </span>
             <div className="flex gap-x-2">
-                {orgTriggerAction&&projectStatuses.filter(p=>p!="DRAFT")
+                {triggerAction && projectStatuses
                     .map((status, index)=><RadioButton 
                         key={index}
                         active={selectedProjectCategory == status}
@@ -175,14 +181,12 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
                 </div>
                 )}
 
-
             {projects?.filter(prj=>{
-                // Display only project categories user wants to see
                 if(selectedProjectCategory != "")
                     return prj.status == selectedProjectCategory
                 return true
             }).map((project, index) => (
-                <ProjectCard {...project} key={index} isOrganization={orgTriggerAction&&true} manage={true}  onEdit={(project)=>{
+                <ProjectCard {...project} key={index} isOrganization={false} manage={true}  onEdit={(project)=>{
                     setProjects(prev =>[project, ...prev.filter(prj=>prj.id != project.id)])
                 }}/>
             ))}

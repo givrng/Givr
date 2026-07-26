@@ -78,27 +78,27 @@ export const ParticipantCard: React.FC<ParticipantCardComponentProps> = ({ parti
   return (
     <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full hover:border-green-300 transition-colors duration-200">
       {/* Top Header Section */}
-      <div className="flex justify-between items-start mb-5">
-        <div className="flex gap-4">
-          <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 overflow-hidden">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-5">
+        <div className="flex gap-4 min-w-0">
+          <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 overflow-hidden shrink-0">
              {volunteer.profileUrl ? (
                <img src={volunteer.profileUrl} alt={volunteer.firstname} className="h-full w-full object-cover" />
              ) : (
                <User className="text-gray-400" size={24} />
              )}
           </div>
-          <div className="flex flex-col">
-            <h3 className="text-xl font-bold text-gray-900 leading-none mb-1">
+          <div className="flex flex-col min-w-0">
+            <h3 className="text-xl font-bold text-gray-900 leading-none mb-1 break-words">
               {`${volunteer.firstname} ${volunteer.middleName ? volunteer.middleName + ' ' : ''}${volunteer.lastname}`}
             </h3>
-            <div className="flex items-center text-sm text-gray-500 gap-3">
+            <div className="flex flex-wrap items-center text-sm text-gray-500 gap-3">
               <span className="flex items-center">
-                <MapPin size={14} className="mr-1" />
-                {volunteer.location?.state || ""}
+                <MapPin size={14} className="mr-1 shrink-0" />
+                <span className="truncate">{volunteer.location?.state || ""}</span>
               </span>
               <span className="flex items-center">
-                <Calendar size={14} className="mr-1" />
-                Joined {volunteer?.createdAt &&formatDate(volunteer?.createdAt)}
+                <Calendar size={14} className="mr-1 shrink-0" />
+                <span className="truncate">Joined {volunteer?.createdAt &&formatDate(volunteer?.createdAt)}</span>
               </span>
 
             </div>
@@ -300,7 +300,7 @@ export const ProjectGroupHeader:React.FC<ProjectGroupHeaderProps> = ({ project, 
       {isBroadcasting && <GroupMessageComp/>}
 
       {
-        !isBroadcasting && <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 m-2">
+        !isBroadcasting && <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 m-2 overflow-y-auto flex-1 min-h-0">
           {members.map((member:ParticipantProps) => (
           <ParticipantCard 
               key={member.id} 
