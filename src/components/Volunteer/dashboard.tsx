@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { type DashboardProps, type OrganizationProps, type OrganizationQuickActions, type ProjectProps, type VolunteerQuickActions } from "../../interface/interfaces";
+import { projectStatuses, type DashboardProps, type OrganizationProps, type OrganizationQuickActions, type ProjectProps, type VolunteerQuickActions } from "../../interface/interfaces";
 import { Banner, MetricCard, OrganizationCard, ProjectCard, RadioButton } from "../ReuseableComponents";
 import useAuthFetch from "../hooks/useAuthFetch";
 import { useOrganizationView } from "./ViewOrganization";
@@ -10,6 +10,7 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
     const {API} = useAuthFetch(orgTriggerAction?"organization":"volunteer")
     const [projects, setProjects] = useState<ProjectProps[]>([])
     const [organizations, setOrganizations] = useState<OrganizationProps[]>([])
+    const [selectedProjectCategory, setSelectedProjectCategory] = useState("")
 
     // ------------- View organization properties start ----------------
     // Hook to render the details of a specific organization
@@ -137,15 +138,33 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
             );
         }
 
-        // Default (List of projects) — for volunteers only; orgs see projects in Project Management tab
+    const activateSelectedProjectCategory = (event: React.MouseEvent<HTMLButtonElement>)=>{
+        let selectButtonValue = event.currentTarget.textContent;
+    
+        setSelectedProjectCategory(selectButtonValue != selectedProjectCategory? selectButtonValue : "")
+    }
+
+        // Organization dashboard: no project cards here (moved to Project Management tab)
+        if (orgTriggerAction) {
+            return null;
+        }
+
+        // Volunteer dashboard: show projects with recommendations
         return (
-            <div className={`border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2 `}>
-            {!orgTriggerAction && <>
+            <div className="border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2">
             <p className="text-xl font-bold text-gray-800">{triggerAction? "Recommended for you": "Your Projects"}</p>
             <span className="text-sm font-medium text-gray-500">
                 {triggerAction && "Based on your skills and location"}
             </span>
-            </>}
+            <div className="flex gap-x-2">
+                {triggerAction && projectStatuses
+                    .map((status, index)=><RadioButton 
+                        key={index}
+                        active={selectedProjectCategory == status}
+                        value={status}
+                        onClick={activateSelectedProjectCategory}
+                        >{status}</RadioButton>)}
+            </div>
             {!profileCompleted && triggerAction && (
                 <div className="flex items-center justify-between gap-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
                     <span>
@@ -162,7 +181,11 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
                 </div>
                 )}
 
-            {!orgTriggerAction && projects?.map((project, index) => (
+            {projects?.filter(prj=>{
+                if(selectedProjectCategory != "")
+                    return prj.status == selectedProjectCategory
+                return true
+            }).map((project, index) => (
                 <ProjectCard {...project} key={index} isOrganization={false} manage={true}  onEdit={(project)=>{
                     setProjects(prev =>[project, ...prev.filter(prj=>prj.id != project.id)])
                 }}/>
