@@ -158,6 +158,7 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
             </span>
             <div className="flex gap-x-2">
                 {triggerAction && projectStatuses
+                    .filter(status => status !== "DRAFT")
                     .map((status, index)=><RadioButton 
                         key={index}
                         active={selectedProjectCategory == status}

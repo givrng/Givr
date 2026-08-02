@@ -142,6 +142,7 @@ export const Card: React.FC<{children: React.ReactNode}> = ({ children }) => (
 
 /**Used to display the performance information */
 export const MetricCard: React.FC<MetricComponentProps> = ({title, context, icon, value, className = "w-full ", color})=>{
+  const isLoading = value === undefined || value === null || value === "" || value === "undefined";
   return (
     <div className={`bg-white p-6 rounded-xl shadow-lg max-w-sm ${className}`}>
 
@@ -151,8 +152,16 @@ export const MetricCard: React.FC<MetricComponentProps> = ({title, context, icon
     </div>
 
     <div className="flex flex-col">
-        <span className={`text-2xl font-extrabold text-[${color}] leading-none`}>{value?value:"124"}</span>
-        <span className="text-sm font-medium text-gray-500 mt-2">{context? context: "+12 hours this month"}</span>
+        {isLoading ? (
+          <div className="h-8 w-16 bg-gray-200 rounded-md animate-pulse" />
+        ) : (
+          <span className={`text-2xl font-extrabold text-[${color}] leading-none`}>{value}</span>
+        )}
+        {isLoading ? (
+          <div className="h-4 w-36 bg-gray-100 rounded-sm animate-pulse mt-2" />
+        ) : (
+          <span className="text-sm font-medium text-gray-500 mt-2">{context? context: "+12 hours this month"}</span>
+        )}
     </div>
 </div>
   )
