@@ -42,6 +42,12 @@ export const ProfilePage:React.FC<{editing?:boolean}> = ({editing = false})=> {
       }
     }
 
+    const handleProfileRefresh = (event?: Event | StorageEvent) => {
+      const isRelevantEvent = !event || (event as StorageEvent).key === "givr:certificate-updated" || (event as CustomEvent).detail;
+      if (!isRelevantEvent) return;
+      void loadProfile();
+    }
+
     void loadProfile()
 
     const handleFocus = () => {
@@ -56,11 +62,15 @@ export const ProfilePage:React.FC<{editing?:boolean}> = ({editing = false})=> {
 
     window.addEventListener("focus", handleFocus)
     document.addEventListener("visibilitychange", handleVisibilityChange)
+    window.addEventListener("storage", handleProfileRefresh as EventListener)
+    window.addEventListener("givr:certificate-updated", handleProfileRefresh as EventListener)
 
     return () => {
       isMounted = false
       window.removeEventListener("focus", handleFocus)
       document.removeEventListener("visibilitychange", handleVisibilityChange)
+      window.removeEventListener("storage", handleProfileRefresh as EventListener)
+      window.removeEventListener("givr:certificate-updated", handleProfileRefresh as EventListener)
     }
 
   }, [profileChanged, isEditing])

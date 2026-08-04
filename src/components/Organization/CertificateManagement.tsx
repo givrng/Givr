@@ -43,12 +43,22 @@ export const CertificateManagement: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
 
+  const notifyCertificateChange = useCallback((participantId?: number) => {
+    const payload = {
+      participantId,
+      updatedAt: Date.now(),
+    };
+
+    window.localStorage.setItem("givr:certificate-updated", JSON.stringify(payload));
+    window.dispatchEvent(new CustomEvent("givr:certificate-updated", { detail: payload }));
+  }, []);
+
   const fetchPendingCertificates = useCallback(
     async (page: number) => {
       try {
         setIsLoading(true);
         const response = await API().get<PagedModelParticipationDto>(
-          `/admin/certificate/pending?page=${page}&size=${PAGE_SIZE}`
+          `/admin/certificate/pending?page=${page}&size=${PAGE_SIZE}&t=${Date.now()}`
         );
         const data = response.data;
         setParticipants(data.content);
@@ -110,16 +120,8 @@ export const CertificateManagement: React.FC = () => {
     try {
       setIsApproving(true);
       await API().patch(`/admin/certificate/${participantId}/approve`);
-      setParticipants((prev) => prev.filter((p) => p.id !== participantId));
-      setPageMeta((prev) => ({
-        ...prev,
-        totalElements: prev.totalElements - 1,
-      }));
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        next.delete(participantId);
-        return next;
-      });
+      await fetchPendingCertificates(currentPage);
+      notifyCertificateChange(participantId);
       alertMessage("Certificate issued successfully.");
     } catch {
       alertMessage("Failed to approve certificate.");
@@ -151,13 +153,8 @@ export const CertificateManagement: React.FC = () => {
         await API().patch("/admin/certificate/approve", body);
       }
 
-      setParticipants((prev) =>
-        prev.filter((p) => !selectedIds.has(p.id))
-      );
-      setPageMeta((prev) => ({
-        ...prev,
-        totalElements: prev.totalElements - selectedIds.size,
-      }));
+      await fetchPendingCertificates(currentPage);
+      notifyCertificateChange();
       setSelectedIds(new Set());
       alertMessage(
         `${selectedIds.size} certificate${selectedIds.size > 1 ? "s" : ""} issued successfully.`
