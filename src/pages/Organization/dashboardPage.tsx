@@ -25,7 +25,8 @@ export const DashboardPage = () => {
             draftProjects: [],
             openProjects: [],
             ongoingProjects: [],
-            completedProjects: []
+            completedProjects: [],
+            closedProjects: []
         },
     
         rating: 0.0,

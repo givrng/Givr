@@ -72,7 +72,8 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, orgTriggerAction?:(a
             const allPublished = [
                 ...data.projects.openProjects,
                 ...data.projects.ongoingProjects,
-                ...data.projects.completedProjects
+                ...data.projects.completedProjects,
+                ...data.projects.closedProjects
             ]
             setOrganizationAllProjects(allPublished)
             setVerificationStatus(data.status)

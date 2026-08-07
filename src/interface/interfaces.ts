@@ -368,6 +368,7 @@ export interface ProjectMap {
   openProjects: ProjectProps[];
   ongoingProjects: ProjectProps[];
   completedProjects: ProjectProps[];
+  closedProjects: ProjectProps[];
 }
 
 export const projectStatuses= ["DRAFT", "OPEN", "ONGOING", "COMPLETED"] as const
