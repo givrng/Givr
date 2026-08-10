@@ -69,11 +69,15 @@ export const ProfilePage:React.FC<{editing?:boolean}> = ({editing = false})=> {
     window.addEventListener("storage", handleProfileRefresh as EventListener)
     window.addEventListener("givr:certificate-updated", handleProfileRefresh as EventListener)
 
-    // Poll for certificate updates every 30s while profile tab is open
-    // This ensures cross-device updates (org admin on another machine) are picked up
+    // Poll for certificate updates every 2 minutes while profile tab is open.
+    // 120s aligns with industry standard (GitHub, Stripe, Jira) for dashboard polling.
+    // Cross-device updates (org admin on another machine) also benefit from:
+    //   - Instant refresh on tab focus/visibility change (lines above)
+    //   - localStorage cross-tab sync (same browser)
+    //   - CustomEvent for same-page updates
     pollTimer = setInterval(() => {
       void loadProfile(true)
-    }, 30000)
+    }, 120000)
 
     return () => {
       isMounted = false
