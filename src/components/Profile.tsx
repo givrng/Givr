@@ -26,37 +26,41 @@ export const ProfilePage:React.FC<{editing?:boolean}> = ({editing = false})=> {
 
   useEffect(()=>{
     let isMounted = true
+    let pollTimer: ReturnType<typeof setInterval> | null = null
 
-    const loadProfile = async ()=>{
+    const loadProfile = async (silent = false)=>{
       try{
-        setIsLoading(true)
+        if (!silent) setIsLoading(true)
         const response = await apiRef.current().get(`/profile?t=${Date.now()}`)
         if (!isMounted) return
         setProfile(prev=>({...prev, ...response.data as ProfileProps}))
       } catch (error) {
-        console.error("Failed to load volunteer profile", error)
+        // Silently ignore polling errors — server may be temporarily unreachable
+        if (!silent) console.error("Failed to load volunteer profile", error)
       } finally{
-        if (isMounted) {
+        if (isMounted && !silent) {
           setIsLoading(false)
         }
       }
     }
 
+    // Handle storage events (cross-tab), custom events, and direct calls
     const handleProfileRefresh = (event?: Event | StorageEvent) => {
-      const isRelevantEvent = !event || (event as StorageEvent).key === "givr:certificate-updated" || (event as CustomEvent).detail;
-      if (!isRelevantEvent) return;
-      void loadProfile();
+      // Always refresh on any certificate-related event or tab focus
+      void loadProfile(true);
+      // Prevent unused variable warning
+      void event;
     }
 
     void loadProfile()
 
     const handleFocus = () => {
-      void loadProfile()
+      void loadProfile(true)
     }
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        void loadProfile()
+        void loadProfile(true)
       }
     }
 
@@ -65,8 +69,15 @@ export const ProfilePage:React.FC<{editing?:boolean}> = ({editing = false})=> {
     window.addEventListener("storage", handleProfileRefresh as EventListener)
     window.addEventListener("givr:certificate-updated", handleProfileRefresh as EventListener)
 
+    // Poll for certificate updates every 30s while profile tab is open
+    // This ensures cross-device updates (org admin on another machine) are picked up
+    pollTimer = setInterval(() => {
+      void loadProfile(true)
+    }, 30000)
+
     return () => {
       isMounted = false
+      if (pollTimer) clearInterval(pollTimer)
       window.removeEventListener("focus", handleFocus)
       document.removeEventListener("visibilitychange", handleVisibilityChange)
       window.removeEventListener("storage", handleProfileRefresh as EventListener)
