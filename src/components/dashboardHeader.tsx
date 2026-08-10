@@ -25,7 +25,7 @@ export const DashboardHeader: React.FC<{ isOrganization?: boolean }> = ({ isOrga
     <div className="max-w-7xl mx-auto px-4 sm:px-6 font-semibold lg:px-8 flex justify-between items-center h-15">
       <div className="flex items-center space-x-1  text-xl text-gray-800">
         <GivrLogoIcon className='w-20 h-auto max-w-full' />
-        <span className={`text-xs bg-${isOrganization? "[#34A853]" : "[#1877F2] "} rounded-lg text-white p-1`}>{isOrganization ? "Organization" : "Volunteer"}</span>
+        <span className={`text-xs rounded-lg text-white p-1 ${isOrganization ? "bg-[#34A853]" : "bg-[#1877F2]"}`}>{isOrganization ? "Organization" : "Volunteer"}</span>
       </div>
 
       {/* Navigation Links */}

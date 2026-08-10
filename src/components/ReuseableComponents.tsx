@@ -140,27 +140,39 @@ export const Card: React.FC<{children: React.ReactNode}> = ({ children }) => (
   </div>
 );
 
+/** Color map for MetricCard - avoids dynamic Tailwind classes that JIT can't resolve */
+const METRIC_COLOR_MAP: Record<string, string> = {
+  "#1A73E8": "text-[#1A73E8]",
+  "#34A853": "text-[#34A853]",
+  "#FBBC05": "text-[#FBBC05]",
+  "#B86705": "text-[#B86705]",
+  "#237238": "text-[#237238]",
+};
+
 /**Used to display the performance information */
 export const MetricCard: React.FC<MetricComponentProps> = ({title, context, icon, value, className = "w-full ", color})=>{
   const isLoading = value === undefined || value === null || value === "" || value === "undefined";
+  const colorClass = color ? METRIC_COLOR_MAP[color] ?? "text-gray-900" : "text-gray-900";
+
   return (
     <div className={`bg-white p-6 rounded-xl shadow-lg max-w-sm ${className}`}>
 
     <div className="flex justify-between items-center mb-4">
-        <h2 className="text-sm font-bold text-gray-700">{title? title: "Hours Logged"}</h2>
+        <h2 className="text-sm font-bold text-gray-700">{title || "—"}</h2>
         {icon}
     </div>
 
     <div className="flex flex-col">
         {isLoading ? (
-          <div className="h-8 w-16 bg-gray-200 rounded-md animate-pulse" />
+          <>
+            <div className="h-8 w-16 bg-gray-200 rounded-md animate-pulse" />
+            <div className="h-4 w-36 bg-gray-100 rounded-sm animate-pulse mt-2" />
+          </>
         ) : (
-          <span className={`text-2xl font-extrabold text-[${color}] leading-none`}>{value}</span>
-        )}
-        {isLoading ? (
-          <div className="h-4 w-36 bg-gray-100 rounded-sm animate-pulse mt-2" />
-        ) : (
-          <span className="text-sm font-medium text-gray-500 mt-2">{context? context: "+12 hours this month"}</span>
+          <>
+            <span className={`text-2xl font-extrabold ${colorClass} leading-none`}>{value}</span>
+            <span className="text-sm font-medium text-gray-500 mt-2">{context || "—"}</span>
+          </>
         )}
     </div>
 </div>
@@ -196,18 +208,23 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = (orgCompon
   const {alertMessage, AlertDialog} = useAlert({isOrg:true})
 
   const handleApplication = async ()=>{
-    const ok = orgComponentProps.hasVolunteered? await confirmAsk({
-      question: "Are you sure you want to cancel your application for this particular project?",
-      trueAnswer: "Proceed",
-      falseAnswer: "Cancel"
-    }): await await confirmAsk({
-      question: "Are you sure you want to apply for this particular project?",
-      trueAnswer: "Apply",
-      falseAnswer: "Cancel"
-    })
+    const ok = orgComponentProps.hasVolunteered
+      ? await confirmAsk({
+          question: "Are you sure you want to cancel your application for this particular project?",
+          trueAnswer: "Proceed",
+          falseAnswer: "Cancel"
+        })
+      : await confirmAsk({
+          question: "Are you sure you want to apply for this particular project?",
+          trueAnswer: "Apply",
+          falseAnswer: "Cancel"
+        })
 
     if(ok){
-      let message = orgComponentProps.hasVolunteered?`Your application to ${name} has been cancelled`:`Your application to ${name} has been submitted`
+      const orgName = orgComponentProps.name || "this organization";
+      const message = orgComponentProps.hasVolunteered
+        ? `Your application to ${orgName} has been cancelled`
+        : `Your application to ${orgName} has been submitted`
       await alertMessage(message)
     }
   }
@@ -360,12 +377,12 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
       ><DeleteBinIcon/></button>}
       <div className=" flex justify-between items-start mb-4">
           <div className="flex flex-col">
-              <h3 className="text-xl font-bold text-gray-800">{title?title: "Community Health Screening"}</h3>
-              {!isOrganization && <p className="text-sm font-medium text-gray-500">{organization? organization.name: "Abuja Health Initiative"}</p>}
+              <h3 className="text-xl font-bold text-gray-800">{title || "—"}</h3>
+              {!isOrganization && <p className="text-sm font-medium text-gray-500">{organization?.name || "—"}</p>}
           </div>
           <div className="flex justify-between gap-x-2">
             <span className={`${status=="OPEN"? "bg-green-600": "bg-red-600 "} text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider`}>
-                {status? status: "Verified"}
+                {status || "—"}
             </span>
             {
               status != "DRAFT" && <button onClick={handleShareProject}>
@@ -376,21 +393,20 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-6 py-4 border-y border-gray-200">
-          <InfoCell icon={<CalendarIcon/>} info={startDate? startDate.split(",")[0]: "Jan 20, 2025"}/>
-          {/* <InfoCell icon={<ClockIcon color="#676879" className="w-6 w-6"/>} info={attendanceHours && `${attendanceHours.from.toUpperCase()}-${attendanceHours.to.toUpperCase()}`}/> */}
+          <InfoCell icon={<CalendarIcon/>} info={startDate ? startDate.split(",")[0] : "—"}/>
           <InfoCell icon= {<Hourglass/>} info={`${duration} days`}/>
-          <InfoCell icon={<LocationIcon/>} info={address? `${address}`: "Wuse District, Abuja"}/>
-          <InfoCell icon={<GroupIcon/>} info={`${totalApplicants?totalApplicants: 0 }/${maxVolunteers?maxVolunteers: 20}` }/>
+          <InfoCell icon={<LocationIcon/>} info={address || "—"}/>
+          <InfoCell icon={<GroupIcon/>} info={`${totalApplicants || 0}/${maxVolunteers || 0}` }/>
       </div>
 
       <div className="flex flex-col justify-between pt-4 gap-y-2">
 
           <div className="flex flex-col space-y-3 box-border">
             <div className="flex flex-wrap gap-2 justify-start">
-                {categories? categories.map((cat, i)=>(<span key= {i} className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{cat}</span>)): <>
-                <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">Healthcare</span>
-                <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">Community Outreach</span>
-                </>}
+                {categories && categories.length > 0
+                  ? categories.map((cat, i)=>(<span key={i} className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{cat}</span>))
+                  : <span className="text-xs text-gray-400">No categories assigned</span>
+                }
             </div>
               {superVolunteer&& (<p className="text-sm font-normal text-gray-600">Super Volunteer: <span className="font-medium text-gray-800">{superVolunteer}</span></p>)}
           </div>

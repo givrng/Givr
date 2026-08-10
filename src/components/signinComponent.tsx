@@ -23,11 +23,24 @@ const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toFo
         const status = await onSignInAttempt(email, password)
         
         switch(status){
+            case 401:
+                setError("The email or password you entered is incorrect. Please check and try again.")
+                break
+            case 403:
+                setError("Your account has been temporarily locked due to too many failed attempts. Please try again later or reset your password.")
+                break
             case 409:
-                setError("Account was registed with Google sign in, click sign in with Google ")
+                setError("This email was registered using Google Sign-In. Please click \"Sign-in / Sign-up with Google\" below to continue.")
+                break
+            case 422:
+                setError("Please enter a valid email address and password.")
                 break
             default:
-                setError("Invalid email or password")
+                if (status && status >= 500) {
+                    setError("We're having trouble signing you in right now. Please try again in a moment.")
+                } else if (status){
+                    setError("We couldn't sign you in. Please check your email and password, then try again.")
+                }
         }
         setIsLoading(false)      
     };
@@ -97,7 +110,7 @@ const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toFo
                             Remember Me
                         </label>
                     </div>
-                    <Link className={`font-medium text-[#${isOrganization? "34A853":"1877F2"}] hover:underline hover:cursor-pointer`} to={toForgotPassword ? toForgotPassword : "/"}>
+                    <Link className={`font-medium hover:underline hover:cursor-pointer ${isOrganization ? "text-[#34A853]" : "text-[#1877F2]"}`} to={toForgotPassword ? toForgotPassword : "/"}>
                         Forgot Password?
                     </Link>
                 </div>
@@ -128,7 +141,7 @@ const SignInForm: React.FC<SignInFormProps> = ({ toSignUp, onSignInAttempt, toFo
             {/* Sign Up Link */}
             <p className="mt-8 text-center text-sm text-gray-600">
                 No Gmail account?
-                <Link className={`font-semibold text-[#${isOrganization? "34A853":"1877F2"}] hover:underline ml-1`} to={toSignUp ? redirect?`${toSignUp}?redirect=${redirect}`:toSignUp : "/"}>
+                <Link className={`font-semibold hover:underline ml-1 ${isOrganization ? "text-[#34A853]" : "text-[#1877F2]"}`} to={toSignUp ? redirect?`${toSignUp}?redirect=${redirect}`:toSignUp : "/"}>
                     Sign Up manually here
                 </Link>
             </p>
