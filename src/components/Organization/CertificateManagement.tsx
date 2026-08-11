@@ -117,13 +117,24 @@ export const CertificateManagement: React.FC = () => {
     });
     if (!confirmed) return;
 
+    // Optimistic UI: remove the item from the list immediately
+    setParticipants(prev => prev.filter(p => p.id !== participantId));
+
     try {
       setIsApproving(true);
       await API().patch(`/admin/certificate/${participantId}/approve`);
+
+      // Small delay before re-fetching to account for eventual consistency on the backend.
+      // Without this, the just-approved item may still appear in the response
+      // because the write hasn't fully propagated.
+      await new Promise(resolve => setTimeout(resolve, 600));
+
       await fetchPendingCertificates(currentPage);
       notifyCertificateChange(participantId);
       alertMessage("Certificate issued successfully.");
     } catch {
+      // Roll back optimistic removal on failure
+      await fetchPendingCertificates(currentPage);
       alertMessage("Failed to approve certificate.");
     } finally {
       setIsApproving(false);

@@ -137,6 +137,26 @@ export const DashboardPage = () => {
                     context: `+${approvedThisMonth} this month`
                 }
             }
+
+            // Badges and Rating may not be returned by the dashboard API yet.
+            // Set them to a neutral placeholder so the UI shows "—" instead of
+            // an infinite loading skeleton pulse.
+            if (metric.title === "Badges Earned" && metric.value === "") {
+                return {
+                    ...metric,
+                    value: "0",
+                    context: "No badges earned yet",
+                }
+            }
+
+            if (metric.title === "Rating" && metric.value === "") {
+                return {
+                    ...metric,
+                    value: "—",
+                    context: "No ratings yet",
+                }
+            }
+
             return metric
         }))
     }, [volunteerDashboard])
