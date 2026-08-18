@@ -317,7 +317,7 @@ export const ApplicationHub: React.FC<{ onProjectCompleted?: () => void }> = ({ 
         
 
         if(response){
-            await API().patch(`/projects/${project.id}`, {...project, status: "COMPLETED"})
+            await API().patch(`/projects/${project.id}/completed`, {})
             setParticipants(prev => prev.filter(p => p.project.id !== project.id))
             // Signal the dashboard to refresh Project Management tab
             onProjectCompleted?.()
