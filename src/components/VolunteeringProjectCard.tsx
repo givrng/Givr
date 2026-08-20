@@ -82,6 +82,15 @@ export default function VolunteeringProjectCard({volunteered, onCancelClick, onV
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
       {isLoading&&<PageLoader color="blue" message={"Rating"} />}
+      {volunteered.project?.projectFlierUrl && (
+        <div className="-mx-5 -mt-5 mb-4 overflow-hidden rounded-t-2xl">
+          <img
+            src={volunteered.project.projectFlierUrl}
+            alt={`${volunteered.project.title} flier`}
+            className="w-full h-40 object-cover"
+          />
+        </div>
+      )}
       <div className="flex justify-between items-start">
   <div className="flex-1">
     <h2 className="text-lg font-semibold text-[#323338] leading-tight">

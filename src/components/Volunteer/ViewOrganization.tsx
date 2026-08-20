@@ -306,6 +306,15 @@ export const useOrganizationView = ()=>{
         return (
             <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 group flex flex-col h-full">
                {applicationFormOpen? <ApplicationModal/>: <>
+                    {project.projectFlierUrl && (
+                        <div className="-mx-8 -mt-8 mb-6 overflow-hidden rounded-t-[2rem]">
+                            <img
+                                src={project.projectFlierUrl}
+                                alt={`${project.title} flier`}
+                                className="w-full h-44 object-cover"
+                            />
+                        </div>
+                    )}
                     <div className="flex justify-between items-start mb-6">
                         <h4 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight pr-4">
                         {project.title || "Untitled Project"}
