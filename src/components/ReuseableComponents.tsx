@@ -275,7 +275,7 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = (orgCompon
 }
 
 /**Displays details of a project */
-export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organization, specialRequirements,applicationDeadline,description,categories, attendanceHours, location,address,requiredSkills, maxVolunteers, startDate, endDate,status, totalApplicants, superVolunteer, manage=false, applied=false, isOrganization=false, isDraft=false, onEdit, onDelete, onPublish})=>{
+export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organization, specialRequirements,applicationDeadline,description,categories, attendanceHours, location,address,requiredSkills, maxVolunteers, startDate, endDate,status, totalApplicants, superVolunteer, manage=false, applied=false, isOrganization=false, isDraft=false, onEdit, onDelete, onPublish, projectFlierUrl})=>{
 
   const [displayForm, setDisplayForm] = useState(false)
   const {modal, DisplayModal} = useModal()
@@ -292,7 +292,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
     description,categories, attendanceHours, 
     location,address,requiredSkills, maxVolunteers, 
     startDate, endDate,status, totalApplicants, 
-    superVolunteer
+    superVolunteer, projectFlierUrl
   }
 
   const {openShare, ShareModalComponent} = useShareModal()
@@ -343,6 +343,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
     address,
     requiredSkills: requiredSkills,
     specialRequirements: specialRequirements,
+    projectFlierUrl: projectFlierUrl,
   }
 
   const {openApplicationForm, ApplicationModal} = useApplicationForm()
@@ -375,6 +376,15 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
           onDelete(id, title)
       }}
       ><DeleteBinIcon/></button>}
+      {projectFlierUrl && (
+        <div className="mb-4 -mx-6 -mt-6 overflow-hidden rounded-t-xl">
+          <img
+            src={projectFlierUrl}
+            alt={`${title} flier`}
+            className="w-full h-40 object-cover"
+          />
+        </div>
+      )}
       <div className=" flex justify-between items-start mb-4">
           <div className="flex flex-col">
               <h3 className="text-xl font-bold text-gray-800">{title || "—"}</h3>

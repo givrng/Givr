@@ -4,6 +4,7 @@ import { RequireAuth } from "./components/Auth/RequireAuth"
 import ComingSoon from "./pages/Volunteer/comingSoon"
 import { PageNotFound } from "./pages/Volunteer/404 Page"
 import { WebsocketConnection } from "./components/Chat/socketConnection"
+import { CertificateVerificationPage } from "./pages/Volunteer/certificateVerificationPage"
 
 export const OrganizationApp: React.FC = function () {
     return <Routes>
@@ -14,8 +15,9 @@ export const OrganizationApp: React.FC = function () {
           </RequireAuth>} />
 
         <Route path="organizations" element={<ComingSoon dashboardPath="/organization"/>}/>
-        <Route path="certificates" element={<ComingSoon dashboardPath="/organization"/>}/>
-        <Route path="*" element={<PageNotFound toDashBoard="/volunteer" />} />
+        <Route path="certificates" element={<CertificateVerificationPage isOrganization public />}/>
+        <Route path="certificates/verify/:certId" element={<CertificateVerificationPage isOrganization public />}/>
+        <Route path="*" element={<PageNotFound toDashBoard="/organization" />} />
         
     </Routes>
 }

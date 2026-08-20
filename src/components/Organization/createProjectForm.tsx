@@ -7,6 +7,7 @@ import { interestCategories } from "../interest";
 import useAuthFetch from "../hooks/useAuthFetch";
 import { useAlert } from "../hooks/useAlert";
 import { LoadingEffect } from "../icons";
+import { CloudinaryUpload } from "../CloudinaryWidget";
 
 export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updProject: ProjectProps)=>void, projectData?:ProjectFormProps, isCreating?:boolean, handlesave?: (projects:ProjectProps[])=>Promise<void>}> = ({onClose, projectData, isCreating=true, onSuccessfulEdit, handlesave})=>{
 
@@ -37,7 +38,8 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
         },
         address:"",
         requiredSkills:[],
-        specialRequirements:''
+        specialRequirements:'',
+        projectFlierUrl: ''
     });
     const MAX_CHARS = 1000
     const [selectedSkillCat, setSelectedSkillCat] = useState("");
@@ -296,6 +298,58 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                     >
                         {charCount}/{MAX_CHARS} characters
                     </span>
+                </div>
+
+                {/* Project Flier */}
+                <div className="mt-5 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                    <div className="flex items-center gap-4">
+                        {formFields.projectFlierUrl ? (
+                            <img
+                                src={formFields.projectFlierUrl}
+                                alt="Project flier preview"
+                                className="h-20 w-32 object-cover rounded-lg border border-gray-200 shadow-sm"
+                            />
+                        ) : (
+                            <div className="flex h-20 w-32 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white text-gray-400">
+                                <span className="text-xs text-center px-2">No flier</span>
+                            </div>
+                        )}
+
+                        <div className="flex flex-col items-start">
+                            <span className="text-sm font-bold text-gray-900 mb-1">
+                                Project Flier (optional)
+                            </span>
+                            <CloudinaryUpload
+                                folder="project-fliers"
+                                buttonText={formFields.projectFlierUrl ? "Change Flier" : "Upload Flier"}
+                                sources={["local", "camera", "google_drive"]}
+                                max_size_MB={2}
+                                onUploadSuccess={(url) => {
+                                    setFormFields((prev) => ({
+                                        ...prev,
+                                        projectFlierUrl: url,
+                                    }));
+                                }}
+                            />
+                            <p className="mt-2 text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+                                JPG, PNG or WEBP • Max 2MB
+                            </p>
+                            {formFields.projectFlierUrl && (
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setFormFields((prev) => ({
+                                            ...prev,
+                                            projectFlierUrl: "",
+                                        }))
+                                    }
+                                    className="mt-1 text-xs font-semibold text-red-500 hover:text-red-700"
+                                >
+                                    Remove flier
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
             

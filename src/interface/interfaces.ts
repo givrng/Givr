@@ -97,6 +97,7 @@ export interface ProjectProps{
   address?:string;
   broadcastEnabled?:boolean;
   rating?:number;
+  projectFlierUrl?: string;
   }
 
 export interface ProjectFormProps{
@@ -119,6 +120,7 @@ export interface ProjectFormProps{
   address?:string;
   requiredSkills:string[];
   specialRequirements:string;
+  projectFlierUrl?: string;
 
 }
 
@@ -511,4 +513,11 @@ export interface PagedModelParticipationDto {
 
 export interface BatchCertificateRequest {
   participants: number[];
+}
+
+export interface CertificateVerificationResponse {
+  certificate: CertificateDto;
+  volunteerFirstName: string;
+  volunteerLastName: string;
+  volunteerMiddleName: string;
 }
