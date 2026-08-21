@@ -353,7 +353,7 @@ export const CertificateVerificationPage: React.FC<{
               <Award size={28} />
             </div>
             <p className="text-sm font-semibold text-gray-600">
-              Scam the QR Code of a certificate to begin verification
+              Scan the QR Code of a certificate to begin verification
             </p>
             <p className="mt-1.5 text-xs text-gray-400 max-w-md mx-auto leading-relaxed">
               The QR Code is found on every certificate issued through
