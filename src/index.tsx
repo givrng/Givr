@@ -44,7 +44,7 @@ export const IndexPage = ()=>{
             <Route path="organization/*" element={<OrganizationApp />} />
             <Route
               path="*"
-              element={<PageNotFound toDashBoard="/dashboard" />}
+              element={<PageNotFound toDashBoard="/" />}
             />
             <Route path="/opportunities" element={<ComingSoon dashboardPath="/" buttonLabel="Return Home"/>} />
             <Route path="/organizations" element={<ComingSoon dashboardPath="/" buttonLabel="Return Home"/>} />
