@@ -1,10 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Share2, 
-  Copy, 
-  Check, 
-  X,  
-} from 'lucide-react';
+import React, { useState, useEffect, useCallback } from "react";
+import { Share2, Copy, Check, X } from "lucide-react";
 
 // --- Interfaces ---
 
@@ -15,13 +10,6 @@ interface ShareData {
   /** Text used on the primary "Share" button. Defaults to "Share". */
   label?: string;
 }
-
-// interface SocialPlatform {
-//   name: string;
-//   icon: React.ReactElement<LucideIcon>;
-//   color: string;
-//   link: string;
-// }
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -35,132 +23,155 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, shareData }) =
   const [copied, setCopied] = useState<boolean>(false);
   const [isNativeSupported, setIsNativeSupported] = useState<boolean>(false);
 
+  // Re-evaluate support and reset copy state whenever the modal opens.
   useEffect(() => {
-    if (typeof navigator !== 'undefined' && 'share' in navigator) {
-      setIsNativeSupported(true);
-    }
-  }, []);
+    if (!isOpen) return;
+    setIsNativeSupported(
+      typeof navigator !== "undefined" &&
+        "share" in navigator
+    );
+    setCopied(false);
+  }, [isOpen]);
+
+  // Lock background scroll and close on Escape while open.
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   const handleNativeShare = async (): Promise<void> => {
     try {
-      await navigator.share(shareData);
-    } catch (err) {
-      console.log('Error sharing:', err);
+      await navigator.share({
+        title: shareData.title,
+        text: shareData.text,
+        url: shareData.url,
+      });
+    } catch {
+      // User cancelled the native share sheet, or sharing failed. No-op.
     }
   };
 
-  const copyToClipboard = (): void => {
-    const textArea = document.createElement("textarea");
-    textArea.value = shareData.url;
-    document.body.appendChild(textArea);
-    textArea.select();
+  const copyToClipboard = async (): Promise<void> => {
     try {
-      document.execCommand('copy');
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shareData.url);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = shareData.url;
+        textArea.setAttribute("readonly", "");
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Unable to copy', err);
+    } catch {
+      // Clipboard may be blocked; ignore silently.
     }
-    document.body.removeChild(textArea);
   };
-
-  // const socialPlatforms: SocialPlatform[] = [
-  //   {
-  //     name: 'Twitter',
-  //     icon: <Twitter size={20} />,
-  //     color: 'bg-black text-white',
-  //     link: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareData.text)}&url=${encodeURIComponent(shareData.url)}`
-  //   },
-  //   {
-  //     name: 'Facebook',
-  //     icon: <Facebook size={20} />,
-  //     color: 'bg-[#1877F2] text-white',
-  //     link: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareData.url)}`
-  //   },
-  //   {
-  //     name: 'LinkedIn',
-  //     icon: <Linkedin size={20} />,
-  //     color: 'bg-[#0077B5] text-white',
-  //     link: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareData.url)}`
-  //   },
-  //   {
-  //     name: 'Email',
-  //     icon: <Mail size={20} />,
-  //     color: 'bg-gray-600 text-white',
-  //     link: `mailto:?subject=${encodeURIComponent(shareData.title)}&body=${encodeURIComponent(shareData.text + ' ' + shareData.url)}`
-  //   }
-  // ];
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-      <div 
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+    <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-4">
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      <div className="relative bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-300">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <div className="flex items-center gap-2 ml-2">
-            <Share2 size={18} className="text-indigo-600" />
-            <h3 className="text-lg font-bold text-gray-800">Share</h3>
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative flex w-full max-h-[90dvh] flex-col bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl sm:max-w-md overflow-hidden animate-in slide-in-from-bottom duration-300"
+      >
+        {/* Mobile grab handle */}
+        <div className="flex justify-center pt-3 sm:hidden">
+          <div className="h-1.5 w-12 rounded-full bg-gray-200" />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+              <Share2 size={18} />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-base font-bold text-gray-900 leading-tight">
+                Share
+              </h3>
+              <p className="text-xs text-gray-500 truncate max-w-[240px]">
+                {shareData.title}
+              </p>
+            </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 shrink-0"
+            aria-label="Close share dialog"
           >
             <X size={20} />
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        {/* Body */}
+        <div className="overflow-y-auto px-5 pb-5 pt-1 space-y-4">
           {isNativeSupported && (
             <button
               onClick={handleNativeShare}
-              className="w-full flex items-center justify-center gap-3 bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-md hover:bg-indigo-700 transition-all active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-2.5 bg-indigo-600 text-white py-3.5 rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition-colors active:scale-[0.98]"
             >
-              <Share2 size={20} /> {shareData.label || "Share"}
+              <Share2 size={18} />
+              {shareData.label || "Share"}
             </button>
           )}
 
-          {/* <div className="grid grid-cols-4 gap-4">
-            {socialPlatforms.map((platform) => (
-              <a
-                key={platform.name}
-                href={platform.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col items-center gap-2 group"
-              >
-                <div className={`w-12 h-12 ${platform.color} rounded-full flex items-center justify-center shadow-sm transition-transform group-hover:scale-110`}>
-                  {platform.icon}
-                </div>
-                <span className="text-xs font-medium text-gray-600">{platform.name}</span>
-              </a>
-            ))}
-          </div> */}
-
           <div className="space-y-2">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Copy Link</label>
-            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 p-1.5 rounded-xl">
-              <div className="flex-1 overflow-hidden px-2">
-                <p className="text-xs text-gray-500 truncate font-mono">{shareData.url}</p>
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+              Copy Link
+            </label>
+            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 p-2">
+              <div className="min-w-0 flex-1 px-1">
+                <p className="truncate font-mono text-xs text-gray-600">
+                  {shareData.url}
+                </p>
               </div>
               <button
                 onClick={copyToClipboard}
-                className={`flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold transition-all ${
-                  copied 
-                    ? 'bg-green-500 text-white w-28' 
-                    : 'bg-white border border-gray-200 text-gray-700 hover:border-indigo-300 w-24'
+                className={`shrink-0 inline-flex items-center justify-center gap-1.5 h-10 px-3.5 rounded-lg text-sm font-semibold transition-colors ${
+                  copied
+                    ? "bg-green-50 text-green-700"
+                    : "bg-white text-gray-700 border border-gray-200 hover:border-indigo-300"
                 }`}
               >
                 {copied ? <Check size={16} /> : <Copy size={16} />}
-                <span className="text-sm">{copied ? 'Copied' : 'Copy'}</span>
+                {copied ? "Copied" : "Copy"}
               </button>
             </div>
           </div>
+
+          {!isNativeSupported && (
+            <p className="text-xs text-gray-400 text-center leading-relaxed">
+              Copy the link above to share it with anyone.
+            </p>
+          )}
         </div>
+
+        {/* Safe area for notched mobile devices */}
+        <div className="pb-[env(safe-area-inset-bottom)] sm:hidden" />
       </div>
     </div>
   );
@@ -170,7 +181,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, shareData }) =
 
 export const useShareModal = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [data, setData] = useState<ShareData>({ title: '', text: '', url: '' });
+  const [data, setData] = useState<ShareData>({ title: "", text: "", url: "" });
 
   const openShare = useCallback((shareConfig: ShareData) => {
     setData(shareConfig);
@@ -187,6 +198,5 @@ export const useShareModal = () => {
 
   return { openShare, ShareModalComponent };
 };
-
 
 export default useShareModal;
