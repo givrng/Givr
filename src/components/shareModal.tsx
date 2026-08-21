@@ -12,6 +12,8 @@ interface ShareData {
   title: string;
   text: string;
   url: string;
+  /** Text used on the primary "Share" button. Defaults to "Share". */
+  label?: string;
 }
 
 // interface SocialPlatform {
@@ -118,8 +120,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, shareData }) =
               onClick={handleNativeShare}
               className="w-full flex items-center justify-center gap-3 bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-md hover:bg-indigo-700 transition-all active:scale-[0.98]"
             >
-              
-              <Share2 size={20} /> Share Project
+              <Share2 size={20} /> {shareData.label || "Share"}
             </button>
           )}
 

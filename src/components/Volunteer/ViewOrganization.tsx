@@ -19,6 +19,9 @@ import useAuthFetch from '../hooks/useAuthFetch';
 import {  Button, InfoCell } from '../ReuseableComponents';
 import { GroupIcon, LocationIcon } from '../icons';
 import { useApplicationForm } from './ApplicationForm';
+import { useImageViewer } from '../hooks/useImageViewer';
+import { downloadFile } from '../../utils/fileDownload';
+import { Download, ZoomIn } from 'lucide-react';
 
 /** * Interfaces based on your requirements 
  */
@@ -302,17 +305,31 @@ export const useOrganizationView = ()=>{
 
         const [applicationFormOpen, setApplicationFormOpen] = useState(false)
         const {openApplicationForm, ApplicationModal} = useApplicationForm()
+        const {openImage, ImageViewerModal} = useImageViewer()
 
         return (
             <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 group flex flex-col h-full">
                {applicationFormOpen? <ApplicationModal/>: <>
                     {project.projectFlierUrl && (
-                        <div className="-mx-8 -mt-8 mb-6 overflow-hidden rounded-t-[2rem]">
+                        <div className="group/img relative -mx-8 -mt-8 mb-6 overflow-hidden rounded-t-[2rem] cursor-pointer">
                             <img
                                 src={project.projectFlierUrl}
                                 alt={`${project.title} flier`}
                                 className="w-full h-44 object-cover"
+                                onClick={() => openImage({ url: project.projectFlierUrl!, title: project.title, downloadName: `${project.title}-flier` })}
                             />
+                            <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity">
+                                <span className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow pointer-events-none">
+                                    <ZoomIn size={14} /> View
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); void downloadFile(project.projectFlierUrl!, `${project.title}-flier`); }}
+                                    className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow hover:bg-gray-100"
+                                >
+                                    <Download size={14} /> Download
+                                </button>
+                            </div>
                         </div>
                     )}
                     <div className="flex justify-between items-start mb-6">
@@ -342,6 +359,7 @@ export const useOrganizationView = ()=>{
                     }
                     
                 </>}
+                <ImageViewerModal/>
             </div>
         );
     };

@@ -4,6 +4,9 @@ import { Button } from "./ReuseableComponents";
 import { PageLoader } from "./icons";
 import { ChatNavItem } from "./ChatNavItem";
 import { useSocketConnection } from "./Chat/socketConnection";
+import { useImageViewer } from "./hooks/useImageViewer";
+import { downloadFile } from "../utils/fileDownload";
+import { Download, ZoomIn } from "lucide-react";
 
 
 interface ProjectCardProps {
@@ -63,6 +66,7 @@ export default function VolunteeringProjectCard({volunteered, onCancelClick, onV
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [persistedRating, setPersistedRating] = useState<number | null>(volunteered.project?.rating || null);
   const [isLoading, setIsLoading] = useState(false)
+  const {openImage, ImageViewerModal} = useImageViewer()
   
   const unreadCount = useSocketConnection()?.unreadCount?.get(volunteered.project.id)
 
@@ -83,12 +87,25 @@ export default function VolunteeringProjectCard({volunteered, onCancelClick, onV
     <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
       {isLoading&&<PageLoader color="blue" message={"Rating"} />}
       {volunteered.project?.projectFlierUrl && (
-        <div className="-mx-5 -mt-5 mb-4 overflow-hidden rounded-t-2xl">
+        <div className="group/img relative -mx-5 -mt-5 mb-4 overflow-hidden rounded-t-2xl cursor-pointer">
           <img
             src={volunteered.project.projectFlierUrl}
             alt={`${volunteered.project.title} flier`}
             className="w-full h-40 object-cover"
+            onClick={() => openImage({ url: volunteered.project.projectFlierUrl!, title: volunteered.project.title, downloadName: `${volunteered.project.title}-flier` })}
           />
+          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity">
+            <span className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow pointer-events-none">
+              <ZoomIn size={14} /> View
+            </span>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); void downloadFile(volunteered.project.projectFlierUrl!, `${volunteered.project.title}-flier`); }}
+              className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow hover:bg-gray-100"
+            >
+              <Download size={14} /> Download
+            </button>
+          </div>
         </div>
       )}
       <div className="flex justify-between items-start">
@@ -213,5 +230,6 @@ export default function VolunteeringProjectCard({volunteered, onCancelClick, onV
           </div>
         )}
       </div>
+      <ImageViewerModal/>
     </div>  );
 }

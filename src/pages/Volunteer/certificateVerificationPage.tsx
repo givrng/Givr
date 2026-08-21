@@ -4,6 +4,8 @@ import axios, { AxiosError } from "axios";
 import type { CertificateVerificationResponse } from "../../interface/interfaces";
 import { DashboardHeader } from "../../components/dashboardHeader";
 import { GivrLogoIcon, PageLoader } from "../../components/icons";
+import useShareModal from "../../components/shareModal";
+import { downloadFile } from "../../utils/fileDownload";
 import {
   AlertCircle,
   Award,
@@ -11,13 +13,13 @@ import {
   Building2,
   CalendarDays,
   ClipboardCopy,
+  Download,
   ExternalLink,
   FileText,
   Share,
   ShieldCheck,
   UserRound,
 } from "lucide-react";
-import useShareModal from "../../components/shareModal";
 
 type VerifyState = "idle" | "loading" | "success" | "error";
 
@@ -49,7 +51,8 @@ export const CertificateVerificationPage: React.FC<{
 
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
-  const {openShare, ShareModalComponent} = useShareModal()
+  const { openShare, ShareModalComponent } = useShareModal();
+
   const verifyCertificate = useCallback(
     async (certId: string) => {
       const trimmed = certId.trim();
@@ -99,11 +102,6 @@ export const CertificateVerificationPage: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   void verifyCertificate(certIdInput);
-  // };
-
   const handleCopy = async () => {
     if (!result) return;
     try {
@@ -121,9 +119,17 @@ export const CertificateVerificationPage: React.FC<{
         .join(" ")
     : "";
 
+  const handleDownload = () => {
+    if (!result?.certificate.certUrl) return;
+    void downloadFile(
+      result.certificate.certUrl,
+      `Givr-Certificate-${result.certificate.certId}`
+    );
+  };
+
   return (
     <main className="min-h-screen bg-[#F8FAFC] font-sans">
-      <ShareModalComponent/>
+      <ShareModalComponent />
       {isPublic ? (
         <header className="fixed top-0 left-0 right-0 z-50 bg-[#F7FAFC] backdrop-blur-sm border-b border-gray-100 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-15">
@@ -160,45 +166,6 @@ export const CertificateVerificationPage: React.FC<{
             Confirm the authenticity of any Givr volunteer certificate by scanning the QR Code on the certificate.
           </p>
         </div>
-
-        {/* Search / verify form */}
-        {/* <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6 mb-8"
-        >
-          <label
-            htmlFor="certId"
-            className="block text-sm font-semibold text-gray-700 mb-2"
-          >
-            Certificate ID
-          </label>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search
-                size={18}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                id="certId"
-                type="text"
-                value={certIdInput}
-                onChange={(e) => setCertIdInput(e.target.value)}
-                placeholder="e.g. CERT-123"
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 text-sm text-gray-800 focus:ring-2 focus:outline-none transition-colors"
-                style={{ "--tw-ring-color": accent } as React.CSSProperties}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={!certIdInput.trim() || state === "loading"}
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-6 py-3 text-sm font-bold text-white shadow-sm transition-opacity disabled:opacity-50"
-              style={{ backgroundColor: accent }}
-            >
-              <BadgeCheck size={18} />
-              Verify Certificate
-            </button>
-          </div>
-        </form> */}
 
         {/* Error state */}
         {state === "error" && (
@@ -333,27 +300,45 @@ export const CertificateVerificationPage: React.FC<{
               </div>
 
               {/* Actions */}
-              <div className="flex gap-x-2">
-                  {result.certificate.certUrl && (
+              <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-3">
+                {result.certificate.certUrl && (
                   <a
                     href={result.certificate.certUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-8 inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90"
+                    className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90"
                     style={{ backgroundColor: accent }}
                   >
                     <ExternalLink size={18} />
                     View Certificate
                   </a>
                 )}
-
-                <button onClick={()=>{
-                  openShare({
-                    text: "Share certificate",
-                    title: "Givr certificate",
-                    url: result.certificate.certUrl
-                  })
-                }}><Share></Share>Share</button>
+                {result.certificate.certUrl && (
+                  <button
+                    type="button"
+                    onClick={handleDownload}
+                    className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: accent }}
+                  >
+                    <Download size={18} />
+                    Download
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    openShare({
+                      text: "Share certificate",
+                      title: "Givr certificate",
+                      url: result.certificate.certUrl,
+                      label: "Share Certificate",
+                    });
+                  }}
+                  className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold bg-white text-gray-700 border border-gray-300 shadow-sm hover:bg-gray-50 transition-colors"
+                >
+                  <Share size={18} />
+                  Share
+                </button>
               </div>
             </div>
           </div>
@@ -369,8 +354,7 @@ export const CertificateVerificationPage: React.FC<{
               Scan the QR Code of a certificate to begin verification
             </p>
             <p className="mt-1.5 text-xs text-gray-400 max-w-md mx-auto leading-relaxed">
-              The QR Code is found on every certificate issued through
-              Givr.
+              The QR Code is found on every certificate issued through Givr.
             </p>
           </div>
         )}

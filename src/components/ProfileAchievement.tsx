@@ -6,7 +6,9 @@ import { VerifyEmailOtpModal } from "./VerifyOtpModal";
 import useAuthFetch from "./hooks/useAuthFetch";
 import { useAlert } from "./hooks/useAlert";
 import { PageLoader } from "./icons";
-import { Award, ExternalLink } from "lucide-react";
+import { useShareModal } from "./shareModal";
+import { downloadFile } from "../utils/fileDownload";
+import { Award, Download, ExternalLink, Share2 } from "lucide-react";
 interface ProfileAchievementsProps {
   profile: ProfileProps;
   onEditProfile: () => void;
@@ -21,6 +23,7 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
   const [isLoading, setIsLoading] = useState(false);
   const {alertMessage, AlertDialog} = useAlert({isOrg:false})
   const {API} = useAuthFetch("volunteer")
+  const {openShare, ShareModalComponent} = useShareModal()
 
 
   const requestOtp = async (purpose:OtpPurpose)=>{
@@ -89,8 +92,23 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
     });
   };
 
+  const handleShare = (cert: CertificateDto) => {
+    const shareUrl = `${window.location.origin}/certificates/verify/${encodeURIComponent(cert.certId)}`;
+    openShare({
+      title: `Certificate ${cert.certId}`,
+      text: `${profile.firstname} ${profile.lastname} — ${cert.projectTitle}`,
+      url: shareUrl,
+      label: "Share Certificate",
+    });
+  };
+
+  const handleDownload = (cert: CertificateDto) => {
+    void downloadFile(cert.certUrl, `Givr-Certificate-${cert.certId}`);
+  };
+
   return (
     <div className="grid lg:grid-cols-6 gap-8 w-full ">
+      <ShareModalComponent />
       <AlertDialog/>
       {isLoading && <PageLoader/>}
       {/* ------------------ Profile Section ------------------ */}
@@ -289,19 +307,40 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
                 <p className="text-xs text-gray-500 mb-5 truncate">
                   {cert.organizationName}
                 </p>
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                  <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">
+                <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-100">
+                  <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold shrink-0">
                     Verified
                   </span>
-                  <a
-                    href={cert.certUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-green-700 hover:text-white bg-green-50 hover:bg-green-600 px-3 py-1.5 rounded-lg transition-all duration-200"
-                  >
-                    <ExternalLink size={13} />
-                    View
-                  </a>
+                  <div className="flex items-center gap-1.5">
+                    <a
+                      href={cert.certUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Open certificate"
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-green-700 hover:text-white bg-green-50 hover:bg-green-600 px-2.5 py-1.5 rounded-lg transition-all duration-200"
+                    >
+                      <ExternalLink size={13} />
+                      View
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => handleDownload(cert)}
+                      title="Download certificate"
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-white bg-gray-50 hover:bg-gray-600 px-2.5 py-1.5 rounded-lg transition-all duration-200"
+                    >
+                      <Download size={13} />
+                      <span className="hidden sm:inline">Download</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleShare(cert)}
+                      title="Share certificate"
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-white bg-gray-50 hover:bg-gray-600 px-2.5 py-1.5 rounded-lg transition-all duration-200"
+                    >
+                      <Share2 size={13} />
+                      <span className="hidden sm:inline">Share</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

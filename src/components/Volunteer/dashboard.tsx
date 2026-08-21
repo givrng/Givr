@@ -182,15 +182,17 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
                 </div>
                 )}
 
-            {projects?.filter(prj=>{
-                if(selectedProjectCategory != "")
-                    return prj.status == selectedProjectCategory
-                return true
-            }).map((project, index) => (
-                <ProjectCard {...project} key={index} isOrganization={false} manage={true}  onEdit={(project)=>{
-                    setProjects(prev =>[project, ...prev.filter(prj=>prj.id != project.id)])
-                }}/>
-            ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-2">
+                {projects?.filter(prj=>{
+                    if(selectedProjectCategory != "")
+                        return prj.status == selectedProjectCategory
+                    return true
+                }).map((project, index) => (
+                    <ProjectCard {...project} key={index} isOrganization={false} manage={true}  onEdit={(project)=>{
+                        setProjects(prev =>[project, ...prev.filter(prj=>prj.id != project.id)])
+                    }}/>
+                ))}
+            </div>
 
             </div>
         );
