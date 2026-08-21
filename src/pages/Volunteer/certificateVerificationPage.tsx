@@ -13,7 +13,6 @@ import {
   ClipboardCopy,
   ExternalLink,
   FileText,
-  Search,
   ShieldCheck,
   UserRound,
 } from "lucide-react";
@@ -38,7 +37,7 @@ export const CertificateVerificationPage: React.FC<{
 
   const [searchParams] = useSearchParams();
   const params = useParams<{ certId?: string }>();
-  const [certIdInput, setCertIdInput] = useState("");
+  const [_, setCertIdInput] = useState("");
   const [state, setState] = useState<VerifyState>("idle");
   const [result, setResult] = useState<CertificateVerificationResponse | null>(
     null
@@ -97,10 +96,10 @@ export const CertificateVerificationPage: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    void verifyCertificate(certIdInput);
-  };
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   void verifyCertificate(certIdInput);
+  // };
 
   const handleCopy = async () => {
     if (!result) return;
@@ -160,7 +159,7 @@ export const CertificateVerificationPage: React.FC<{
         </div>
 
         {/* Search / verify form */}
-        <form
+        {/* <form
           onSubmit={handleSubmit}
           className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6 mb-8"
         >
@@ -196,7 +195,7 @@ export const CertificateVerificationPage: React.FC<{
               Verify Certificate
             </button>
           </div>
-        </form>
+        </form> */}
 
         {/* Error state */}
         {state === "error" && (

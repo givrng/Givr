@@ -48,8 +48,7 @@ export const IndexPage = ()=>{
             />
             <Route path="/opportunities" element={<ComingSoon dashboardPath="/" buttonLabel="Return Home"/>} />
             <Route path="/organizations" element={<ComingSoon dashboardPath="/" buttonLabel="Return Home"/>} />
-            <Route path="/certificates" element={<CertificateVerificationPage public />} />
-            <Route path="/certificates/verify/:certId" element={<CertificateVerificationPage public />} />
+            <Route path="/certificates/*" element={<CertificateVerificationPage public />} />
           </Routes>
         </AuthenticatedFlagProvider>
       </>
