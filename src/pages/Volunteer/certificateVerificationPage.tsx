@@ -153,8 +153,7 @@ export const CertificateVerificationPage: React.FC<{
             Verify a certificate
           </h1>
           <p className="mt-3 text-sm md:text-base text-gray-500 max-w-xl mx-auto leading-relaxed">
-            Confirm the authenticity of any Givr volunteer certificate by entering
-            its unique certificate ID below.
+            Confirm the authenticity of any Givr volunteer certificate by scanning the QR Code on the certificate.
           </p>
         </div>
 
