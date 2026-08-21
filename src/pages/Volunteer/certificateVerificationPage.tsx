@@ -13,9 +13,11 @@ import {
   ClipboardCopy,
   ExternalLink,
   FileText,
+  Share,
   ShieldCheck,
   UserRound,
 } from "lucide-react";
+import useShareModal from "../../components/shareModal";
 
 type VerifyState = "idle" | "loading" | "success" | "error";
 
@@ -47,6 +49,7 @@ export const CertificateVerificationPage: React.FC<{
 
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
+  const {openShare, ShareModalComponent} = useShareModal()
   const verifyCertificate = useCallback(
     async (certId: string) => {
       const trimmed = certId.trim();
@@ -120,6 +123,7 @@ export const CertificateVerificationPage: React.FC<{
 
   return (
     <main className="min-h-screen bg-[#F8FAFC] font-sans">
+      <ShareModalComponent/>
       {isPublic ? (
         <header className="fixed top-0 left-0 right-0 z-50 bg-[#F7FAFC] backdrop-blur-sm border-b border-gray-100 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-15">
@@ -329,18 +333,28 @@ export const CertificateVerificationPage: React.FC<{
               </div>
 
               {/* Actions */}
-              {result.certificate.certUrl && (
-                <a
-                  href={result.certificate.certUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-8 inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: accent }}
-                >
-                  <ExternalLink size={18} />
-                  View Certificate
-                </a>
-              )}
+              <div>
+                  {result.certificate.certUrl && (
+                  <a
+                    href={result.certificate.certUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-8 inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: accent }}
+                  >
+                    <ExternalLink size={18} />
+                    View Certificate
+                  </a>
+                )}
+
+                <button onClick={()=>{
+                  openShare({
+                    text: "Share certificate",
+                    title: "Givr certificate",
+                    url: result.certificate.certUrl
+                  })
+                }}><Share></Share>Share</button>
+              </div>
             </div>
           </div>
         )}
