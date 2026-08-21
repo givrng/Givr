@@ -353,11 +353,11 @@ export const CertificateVerificationPage: React.FC<{
               <Award size={28} />
             </div>
             <p className="text-sm font-semibold text-gray-600">
-              Enter a certificate ID to begin verification
+              Scam the QR Code of a certificate to begin verification
             </p>
             <p className="mt-1.5 text-xs text-gray-400 max-w-md mx-auto leading-relaxed">
-              The certificate ID can be found on any certificate issued through
-              Givr. It typically looks like <span className="font-mono">CERT-123</span>.
+              The QR Code is found on every certificate issued through
+              Givr.
             </p>
           </div>
         )}
