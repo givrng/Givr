@@ -333,7 +333,7 @@ export const CertificateVerificationPage: React.FC<{
               </div>
 
               {/* Actions */}
-              <div>
+              <div className="flex gap-x-2">
                   {result.certificate.certUrl && (
                   <a
                     href={result.certificate.certUrl}
