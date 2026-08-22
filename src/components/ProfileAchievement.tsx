@@ -103,7 +103,7 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
   };
 
   const handleDownload = (cert: CertificateDto) => {
-    void downloadFile(cert.certUrl, `Givr-Certificate-${cert.certId}`);
+    void downloadFile(cert.certUrl, `Givr-Certificate-${cert.certId}.pdf`);
   };
 
   return (

@@ -16,6 +16,7 @@ import {
   Download,
   ExternalLink,
   FileText,
+  Search,
   Share,
   ShieldCheck,
   UserRound,
@@ -41,7 +42,7 @@ export const CertificateVerificationPage: React.FC<{
 
   const [searchParams] = useSearchParams();
   const params = useParams<{ certId?: string }>();
-  const [_, setCertIdInput] = useState("");
+  const [certIdInput, setCertIdInput] = useState("");
   const [state, setState] = useState<VerifyState>("idle");
   const [result, setResult] = useState<CertificateVerificationResponse | null>(
     null
@@ -102,6 +103,12 @@ export const CertificateVerificationPage: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!certIdInput.trim()) return;
+    void verifyCertificate(certIdInput);
+  };
+
   const handleCopy = async () => {
     if (!result) return;
     try {
@@ -123,7 +130,7 @@ export const CertificateVerificationPage: React.FC<{
     if (!result?.certificate.certUrl) return;
     void downloadFile(
       result.certificate.certUrl,
-      `Givr-Certificate-${result.certificate.certId}`
+      `Givr-Certificate-${result.certificate.certId}.pdf`
     );
   };
 
@@ -163,9 +170,49 @@ export const CertificateVerificationPage: React.FC<{
             Verify a certificate
           </h1>
           <p className="mt-3 text-sm md:text-base text-gray-500 max-w-xl mx-auto leading-relaxed">
-            Confirm the authenticity of any Givr volunteer certificate by scanning the QR Code on the certificate.
+            Confirm the authenticity of any Givr volunteer certificate by entering
+            its certificate ID or scanning the QR Code.
           </p>
         </div>
+
+        {/* Manual verification form */}
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6 mb-8"
+        >
+          <label
+            htmlFor="certId"
+            className="block text-sm font-semibold text-gray-700 mb-2"
+          >
+            Certificate ID
+          </label>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search
+                size={18}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <input
+                id="certId"
+                type="text"
+                value={certIdInput}
+                onChange={(e) => setCertIdInput(e.target.value)}
+                placeholder="e.g. CERT-123"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 text-sm text-gray-800 focus:ring-2 focus:outline-none transition-colors"
+                style={{ "--tw-ring-color": accent } as React.CSSProperties}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={!certIdInput.trim() || state === "loading"}
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-6 py-3 text-sm font-bold text-white shadow-sm transition-opacity disabled:opacity-50"
+              style={{ backgroundColor: accent }}
+            >
+              <BadgeCheck size={18} />
+              Verify Certificate
+            </button>
+          </div>
+        </form>
 
         {/* Error state */}
         {state === "error" && (
@@ -351,10 +398,11 @@ export const CertificateVerificationPage: React.FC<{
               <Award size={28} />
             </div>
             <p className="text-sm font-semibold text-gray-600">
-              Scan the QR Code of a certificate to begin verification
+              Enter a certificate ID above to verify it
             </p>
             <p className="mt-1.5 text-xs text-gray-400 max-w-md mx-auto leading-relaxed">
-              The QR Code is found on every certificate issued through Givr.
+              You can also scan the QR Code found on every certificate issued
+              through Givr.
             </p>
           </div>
         )}
