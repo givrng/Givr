@@ -284,34 +284,36 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 min-w-0">
             {profile.certificates.map((cert: CertificateDto) => (
               <div
-                key={cert.certId}
-                className="relative bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 hover:border-green-300 group cursor-default"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="p-2.5 bg-green-50 rounded-lg">
-                    <Award size={20} className="text-green-600" />
-                  </div>
-                  <time
-                    dateTime={cert.issuedAt}
-                    className="text-[11px] font-medium text-gray-500 bg-gray-50 px-2.5 py-1 rounded-md whitespace-nowrap"
-                  >
-                    {formatDate(cert.issuedAt)}
-                  </time>
+                  key={cert.certId}
+                  className="relative min-w-0 w-full bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 hover:border-green-300 group cursor-default"
+                >
+                <div className="flex items-start gap-2 mb-3">
+                <div className="p-2.5 bg-green-50 rounded-lg shrink-0">
+                  <Award size={20} className="text-green-600" />
                 </div>
+
+                <time
+                  dateTime={cert.issuedAt}
+                  className="ml-auto min-w-0 max-w-[55%] text-[11px] font-medium text-gray-500 bg-gray-50 px-2.5 py-1 rounded-md truncate"
+                >
+                  {formatDate(cert.issuedAt)}
+                </time>
+              </div>
                 <h4 className="text-sm font-bold text-gray-900 mb-1.5 line-clamp-2 leading-snug">
                   {cert.projectTitle}
                 </h4>
                 <p className="text-xs text-gray-500 mb-5 truncate">
                   {cert.organizationName}
                 </p>
-                <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-100">
-                  <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold shrink-0">
+                <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-gray-100">
+                  <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold shrink-0 mr-auto">
                     Verified
                   </span>
-                  <div className="flex items-center gap-1.5">
+
+                  <div className="flex flex-wrap items-center justify-end gap-1.5 min-w-0">
                     <a
                       href={cert.certUrl}
                       target="_blank"
@@ -322,6 +324,7 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
                       <ExternalLink size={13} />
                       View
                     </a>
+
                     <button
                       type="button"
                       onClick={() => handleDownload(cert)}
@@ -331,6 +334,7 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
                       <Download size={13} />
                       <span className="hidden sm:inline">Download</span>
                     </button>
+
                     <button
                       type="button"
                       onClick={() => handleShare(cert)}
