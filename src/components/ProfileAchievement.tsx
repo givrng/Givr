@@ -308,7 +308,7 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
                 <p className="text-xs text-gray-500 mb-5 truncate">
                   {cert.organizationName}
                 </p>
-                <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-gray-100">
+                <div className="flex flex-wrap flex-cols items-center gap-2 pt-3 border-t border-gray-100">
                   <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold shrink-0 mr-auto">
                     Verified
                   </span>
