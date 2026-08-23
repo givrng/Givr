@@ -205,7 +205,7 @@ const VolunteerCard:React.FC<{applicant:VolunteerApplicationProps, onApprove: (a
   );
 };
 
-export const ApplicationHub = ()=>{
+export const ApplicationHub: React.FC<{ onProjectCompleted?: () => void }> = ({ onProjectCompleted })=>{
     const [applicants, setApplications] = useState<VolunteerApplicationProps[]>()
     const {API} = useAuthFetch("organization")
     const [isLoading, setIsLoading] = useState(false)
@@ -216,6 +216,9 @@ export const ApplicationHub = ()=>{
         API().get("/projects/applicants")
         .then((response)=>{
             setApplications(response.data as VolunteerApplicationProps[])
+        })
+        .catch(() => {
+            // Silently handle — the user can still see participants
         })
         fetchParticipants()
     }, [])
@@ -316,6 +319,8 @@ export const ApplicationHub = ()=>{
         if(response){
             await API().patch(`/projects/${project.id}/completed`, {})
             setParticipants(prev => prev.filter(p => p.project.id !== project.id))
+            // Signal the dashboard to refresh Project Management tab
+            onProjectCompleted?.()
         }
     }
 

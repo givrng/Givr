@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { Mail, Edit2, Check, Loader2, AlertCircle } from "lucide-react";
 import type { AxiosResponse } from "axios";
 
-
 type VerifyEmailModalProps = {
   email: string;
   onSubmit: (otp:string)=>Promise<AxiosResponse<any, any, any>>;
@@ -12,31 +11,23 @@ type VerifyEmailModalProps = {
   onSuccess: ()=>void;
   close: ()=>void;
 }
-/**
- * @typedef {Object} VerifyEmailOtpModalProps
- * @property {string} email - Initial email address
- * @property {(otp: string) => Promise<any>} onSubmit - Callback for OTP verification
- * @property {(newEmail: string) => Promise<void>} [onEmailChange] - Optional callback when email is updated
- * @property {boolean} isOpen - Visibility toggle
- * @property {() => void} onSuccess - Callback on successful verification
- */
-export const VerifyEmailOtpModal = ({ 
-  email: initialEmail, 
-  onSubmit, 
-  onEmailChange, 
-  isOpen, 
+
+export const VerifyEmailOtpModal = ({
+  email: initialEmail,
+  onSubmit,
+  otpRequest,
+  onEmailChange,
+  isOpen,
   onSuccess,
   close
 }: VerifyEmailModalProps) => {
-  if (!isOpen) return null;
-
-  // --- State ---
+  // Hooks must be called unconditionally per React rules
   const [email, setEmail] = useState(initialEmail);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   // Cooldown Logic State
   const [countDown, setCountdown] = useState(0);
   const [attempts, setAttempts] = useState(0);
@@ -45,7 +36,7 @@ export const VerifyEmailOtpModal = ({
   const COOL_TIME = 20;
 
   // --- Effects ---
-  // Handle countdown interval
+  // Handle countdown interval (must be called before any conditional return)
   useEffect(() => {
     if (countDown > 0) {
       timerRef.current = setInterval(() => {
@@ -63,7 +54,6 @@ export const VerifyEmailOtpModal = ({
   // --- Handlers ---
   const handleToggleEmailEdit = async () => {
     if (isEditingEmail) {
-      // Logic for "Saving"
       setLoading(true);
       setError("");
       try {
@@ -71,31 +61,38 @@ export const VerifyEmailOtpModal = ({
           await onEmailChange(email);
         }
         setIsEditingEmail(false);
-      } catch (err) {
+      } catch {
         setError("Failed to update email address.");
       } finally {
         setLoading(false);
       }
     } else {
-      setIsEditingEmail(true && (onEmailChange!=null));
+      setIsEditingEmail(onEmailChange != null);
     }
   };
 
-  const handleRequestOtp = () => {
+  // Guard render after all hooks are established
+  if (!isOpen) return null;
+
+  const handleRequestOtp = async () => {
     if (countDown > 0) return;
 
     setError("");
-    // Improved logic: Base delay + (attempts * half of base)
     const delay = COOL_TIME + (attempts * COOL_TIME) / 2;
-    
+
     setCountdown(Math.floor(delay));
     setAttempts((prev) => prev + 1);
 
-    // Mock API call for requesting OTP
-    handleRequestOtp()
+    if (otpRequest) {
+      try {
+        await otpRequest();
+      } catch {
+        setError("Failed to resend code. Please try again.");
+      }
+    }
   };
 
-  const handleSubmit = async (e:React.MouseEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e:React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (otp.length !== 6) {
@@ -113,7 +110,7 @@ export const VerifyEmailOtpModal = ({
       if (status === 404) {
         setError(`${email} is not associated with an account`);
       } else if (status === 400) {
-        setError(`Invalid or expired OTP`);
+        setError("Invalid or expired OTP");
       } else {
         setError("An unexpected error occurred. Please try again.");
       }
@@ -144,7 +141,7 @@ export const VerifyEmailOtpModal = ({
 
           {/* Email Modification Row */}
           <div className="mb-6 flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50 p-2 pl-4">
-            {isEditingEmail && onEmailChange!=null ? (
+            {isEditingEmail && onEmailChange != null ? (
               <input
                 type="email"
                 value={email}
@@ -162,8 +159,8 @@ export const VerifyEmailOtpModal = ({
               onClick={handleToggleEmailEdit}
               disabled={loading}
               className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${
-                isEditingEmail 
-                ? "bg-green-100 text-green-700 hover:bg-green-200" 
+                isEditingEmail
+                ? "bg-green-100 text-green-700 hover:bg-green-200"
                 : "bg-white text-gray-500 hover:text-blue-600 shadow-sm border border-gray-200"
               }`}
               title={isEditingEmail ? "Save Email" : "Edit Email"}
@@ -212,8 +209,8 @@ export const VerifyEmailOtpModal = ({
                 disabled={countDown > 0 || loading || isEditingEmail}
                 className="text-sm font-medium text-gray-500 transition-colors hover:text-blue-600 disabled:cursor-not-allowed disabled:text-gray-300"
               >
-                {countDown > 0 
-                  ? `Resend code in ${countDown}s` 
+                {countDown > 0
+                  ? `Resend code in ${countDown}s`
                   : "Didn't receive a code? Resend"}
               </button>
             </div>

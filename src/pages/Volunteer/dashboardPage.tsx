@@ -19,48 +19,38 @@ export const DashboardPage = () => {
     const [active, setActive] = useState<NavTypes>("Dashboard");
     const [dashboardIsMounted, setDashboardIsMounted] = useState(false)
     const [volunteerDashboard, setVolunteerDashboard] = useState<VolunteerDashboardProps>({
-        firstname: "Daniel",
-        profileCompleted: true,
-        projectApplications: [
-            {
-                appliedAt: "2025-12-13",
-                id: 10,
-                project: 20,
-                status: "APPLIED",
-                volunteer: 10,
-                title: "Testing"
-            }
-
-        ]
+        firstname: "",
+        profileCompleted: false,
+        projectApplications: []
     });
 
     const [metrics, setMetrics] = useState<MetricProps[]>([
         {
             title: "Projects Applied",
-            context: "+12 hours this month",
+            context: "",
             icon: <ClockIcon />,
-            value: "124",
+            value: "",
             color: "#1A73E8"
         },
         {
             title: "Approved Projects",
-            context: "+2 this month",
+            context: "",
             icon: <BriefcaseIcon />,
-            value: "8",
+            value: "",
             color: "#34A853"
         },
         {
             title: "Badges Earned",
-            context: "0 badges earned",
+            context: "",
             icon: <ShieldIcon fill="none" color="#FBBC05" />,
-            value: "0",
+            value: "",
             color: "#FBBC05"
         },
         {
             title: "Rating",
-            context: "0.0 rating from organizations",
+            context: "",
             icon: <StarIcon color="#237238" fill="none" />,
-            value: "0",
+            value: "",
             color: "#34A853"
         }
     ])
@@ -147,6 +137,26 @@ export const DashboardPage = () => {
                     context: `+${approvedThisMonth} this month`
                 }
             }
+
+            // Badges and Rating may not be returned by the dashboard API yet.
+            // Set them to a neutral placeholder so the UI shows "—" instead of
+            // an infinite loading skeleton pulse.
+            if (metric.title === "Badges Earned" && metric.value === "") {
+                return {
+                    ...metric,
+                    value: "0",
+                    context: "No badges earned yet",
+                }
+            }
+
+            if (metric.title === "Rating" && metric.value === "") {
+                return {
+                    ...metric,
+                    value: "—",
+                    context: "No ratings yet",
+                }
+            }
+
             return metric
         }))
     }, [volunteerDashboard])

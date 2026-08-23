@@ -97,6 +97,7 @@ export interface ProjectProps{
   address?:string;
   broadcastEnabled?:boolean;
   rating?:number;
+  projectFlierUrl?: string;
   }
 
 export interface ProjectFormProps{
@@ -119,6 +120,7 @@ export interface ProjectFormProps{
   address?:string;
   requiredSkills:string[];
   specialRequirements:string;
+  projectFlierUrl?: string;
 
 }
 
@@ -217,6 +219,7 @@ export interface ProfileProps {
   emailEditable?: boolean;
   email?:string;
   createdAt?:string;
+  certificates?: CertificateDto[];
 };
 
 export interface BadgeProps {
@@ -248,7 +251,7 @@ export interface DashboardProps{
 export type NavTypes = "Dashboard" | "Find Opportunities"| "My Volunteering"| "Profile & Achievements";
 export type VolunteerQuickActions = "Find Opportunities"| "View Organizations" | "Update Profile"|""
 
-export type OrganizationNavTypes = "Dashboard"| "Project Management" | "Applications" | "Profile"
+export type OrganizationNavTypes = "Dashboard" | "Project Management" | "Applications" | "Profile"
 export type OrganizationQuickActions = "Create New Project"| "Review pending applications"| "Edit Profile"
 
 export interface VolunteerProfileProps{
@@ -486,4 +489,36 @@ export interface ComingSoonProps {
   primaryColor?: string;
   dashboardPath?: string;
   buttonLabel?: string;
+}
+
+// Certificate-related interfaces
+export interface CertificateDto {
+  certId: string;
+  certUrl: string;
+  organizationName: string;
+  projectTitle: string;
+  issuedAt: string;
+}
+
+export interface PageMeta {
+  size: number;
+  number: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export interface PagedModelParticipationDto {
+  content: ParticipantProps[];
+  page: PageMeta;
+}
+
+export interface BatchCertificateRequest {
+  participants: number[];
+}
+
+export interface CertificateVerificationResponse {
+  certificate: CertificateDto;
+  volunteerFirstName: string;
+  volunteerLastName: string;
+  volunteerMiddleName: string;
 }

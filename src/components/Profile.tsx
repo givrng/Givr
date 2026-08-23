@@ -2,7 +2,7 @@ import ProfileAchievements from "./ProfileAchievement";
 import {  PageLoader } from "./icons";
 
 import type { ProfileProps} from "../interface/interfaces"
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EditProfile } from "./Volunteer/editProfile";
 import useAuthFetch from "./hooks/useAuthFetch";
 
@@ -18,19 +18,75 @@ export const ProfilePage:React.FC<{editing?:boolean}> = ({editing = false})=> {
   const [profileChanged, setProfileChanged] = useState(false);
 
   const {API} = useAuthFetch("volunteer")
+  const apiRef = useRef(API)
+
+  useEffect(() => {
+    apiRef.current = API
+  }, [API])
 
   useEffect(()=>{
-    const loadProfile = async ()=>{
+    let isMounted = true
+    let pollTimer: ReturnType<typeof setInterval> | null = null
+
+    const loadProfile = async (silent = false)=>{
       try{
-        setIsLoading(true)
-        let response = await API().get("/profile")
+        if (!silent) setIsLoading(true)
+        const response = await apiRef.current().get(`/profile?t=${Date.now()}`)
+        if (!isMounted) return
         setProfile(prev=>({...prev, ...response.data as ProfileProps}))
-      }finally{
-        setIsLoading(false)
+      } catch (error) {
+        // Silently ignore polling errors — server may be temporarily unreachable
+        if (!silent) console.error("Failed to load volunteer profile", error)
+      } finally{
+        if (isMounted && !silent) {
+          setIsLoading(false)
+        }
       }
     }
 
-    loadProfile()
+    // Handle storage events (cross-tab), custom events, and direct calls
+    const handleProfileRefresh = (event?: Event | StorageEvent) => {
+      // Always refresh on any certificate-related event or tab focus
+      void loadProfile(true);
+      // Prevent unused variable warning
+      void event;
+    }
+
+    void loadProfile()
+
+    const handleFocus = () => {
+      void loadProfile(true)
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void loadProfile(true)
+      }
+    }
+
+    window.addEventListener("focus", handleFocus)
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    window.addEventListener("storage", handleProfileRefresh as EventListener)
+    window.addEventListener("givr:certificate-updated", handleProfileRefresh as EventListener)
+
+    // Poll for certificate updates every 2 minutes while profile tab is open.
+    // 120s aligns with industry standard (GitHub, Stripe, Jira) for dashboard polling.
+    // Cross-device updates (org admin on another machine) also benefit from:
+    //   - Instant refresh on tab focus/visibility change (lines above)
+    //   - localStorage cross-tab sync (same browser)
+    //   - CustomEvent for same-page updates
+    pollTimer = setInterval(() => {
+      void loadProfile(true)
+    }, 120000)
+
+    return () => {
+      isMounted = false
+      if (pollTimer) clearInterval(pollTimer)
+      window.removeEventListener("focus", handleFocus)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+      window.removeEventListener("storage", handleProfileRefresh as EventListener)
+      window.removeEventListener("givr:certificate-updated", handleProfileRefresh as EventListener)
+    }
 
   }, [profileChanged, isEditing])
 

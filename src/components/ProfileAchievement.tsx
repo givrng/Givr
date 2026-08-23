@@ -1,11 +1,14 @@
 import { useState } from "react";
-import type { OtpPurpose, ProfileProps } from "../interface/interfaces";
+import type { CertificateDto, OtpPurpose, ProfileProps } from "../interface/interfaces";
 import { ChangePasswordModal, type ChangePasswordFormFields } from "./ChangePassword";
 import { Button } from "./ReuseableComponents";
 import { VerifyEmailOtpModal } from "./VerifyOtpModal";
 import useAuthFetch from "./hooks/useAuthFetch";
 import { useAlert } from "./hooks/useAlert";
 import { PageLoader } from "./icons";
+import { useShareModal } from "./shareModal";
+import { downloadFile } from "../utils/fileDownload";
+import { Award, Download, ExternalLink, Share2 } from "lucide-react";
 interface ProfileAchievementsProps {
   profile: ProfileProps;
   onEditProfile: () => void;
@@ -20,6 +23,7 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
   const [isLoading, setIsLoading] = useState(false);
   const {alertMessage, AlertDialog} = useAlert({isOrg:false})
   const {API} = useAuthFetch("volunteer")
+  const {openShare, ShareModalComponent} = useShareModal()
 
 
   const requestOtp = async (purpose:OtpPurpose)=>{
@@ -79,8 +83,32 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
           setIsLoading(false)
         }
   }
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const handleShare = (cert: CertificateDto) => {
+    const shareUrl = `${window.location.origin}/certificates/verify/${encodeURIComponent(cert.certId)}`;
+    openShare({
+      title: `Certificate ${cert.certId}`,
+      text: `${profile.firstname} ${profile.lastname} — ${cert.projectTitle}`,
+      url: shareUrl,
+      label: "Share Certificate",
+    });
+  };
+
+  const handleDownload = (cert: CertificateDto) => {
+    void downloadFile(cert.certUrl, `Givr-Certificate-${cert.certId}.pdf`);
+  };
+
   return (
     <div className="grid lg:grid-cols-6 gap-8 w-full ">
+      <ShareModalComponent />
       <AlertDialog/>
       {isLoading && <PageLoader/>}
       {/* ------------------ Profile Section ------------------ */}
@@ -228,6 +256,101 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
             </div>
           </div>
     
+      {/* ------------------ Certificates Section ------------------ */}
+      <div className="col-span-full border border-ui rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-xl text-[#323338] font-semibold">
+              Certificates & Recognition
+            </h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Official certificates earned through verified volunteer work
+            </p>
+          </div>
+          {profile.certificates && profile.certificates.length > 0 && (
+            <span className="text-xs font-bold text-green-700 bg-green-50 px-3 py-1 rounded-full border border-green-200">
+              {profile.certificates.length} {profile.certificates.length === 1 ? "Certificate" : "Certificates"}
+            </span>
+          )}
+        </div>
+        {!profile.certificates || profile.certificates.length === 0 ? (
+          <div className="py-14 flex flex-col items-center justify-center text-gray-400">
+            <div className="p-4 bg-gray-50 rounded-full mb-4">
+              <Award size={40} className="text-gray-300" />
+            </div>
+            <p className="text-sm font-medium text-gray-500">No certificates earned yet.</p>
+            <p className="text-xs text-gray-400 mt-1.5 max-w-md text-center leading-relaxed">
+              Complete volunteer projects and get reviewed by the organization to have your certificates issued here.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 min-w-0">
+            {profile.certificates.map((cert: CertificateDto) => (
+              <div
+                  key={cert.certId}
+                  className="relative min-w-0 w-full bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 hover:border-green-300 group cursor-default"
+                >
+                <div className="flex items-start gap-2 mb-3">
+                <div className="p-2.5 bg-green-50 rounded-lg shrink-0">
+                  <Award size={20} className="text-green-600" />
+                </div>
+
+                <time
+                  dateTime={cert.issuedAt}
+                  className="ml-auto min-w-0 max-w-[55%] text-[11px] font-medium text-gray-500 bg-gray-50 px-2.5 py-1 rounded-md truncate"
+                >
+                  {formatDate(cert.issuedAt)}
+                </time>
+              </div>
+                <h4 className="text-sm font-bold text-gray-900 mb-1.5 line-clamp-2 leading-snug">
+                  {cert.projectTitle}
+                </h4>
+                <p className="text-xs text-gray-500 mb-5 truncate">
+                  {cert.organizationName}
+                </p>
+                <div className="flex flex-wrap flex-cols items-center gap-2 pt-3 border-t border-gray-100">
+                  <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold shrink-0 mr-auto">
+                    Verified
+                  </span>
+
+                  <div className="flex flex-wrap items-center justify-end gap-1.5 min-w-0">
+                    <a
+                      href={cert.certUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Open certificate"
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-green-700 hover:text-white bg-green-50 hover:bg-green-600 px-2.5 py-1.5 rounded-lg transition-all duration-200"
+                    >
+                      <ExternalLink size={13} />
+                      View
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDownload(cert)}
+                      title="Download certificate"
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-white bg-gray-50 hover:bg-gray-600 px-2.5 py-1.5 rounded-lg transition-all duration-200"
+                    >
+                      <Download size={13} />
+                      <span className="hidden sm:inline">Download</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleShare(cert)}
+                      title="Share certificate"
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-white bg-gray-50 hover:bg-gray-600 px-2.5 py-1.5 rounded-lg transition-all duration-200"
+                    >
+                      <Share2 size={13} />
+                      <span className="hidden sm:inline">Share</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     
       </div>
   );

@@ -10,6 +10,13 @@ const ProjectDetailsModal:React.FC<{project: ProjectProps}> = ({
       <div
         className="bg-white p-6 rounded-xl shadow-lg w-2xl max-h-[90vh] overflow-y-auto "
       >
+        {project.projectFlierUrl && (
+          <img
+            src={project.projectFlierUrl}
+            alt={`${project.title} flier`}
+            className="w-full h-52 object-cover rounded-lg mb-4"
+          />
+        )}
         <div className="flex justify-between items-start">
           <div>
             <h2 className="text-base font-semibold mb-2">Project: {project.title}</h2>

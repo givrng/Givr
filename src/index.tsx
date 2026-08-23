@@ -8,6 +8,7 @@ import { PageNotFound } from "./pages/Volunteer/404 Page"
 
 import { AuthenticatedFlagProvider } from "./components/Auth/AuthContext"
 import ComingSoon from "./pages/Volunteer/comingSoon"
+import { CertificateVerificationPage } from "./pages/Volunteer/certificateVerificationPage"
 
 export const IndexPage = ()=>{
     const navigate = useNavigate()
@@ -43,11 +44,11 @@ export const IndexPage = ()=>{
             <Route path="organization/*" element={<OrganizationApp />} />
             <Route
               path="*"
-              element={<PageNotFound toDashBoard="/dashboard" />}
+              element={<PageNotFound toDashBoard="/" />}
             />
             <Route path="/opportunities" element={<ComingSoon dashboardPath="/" buttonLabel="Return Home"/>} />
             <Route path="/organizations" element={<ComingSoon dashboardPath="/" buttonLabel="Return Home"/>} />
-            <Route path="/certificates" element={<ComingSoon dashboardPath="/" buttonLabel="Return Home"/>} />
+            <Route path="/certificates/*" element={<CertificateVerificationPage public />} />
           </Routes>
         </AuthenticatedFlagProvider>
       </>

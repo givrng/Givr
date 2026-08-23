@@ -103,7 +103,7 @@ export default function MyVolunteering() {
             Ongoing Commitments
           </h2>
 
-          <div className="grid md:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {projects.filter(p=>p.status=="IN_PROGRESS").map((project) => (
               <VolunteeringProjectCard
               onRateSubmit={handleRatingUpdate}
@@ -121,7 +121,7 @@ export default function MyVolunteering() {
           <h2 className=" text-[#676879] text-base font-semibold mb-4 ">
             Completed Commitments
           </h2>
-          <div className="grid md:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {projects.filter(p=>p.status=="COMPLETED").map((project) => (
               <VolunteeringProjectCard
                 onRateSubmit={handleRatingUpdate}

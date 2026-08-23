@@ -18,6 +18,8 @@ export const DashboardPage = () => {
 
     const [active, setActive] = useState<OrganizationNavTypes>("Dashboard");
     const [dashboardIsMounted, setDashboardIsMounted] = useState(false);
+    // Counter used to trigger ProjectHub re-fetch when a project is completed
+    const [projectHubRefreshKey, setProjectHubRefreshKey] = useState(0);
     const [dashboard, setDashboard] = useState<OrganizationDashboardProps>({
         name: "", 
         projects: {
@@ -120,8 +122,11 @@ export const DashboardPage = () => {
             {<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-15 ">
                 <UserDashboardInformation notificationCount={notificationCount} activeButton={active} buttons={[...buttons.keys()]} onClick={activateNavButton} username={dashboard.name} isOrganization={true}/>
                 {active == "Dashboard" && dashboard && <Dashboard projects={[]} metrics={metrics} orgTriggerAction={quickAction} hasMounted={()=>setDashboardIsMounted(!dashboardIsMounted)} />}
-                {active == "Project Management" && <ProjectHub isOrganization={true} orgTriggerAction={quickAction}/>}
-                {active == "Applications" && <ApplicationHub/>}
+                {active == "Project Management" && <ProjectHub key={projectHubRefreshKey} isOrganization={true} orgTriggerAction={quickAction}/>}
+                {active == "Applications" && <ApplicationHub onProjectCompleted={() => {
+                    setProjectHubRefreshKey(k => k + 1);
+                    setDashboardIsMounted(m => !m);
+                }}/>}
                 {active == "Profile" && <OrganizationProfilePage/>}
             </div>}
         </main>
