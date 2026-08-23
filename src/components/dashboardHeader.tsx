@@ -32,7 +32,6 @@ export const DashboardHeader: React.FC<{ isOrganization?: boolean }> = ({ isOrga
       <nav className="hidden md:flex space-x-8">
         <NavLink to={"/"}>Home</NavLink>
         <NavLink to={"organizations"}>Organizations</NavLink>
-        <NavLink to={"certificates"}>Certificates</NavLink>
       </nav>
       {/* Drop down menu hidden for large screens*/}
       <div className="md:hidden flex space-x-2">
@@ -53,7 +52,6 @@ export const DashboardHeader: React.FC<{ isOrganization?: boolean }> = ({ isOrga
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col items-center font-bold">
           <NavLink to={"/"}>Home</NavLink>
           <NavLink to={"organizations"}>Organizations</NavLink>
-          <NavLink to={"certificates"}>Certificates</NavLink>
           <button onClick={logout}>Logout</button>
         </div>
       </div>
