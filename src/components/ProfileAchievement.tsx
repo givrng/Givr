@@ -6,9 +6,8 @@ import { VerifyEmailOtpModal } from "./VerifyOtpModal";
 import useAuthFetch from "./hooks/useAuthFetch";
 import { useAlert } from "./hooks/useAlert";
 import { PageLoader } from "./icons";
-import { useShareModal } from "./shareModal";
 import { downloadFile } from "../utils/fileDownload";
-import { Award, Download, ExternalLink, Share2 } from "lucide-react";
+import { Award, Download, ExternalLink } from "lucide-react";
 interface ProfileAchievementsProps {
   profile: ProfileProps;
   onEditProfile: () => void;
@@ -23,7 +22,6 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
   const [isLoading, setIsLoading] = useState(false);
   const {alertMessage, AlertDialog} = useAlert({isOrg:false})
   const {API} = useAuthFetch("volunteer")
-  const {openShare, ShareModalComponent} = useShareModal()
 
 
   const requestOtp = async (purpose:OtpPurpose)=>{
@@ -92,23 +90,12 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
     });
   };
 
-  const handleShare = (cert: CertificateDto) => {
-    const shareUrl = `${window.location.origin}/certificates/verify/${encodeURIComponent(cert.certId)}`;
-    openShare({
-      title: `Certificate ${cert.certId}`,
-      text: `${profile.firstname} ${profile.lastname} — ${cert.projectTitle}`,
-      url: shareUrl,
-      label: "Share Certificate",
-    });
-  };
-
   const handleDownload = (cert: CertificateDto) => {
     void downloadFile(cert.certUrl, `Givr-Certificate-${cert.certId}`);
   };
 
   return (
     <div className="grid lg:grid-cols-6 gap-8 w-full ">
-      <ShareModalComponent />
       <AlertDialog/>
       {isLoading && <PageLoader/>}
       {/* ------------------ Profile Section ------------------ */}
@@ -326,24 +313,14 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
                     <ExternalLink size={14} />
                     View Certificate
                   </a>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleDownload(cert)}
-                      className="flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                      <Download size={14} />
-                      Download
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleShare(cert)}
-                      className="flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                      <Share2 size={14} />
-                      Share
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDownload(cert)}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <Download size={14} />
+                    Download
+                  </button>
                 </div>
               </div>
             ))}
