@@ -284,11 +284,11 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
             </p>
           </div>
         ) : (
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {profile.certificates.map((cert: CertificateDto) => (
               <div
                 key={cert.certId}
-                className="flex w-full flex-col sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.667rem)] max-w-sm bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-green-300 transition-all duration-200"
+                className="flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-green-300 transition-all duration-200"
               >
                 <div className="flex items-center justify-between p-5 pb-4">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 shrink-0">

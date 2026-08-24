@@ -17,7 +17,7 @@ import {
 import type { OrganizationProps, ProjectProps } from '../../interface/interfaces';
 import useAuthFetch from '../hooks/useAuthFetch';
 import {  Button, InfoCell } from '../ReuseableComponents';
-import { GroupIcon, LocationIcon } from '../icons';
+import { GroupIcon } from '../icons';
 import { useApplicationForm } from './ApplicationForm';
 import { useImageViewer } from '../hooks/useImageViewer';
 import { downloadFile } from '../../utils/fileDownload';
@@ -344,11 +344,10 @@ export const useOrganizationView = ()=>{
                         {project.description || "No project description available."}
                     </p>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-6 py-4 border-y border-gray-200">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6 py-4 border-y border-gray-200">
                         <InfoCell icon={<CalendarIcon/>} info={project.startDate? project.startDate.split(",")[0]: "Jan 20, 2025"}/>
                         {/* <InfoCell icon={<ClockIcon color="#676879" className="w-6 w-6"/>} info={attendanceHours && `${attendanceHours.from.toUpperCase()}-${attendanceHours.to.toUpperCase()}`}/> */}
                         <InfoCell icon= {<Hourglass/>} info={`${Math.round(duration)} days`}/>
-                        <InfoCell icon={<LocationIcon/>} info={project.address? `${project.address}`: "Wuse District, Abuja"}/>
                         {project.status == "OPEN"? <InfoCell icon={<GroupIcon/>} info={`${project.totalApplicants?project.totalApplicants: 0 }/${project.maxVolunteers?project.maxVolunteers: 20}` }/>
                             : <InfoCell icon={<Star/>} info={`${project.rating}/5`}/>}
                     </div>

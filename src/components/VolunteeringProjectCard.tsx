@@ -22,10 +22,6 @@ interface ProjectCardProps {
 /**
  * Icons
  */
-const MapMarkerIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-);
-
 const CalendarIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
 );
@@ -84,14 +80,14 @@ export default function VolunteeringProjectCard({volunteered, onCancelClick, onV
     }
   };
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-      {isLoading&&<PageLoader color="blue" message={"Rating"} />}
+    <div className="relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-200 w-full">
+      {isLoading && <PageLoader color="blue" message={"Rating"} />}
       {volunteered.project?.projectFlierUrl && (
-        <div className="group/img relative -mx-5 -mt-5 mb-4 overflow-hidden rounded-t-2xl cursor-pointer">
+        <div className="group/img relative w-full overflow-hidden cursor-pointer">
           <img
             src={volunteered.project.projectFlierUrl}
             alt={`${volunteered.project.title} flier`}
-            className="w-full h-40 object-cover"
+            className="w-full h-40 object-cover transition-transform duration-500 group-hover/img:scale-105"
             onClick={() => openImage({ url: volunteered.project.projectFlierUrl!, title: volunteered.project.title, downloadName: `${volunteered.project.title}-flier` })}
           />
           <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity">
@@ -108,128 +104,129 @@ export default function VolunteeringProjectCard({volunteered, onCancelClick, onV
           </div>
         </div>
       )}
-      <div className="flex justify-between items-start">
-  <div className="flex-1">
-    <h2 className="text-lg font-semibold text-[#323338] leading-tight">
-      {volunteered.project?.title}
-    </h2>
-    <p className="text-[#676879] text-sm mt-0.5">{volunteered.organization?.name}</p>
-  </div>
-
-  <div className="flex items-center gap-2">
-      {persistedRating && (
-        <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg border border-yellow-100">
-          <span className="text-xs font-bold text-yellow-700">{persistedRating}</span>
-          <StarIcon filled className="w-3 h-3" />
-        </div>
-      )}
-      {volunteered.status === "IN_PROGRESS" && (
-        <Button
-          variant="void"
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold 
-            transition-all duration-200"
-          onClick={() => onChatOpen(volunteered.project)}
-        >
-          <ChatNavItem unreadCount={unreadCount}/>
-        </Button>
-      )}
-    </div>
-  </div>
-
-      <div className="flex items-center gap-4 mt-3">
-        <div className="text-gray-500 text-xs flex items-center gap-1">
-          <MapMarkerIcon />
-          <span>
-            {volunteered.project?.address 
-              ? `${volunteered.project.address}` 
-              : volunteered.project.location.state}
-          </span>
-        </div>
-        <div className="text-gray-500 text-xs flex items-center gap-1">
-          <MapMarkerIcon />
-          <span>
-            {volunteered.project?.location 
-              ? `${volunteered.project.location.lga}, ${volunteered.project.location.state}` 
-              : "Remote"}
-          </span>
-        </div>
-        <div className="text-gray-400 text-xs flex items-center gap-1">
-          <CalendarIcon />
-          <span>{volunteered.project?.startDate}</span>
-        </div>
-      </div>
-
-      <div className="mt-5 pt-4 border-t border-gray-100">
-        {volunteered.status === "IN_PROGRESS" ? (
-          <div className="flex gap-3">
-            <Button
-              variant="primary"
-              onClick={() => onViewDetailsClick(volunteered)}
-              className="flex-1"
-            >
-              View Details
-            </Button>
-            <Button
-              variant="danger"
-              onClick={() => onCancelClick(volunteered)}
-              className="text-[#D83A52]"
-            >
-              Cancel
-            </Button>
+      <div className="flex flex-1 flex-col p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h2 className="line-clamp-2 text-base font-bold leading-snug text-gray-900">
+              {volunteered.project?.title}
+            </h2>
+            <p className="mt-0.5 truncate text-sm font-medium text-gray-500">{volunteered.organization?.name}</p>
           </div>
-        ) : (
-          <div className="transition-all duration-300">
-            {!isRatingMode ? (
-              <div className="flex justify-between items-center gap-4">
-                <p className="text-xs text-gray-400 italic">
-                  {persistedRating ? "Feedback received" : "Project ended. How was it?"}
-                </p>
-                <Button 
-                  variant={persistedRating ? "outline" : "primary"}
-                  onClick={() => setIsRatingMode(true)}
-                  className="py-1.5 px-6"
-                >
-                  {persistedRating ? "Change Rating" : "Rate Project"}
-                </Button>
-              </div>
-            ) : (
-              <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                <div className="flex flex-col items-center">
-                  <span className="text-xs font-semibold text-blue-700 mb-2">Select your rating</span>
-                  <div className="flex gap-2 mb-4">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <StarIcon
-                        key={star}
-                        className="w-7 h-7"
-                        filled={hoverRating ? star <= hoverRating : star <= currentRating}
-                        onClick={() => setCurrentRating(star)}
-                        onMouseEnter={() => setHoverRating(star)}
-                        onMouseLeave={() => setHoverRating(0)}
-                      />
-                    ))}
-                  </div>
-                  <div className="flex gap-2 w-full">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1 text-xs bg-white" 
-                      onClick={() => setIsRatingMode(false)}
-                    >
-                      Dismiss
-                    </Button>
-                    <Button 
-                      variant={currentRating ===0?`disabled`: "primary"} 
-                      className="flex-1 text-xs" 
-                      onClick={handleRatingSubmit}
-                    >
-                      Save Rating
-                    </Button>
-                  </div>
-                </div>
-              </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${volunteered.status === "IN_PROGRESS" ? "bg-blue-100 text-blue-700 ring-1 ring-blue-200" : "bg-green-100 text-green-700 ring-1 ring-green-200"}`}>
+              {volunteered.status === "IN_PROGRESS" ? "Ongoing" : "Completed"}
+            </span>
+            {volunteered.status === "IN_PROGRESS" && (
+              <button
+                type="button"
+                className="shrink-0 text-gray-400 transition-colors hover:text-blue-600"
+                onClick={() => onChatOpen(volunteered.project)}
+                aria-label="Open group chat"
+              >
+                <ChatNavItem unreadCount={unreadCount} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {volunteered.project?.description && (
+          <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-gray-500">{volunteered.project.description}</p>
+        )}
+
+        {volunteered.project?.categories && volunteered.project.categories.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-1.5">
+            {volunteered.project.categories.slice(0, 3).map((cat, i) => (
+              <span key={i} className="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-[11px] font-medium text-gray-600">{cat}</span>
+            ))}
+            {volunteered.project.categories.length > 3 && (
+              <span className="rounded-full px-2.5 py-1 text-[11px] font-semibold text-gray-400">+{volunteered.project.categories.length - 3}</span>
             )}
           </div>
         )}
+
+        <div className="mt-auto flex items-center justify-between gap-2 border-t border-gray-100 pt-4">
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500">
+            <CalendarIcon />
+            {volunteered.project?.startDate}
+          </span>
+          {persistedRating && (
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-yellow-700">
+              <StarIcon filled className="w-3 h-3" />
+              {persistedRating}
+            </span>
+          )}
+        </div>
+
+        <div className="mt-4 flex flex-col gap-2">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => onViewDetailsClick(volunteered)}
+          >
+            View Details
+          </Button>
+
+          {volunteered.status === "IN_PROGRESS" ? (
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => onCancelClick(volunteered)}
+            >
+              Cancel Participation
+            </Button>
+          ) : (
+            !isRatingMode ? (
+              <div>
+                <Button
+                  variant={persistedRating ? "outline" : "primary"}
+                  className="w-full"
+                  onClick={() => setIsRatingMode(true)}
+                >
+                  {persistedRating ? "Change Rating" : "Rate Project"}
+                </Button>
+                {!persistedRating && (
+                  <p className="mt-2 text-center text-xs text-gray-400">Project ended. How was it?</p>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4">
+                <span className="mb-2 block text-center text-xs font-semibold text-blue-700">Select your rating</span>
+                <div className="mb-4 flex justify-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <StarIcon
+                      key={star}
+                      className="w-7 h-7"
+                      filled={hoverRating ? star <= hoverRating : star <= currentRating}
+                      onClick={() => setCurrentRating(star)}
+                      onMouseEnter={() => setHoverRating(star)}
+                      onMouseLeave={() => setHoverRating(0)}
+                    />
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 bg-white text-xs"
+                    onClick={() => setIsRatingMode(false)}
+                  >
+                    Dismiss
+                  </Button>
+                  <Button
+                    variant={currentRating === 0 ? "disabled" : "primary"}
+                    className="flex-1 text-xs"
+                    onClick={handleRatingSubmit}
+                  >
+                    Save Rating
+                  </Button>
+                </div>
+              </div>
+            )
+          )}
+        </div>
       </div>
+
       <ImageViewerModal/>
-    </div>  );
+    </div>
+  );
 }
+
