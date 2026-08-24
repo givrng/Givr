@@ -396,9 +396,13 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
             onClick={() => openImage({ url: projectFlierUrl, title, downloadName: `${title}-flier` })}
           />
           <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity">
-            <span className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow pointer-events-none">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); openImage({ url: projectFlierUrl, title, downloadName: `${title}-flier` }); }}
+              className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow hover:bg-gray-100"
+            >
               <ZoomIn size={14} /> View
-            </span>
+            </button>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); void downloadFile(projectFlierUrl, `${title}-flier`); }}
