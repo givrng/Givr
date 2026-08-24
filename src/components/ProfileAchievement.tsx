@@ -103,7 +103,7 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
   };
 
   const handleDownload = (cert: CertificateDto) => {
-    void downloadFile(cert.certUrl, `Givr-Certificate-${cert.certId}.pdf`);
+    void downloadFile(cert.certUrl, `Givr-Certificate-${cert.certId}`);
   };
 
   return (
@@ -284,65 +284,64 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 min-w-0">
+          <div className="flex flex-wrap justify-center gap-4">
             {profile.certificates.map((cert: CertificateDto) => (
               <div
-                  key={cert.certId}
-                  className="relative min-w-0 w-full bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 hover:border-green-300 group cursor-default"
-                >
-                <div className="flex items-start gap-2 mb-3">
-                <div className="p-2.5 bg-green-50 rounded-lg shrink-0">
-                  <Award size={20} className="text-green-600" />
+                key={cert.certId}
+                className="flex w-full flex-col sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.667rem)] max-w-sm bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-green-300 transition-all duration-200"
+              >
+                <div className="flex items-center justify-between p-5 pb-4">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 shrink-0">
+                    <Award size={22} className="text-green-600" />
+                  </div>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-green-700 bg-green-50 px-2 py-1 rounded-full shrink-0">
+                      Verified
+                    </span>
+                    <time
+                      dateTime={cert.issuedAt}
+                      className="text-[11px] font-medium text-gray-500 whitespace-nowrap"
+                    >
+                      {formatDate(cert.issuedAt)}
+                    </time>
+                  </div>
                 </div>
 
-                <time
-                  dateTime={cert.issuedAt}
-                  className="ml-auto min-w-0 max-w-[55%] text-[11px] font-medium text-gray-500 bg-gray-50 px-2.5 py-1 rounded-md truncate"
-                >
-                  {formatDate(cert.issuedAt)}
-                </time>
-              </div>
-                <h4 className="text-sm font-bold text-gray-900 mb-1.5 line-clamp-2 leading-snug">
-                  {cert.projectTitle}
-                </h4>
-                <p className="text-xs text-gray-500 mb-5 truncate">
-                  {cert.organizationName}
-                </p>
-                <div className="flex flex-wrap flex-cols items-center gap-2 pt-3 border-t border-gray-100">
-                  <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold shrink-0 mr-auto">
-                    Verified
-                  </span>
+                <div className="px-5 pb-5 flex-1">
+                  <h4 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2 leading-snug">
+                    {cert.projectTitle}
+                  </h4>
+                  <p className="text-xs text-gray-500 truncate">
+                    {cert.organizationName}
+                  </p>
+                </div>
 
-                  <div className="flex flex-wrap items-center justify-end gap-1.5 min-w-0">
-                    <a
-                      href={cert.certUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="Open certificate"
-                      className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-green-700 hover:text-white bg-green-50 hover:bg-green-600 px-2.5 py-1.5 rounded-lg transition-all duration-200"
-                    >
-                      <ExternalLink size={13} />
-                      View
-                    </a>
-
+                <div className="mt-auto px-5 pb-5 space-y-2">
+                  <a
+                    href={cert.certUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-green-700 transition-colors"
+                  >
+                    <ExternalLink size={14} />
+                    View Certificate
+                  </a>
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => handleDownload(cert)}
-                      title="Download certificate"
-                      className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-white bg-gray-50 hover:bg-gray-600 px-2.5 py-1.5 rounded-lg transition-all duration-200"
+                      className="flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
                     >
-                      <Download size={13} />
-                      <span className="hidden sm:inline">Download</span>
+                      <Download size={14} />
+                      Download
                     </button>
-
                     <button
                       type="button"
                       onClick={() => handleShare(cert)}
-                      title="Share certificate"
-                      className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-white bg-gray-50 hover:bg-gray-600 px-2.5 py-1.5 rounded-lg transition-all duration-200"
+                      className="flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
                     >
-                      <Share2 size={13} />
-                      <span className="hidden sm:inline">Share</span>
+                      <Share2 size={14} />
+                      Share
                     </button>
                   </div>
                 </div>

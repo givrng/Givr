@@ -1,13 +1,13 @@
 import { useState, type ReactNode} from "react";
 import type { ButtonProps, FeatureCardProps, MetricComponentProps, NavLinkProps, OrganizationComponentProps,  ProjectComponentProps, ProjectFormProps, ProjectProps } from "../interface/interfaces"
-import { ArrowIcon, CalendarIcon, DeleteBinIcon, GroupIcon, LocationIcon, PageLoader } from "./icons";
+import { ArrowIcon, CalendarIcon, DeleteBinIcon, LocationIcon, PageLoader } from "./icons";
 import { useConfirmAsk } from "./hooks/useConfirm";
 import { useAlert } from "./hooks/useAlert";
 import { useModal } from "./hooks/useModal";
 import useAuthFetch from "./hooks/useAuthFetch";
 import { CreateProject } from "./Organization/createProjectForm";
 import ProjectDetailsModal from "./ProjectModalDetails";
-import { Download, Hourglass, LucideShare2, ZoomIn } from "lucide-react";
+import { Download, LucideShare2, ZoomIn } from "lucide-react";
 import  { useShareModal } from "./shareModal";
 import { useApplicationForm } from "./Volunteer/ApplicationForm";
 import { useImageViewer } from "./hooks/useImageViewer";
@@ -286,8 +286,6 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
   const {API} = useAuthFetch(isOrganization? "organization": "volunteer")
   const {openImage, ImageViewerModal} = useImageViewer()
 
-  const duration = (Date.parse(endDate) - Date.parse(startDate))/(1000 * 60 * 60 *24)
- 
   const project:ProjectProps = {
     id,
     title, organization, 
@@ -418,11 +416,9 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
           </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-6 py-4 border-y border-gray-200">
+      <div className="grid grid-cols-2 gap-y-3 py-4 border-y border-gray-200">
           <InfoCell icon={<CalendarIcon/>} info={startDate ? startDate.split(",")[0] : "—"}/>
-          <InfoCell icon= {<Hourglass/>} info={`${duration} days`}/>
-          <InfoCell icon={<LocationIcon/>} info={address || "—"}/>
-          <InfoCell icon={<GroupIcon/>} info={`${totalApplicants || 0}/${maxVolunteers || 0}` }/>
+          <InfoCell icon={<LocationIcon/>} info={address || location?.state || "—"}/>
       </div>
 
       <div className="flex flex-col justify-between pt-4 gap-y-2">
@@ -437,20 +433,27 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
               {superVolunteer&& (<p className="text-sm font-normal text-gray-600">Super Volunteer: <span className="font-medium text-gray-800">{superVolunteer}</span></p>)}
           </div>
 
-          {!isOrganization?
-        <div className="flex gap-x-2 self-end">
-              {manage && <Button variant="outline" onClick={handleView}>View details</Button>}
-              {!applied?(<Button variant="primary" onClick={handleApply}>Apply Now</Button>): <Button variant="disabled">Applied</Button>}
-          </div>:
-          <div className="flex gap-x-2 self-end">
-            {status!="COMPLETED" &&<Button variant="outline" onClick={()=>setIsEditing(true)}>Edit</Button>}
-              {isDraft && <Button variant="green" onClick={()=>{
-                if(onPublish)
-                  onPublish(id, title)
-
-              }}>Publish</Button>}
+          <div className="flex flex-col gap-2 w-full">
+            <Button variant="outline" className="w-full" onClick={handleView}>View Full Details</Button>
+            {!isOrganization ? (
+              !applied ? (
+                <Button variant="primary" onClick={handleApply}>Apply Now</Button>
+              ) : (
+                <Button variant="disabled">Applied</Button>
+              )
+            ) : (
+              status !== "COMPLETED" && (
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => setIsEditing(true)}>Edit</Button>
+                  {isDraft && (
+                    <Button variant="green" className="flex-1" onClick={() => { if (onPublish) onPublish(id, title); }}>
+                      Publish
+                    </Button>
+                  )}
+                </div>
+              )
+            )}
           </div>
-        }
       </div>
 
       {/* Volunteer can views details of an organization after applying, therefore, application form should not be shown */}
