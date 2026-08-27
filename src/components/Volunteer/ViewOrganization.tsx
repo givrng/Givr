@@ -17,7 +17,7 @@ import {
 import type { OrganizationProps, ProjectProps } from '../../interface/interfaces';
 import useAuthFetch from '../hooks/useAuthFetch';
 import {  Button, InfoCell } from '../ReuseableComponents';
-import { GroupIcon, LocationIcon } from '../icons';
+import { GroupIcon } from '../icons';
 import { useApplicationForm } from './ApplicationForm';
 import { useImageViewer } from '../hooks/useImageViewer';
 import { downloadFile } from '../../utils/fileDownload';
@@ -263,7 +263,7 @@ export const useOrganizationView = ()=>{
                 </div>
                 ) : (
                 /* Projects List */
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {projects.length > 0 ? (
                     projects.map((project, index) => (
                         <ProjectCard key={index} project={project} />
@@ -319,9 +319,13 @@ export const useOrganizationView = ()=>{
                                 onClick={() => openImage({ url: project.projectFlierUrl!, title: project.title, downloadName: `${project.title}-flier` })}
                             />
                             <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity">
-                                <span className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow pointer-events-none">
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); openImage({ url: project.projectFlierUrl!, title: project.title, downloadName: `${project.title}-flier` }); }}
+                                    className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow hover:bg-gray-100"
+                                >
                                     <ZoomIn size={14} /> View
-                                </span>
+                                </button>
                                 <button
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); void downloadFile(project.projectFlierUrl!, `${project.title}-flier`); }}
@@ -344,11 +348,10 @@ export const useOrganizationView = ()=>{
                         {project.description || "No project description available."}
                     </p>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-6 py-4 border-y border-gray-200">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6 py-4 border-y border-gray-200">
                         <InfoCell icon={<CalendarIcon/>} info={project.startDate? project.startDate.split(",")[0]: "Jan 20, 2025"}/>
                         {/* <InfoCell icon={<ClockIcon color="#676879" className="w-6 w-6"/>} info={attendanceHours && `${attendanceHours.from.toUpperCase()}-${attendanceHours.to.toUpperCase()}`}/> */}
                         <InfoCell icon= {<Hourglass/>} info={`${Math.round(duration)} days`}/>
-                        <InfoCell icon={<LocationIcon/>} info={project.address? `${project.address}`: "Wuse District, Abuja"}/>
                         {project.status == "OPEN"? <InfoCell icon={<GroupIcon/>} info={`${project.totalApplicants?project.totalApplicants: 0 }/${project.maxVolunteers?project.maxVolunteers: 20}` }/>
                             : <InfoCell icon={<Star/>} info={`${project.rating}/5`}/>}
                     </div>

@@ -178,7 +178,7 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, orgTriggerAction?:(a
                         {/* Draft Projects Section */}
                         <div className="mt-6">
                             <h3 className="text-lg font-bold text-green-700 mb-3">Draft Projects</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {organizationDraftProjects.length > 0 ? (
                                     organizationDraftProjects.map((project, i) => <ProjectCard {...project} key={i} isOrganization={true} isDraft={true} onEdit={onSuccessfulProjectUpdate} onPublish={handlePublish} onDelete={handleDelete}/>).reverse()
                                 ) : (
@@ -206,7 +206,7 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, orgTriggerAction?:(a
                                     ))}
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {filteredOrgProjects.length > 0 ? (
                                     filteredOrgProjects.map((project, i) =>
                                         <ProjectCard {...project} key={i} isOrganization={true} manage={true} />
@@ -244,7 +244,7 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, orgTriggerAction?:(a
                     </div>}
 
                 {!isOrganization && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {activeCategory=="All Categories"
                             ? (projects?.map((project, index)=> <ProjectCard {...project} key={index} isOrganization={isOrganization} manage={true}/>))
                             : (projects.filter((p)=> p.categories.includes(activeCategory)).map((p, i)=><ProjectCard {...p} key={i} manage={true}/>))
