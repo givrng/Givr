@@ -25,14 +25,13 @@ export const DashboardHeader: React.FC<{ isOrganization?: boolean }> = ({ isOrga
     <div className="max-w-7xl mx-auto px-4 sm:px-6 font-semibold lg:px-8 flex justify-between items-center h-15">
       <div className="flex items-center space-x-1  text-xl text-gray-800">
         <GivrLogoIcon className='w-20 h-auto max-w-full' />
-        <span className={`text-xs bg-${isOrganization? "[#34A853]" : "[#1877F2] "} rounded-lg text-white p-1`}>{isOrganization ? "Organization" : "Volunteer"}</span>
+        <span className={`text-xs rounded-lg text-white p-1 ${isOrganization ? "bg-[#34A853]" : "bg-[#1877F2]"}`}>{isOrganization ? "Organization" : "Volunteer"}</span>
       </div>
 
       {/* Navigation Links */}
       <nav className="hidden md:flex space-x-8">
         <NavLink to={"/"}>Home</NavLink>
-        <NavLink to={""}>Organizations</NavLink>
-        <NavLink to={"certificates"}>Certificates</NavLink>
+        <NavLink to={"organizations"}>Organizations</NavLink>
       </nav>
       {/* Drop down menu hidden for large screens*/}
       <div className="md:hidden flex space-x-2">
@@ -52,8 +51,7 @@ export const DashboardHeader: React.FC<{ isOrganization?: boolean }> = ({ isOrga
       <div className="md:hidden bg-gray-50 border-t border-gray-200 py-2">
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col items-center font-bold">
           <NavLink to={"/"}>Home</NavLink>
-          <NavLink to={""}>Organizations</NavLink>
-          <NavLink to={"certificates"}>Certificates</NavLink>
+          <NavLink to={"organizations"}>Organizations</NavLink>
           <button onClick={logout}>Logout</button>
         </div>
       </div>

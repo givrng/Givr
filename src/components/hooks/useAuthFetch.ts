@@ -44,7 +44,7 @@ export default function useAuthFetch(path:UserTypes){
 
         const instance = axios.create({
             baseURL: `${ApiBaseUrl}/${path}`,
-            timeout: 2500,
+            timeout: 5000,
             headers: {
                 'Content-Type': 'application/json',
             },

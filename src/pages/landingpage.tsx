@@ -278,7 +278,6 @@ const Footer: React.FC = () => (
           <ul className="space-y-3">
             <li><a href="#opportunities" className="text-sm text-gray-400 hover:text-[#1877F2] transition">Opportunities</a></li>
             <li><a href="#organizations" className="text-sm text-gray-400 hover:text-[#1877F2] transition">Organizations</a></li>
-            <li><a href="#certificates" className="text-sm text-gray-400 hover:text-[#1877F2] transition">Certificates</a></li>
           </ul>
         </div>
 

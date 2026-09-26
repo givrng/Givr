@@ -3,12 +3,13 @@ import { Button, Card } from "./ReuseableComponents";
 import type { BasicNatigationProps } from "../interface/interfaces";
 import { Link, useNavigate } from "react-router-dom";
 import { ResendOtpTimer } from "./ResendOtpTimer";
-import useAuthFetch from "./hooks/useAuthFetch";
 import { PageLoader } from "./icons";
 import { useAlert } from "./hooks/useAlert";
+import axios from "axios";
 
 interface ForgotPasswordProps{
     email:string;
+    otp:string;
     role:"VOLUNTEER"|"ORGANIZATION";
     newPassword:string;
     rePassword:string;
@@ -24,18 +25,26 @@ export const ForgotPasswordForm: React.FC<{navProps:BasicNatigationProps, isOrg?
         email: "",
         role: isOrg?"ORGANIZATION":"VOLUNTEER",
         newPassword: "",
-        rePassword:""
+        rePassword:"",
+        otp:""
     })
 
-    const {API} = useAuthFetch("")
+    const API = axios.create({
+        baseURL: import.meta.env.VITE_API_BASE_URL
+    })
 
     const requestOtp = async ()=>{        
         try{
             setIsLoading(true)
-            await API().post("/password/forgot")
+            await API.post("/password/forgot", formInput)
             setOnSent(true)
-        }catch{
-            alertMessage("OTP Request failed")
+        }catch (err:any){
+            const status = err?.response?.status
+            if(status == 400){
+                alertMessage("Account does not exist")
+            }else{
+                alertMessage("OTP Request failed")
+            }
         }finally{
             setIsLoading(false)
         }
@@ -43,10 +52,11 @@ export const ForgotPasswordForm: React.FC<{navProps:BasicNatigationProps, isOrg?
 
     const handleReset = async (e: React.FormEvent)=>{
         e.preventDefault()
-
+        if(error)
+            return
         try{
             setIsLoading(true)
-            await API().post("/password/reset", formInput)
+            await API.post("/password/reset", formInput)
             navigate("../", {
                 replace:true
             })
@@ -134,6 +144,18 @@ export const ForgotPasswordForm: React.FC<{navProps:BasicNatigationProps, isOrg?
                     <form onSubmit={handleReset}>
                         <div className="h-70 grid grid-cols-1 gap-y-2 text-center">
                             <h1 className="text-4xl font-extrabold text-gray-800 mb-4">OTP has been Sent</h1>
+                            <input
+                                    type="text"
+                                    id="otp"
+                                    placeholder="Enter OTP sent"
+                                    className="shadow appearance-none border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
+                                    value={formInput["otp"]}
+                                    onChange={(e) => setFormInput(prev=>({
+                                        ...prev,
+                                        otp:e.target.value
+                                    }))}
+                                    required
+                                />
                             <input
                                     type="password"
                                     id="password"

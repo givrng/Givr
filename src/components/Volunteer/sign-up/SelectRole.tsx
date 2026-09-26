@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { HeartHandIcon, OrganizationIcon } from "../../icons";
 
 type rolesprops ={
@@ -13,6 +13,9 @@ type rolesprops ={
 
 const SelectRole:React.FC<{isSignin:boolean}> = ({isSignin}) => {
 
+  const [params] = useSearchParams()
+  const redirect = params.get("redirect");
+  
     const roles: rolesprops[] = [
         { id: "volunteer", icon: HeartHandIcon, title: 'Volunteer', desc: "Find and Join volunteering oportunities", path:"volunteer" },
         { id: "organisation", icon: OrganizationIcon, title: 'Organization', desc: "Post projects and recruit volunteers", path:"organization" },
@@ -23,8 +26,11 @@ const SelectRole:React.FC<{isSignin:boolean}> = ({isSignin}) => {
         <h2 className="md:text-5xl text-3xl text-[#323338] font-semibold ">{isSignin?"Log into":"Join"} Givr.ng</h2>
         <h4 className="text-lg  text-[#676879] ">{isSignin?"Log in as":"I want to join as a"}</h4>
         <div className="mt-10 md:w-xl w-full px-5 ">
-          {roles.map((role) => (
-            <Link to={role.path} key={role.id}>
+          {roles.map((role) => {
+            let path = role.path
+            if(role.id == "volunteer" )
+              path = redirect? `${role.path}?redirect=${redirect}`:role.path
+            return <Link to={path} key={role.id}>
               <div
                 key={role.id}
                 className="border border-ui flex items-center rounded-lg md:pl-7 pl-4  mb-4  h-20 hover:shadow-ui hover:bg-(--primary-color) hover:text-white cursor-pointer "
@@ -42,7 +48,7 @@ const SelectRole:React.FC<{isSignin:boolean}> = ({isSignin}) => {
                 </div>
               </div>
             </Link>
-          ))}
+          })}
         </div>
       </div>
     );
