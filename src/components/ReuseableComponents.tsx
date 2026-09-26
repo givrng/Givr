@@ -13,6 +13,7 @@ import { useApplicationForm } from "./Volunteer/ApplicationForm";
 import { useImageViewer } from "./hooks/useImageViewer";
 import { downloadFile } from "../utils/fileDownload";
 import { formatDisplayDate, toISODateInput } from "../utils/date";
+import { pluralize } from "../utils/pluralize";
 
 // --- Reusable Components ---
 
@@ -373,9 +374,9 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
     ? [location?.lga, location?.state].filter(Boolean).join(", ")
     : address || "Location not specified";
   const volunteersLabel = maxVolunteers != null && maxVolunteers > 0
-    ? `${maxVolunteers} volunteer${maxVolunteers === 1 ? "" : "s"} needed`
+    ? `${pluralize(maxVolunteers, "volunteer")} needed`
     : "Volunteers needed: -";
-  const applicantsLabel = `${totalApplicants ?? 0} application${totalApplicants === 1 ? "" : "s"}`;
+  const applicantsLabel = pluralize(totalApplicants ?? 0, "application");
 
   return <div className="relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-200 w-full">
     {isLoading && <PageLoader/>}
