@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   CalendarIcon,
   Hourglass,
+  Clock,
   
 } from 'lucide-react';
 import type { OrganizationProps, ProjectProps } from '../../interface/interfaces';
@@ -21,6 +22,7 @@ import { GroupIcon } from '../icons';
 import { useApplicationForm } from './ApplicationForm';
 import { useImageViewer } from '../hooks/useImageViewer';
 import { downloadFile } from '../../utils/fileDownload';
+import { formatDisplayDate } from '../../utils/date';
 import { Download, ZoomIn } from 'lucide-react';
 
 /** * Interfaces based on your requirements 
@@ -306,29 +308,31 @@ export const useOrganizationView = ()=>{
         const [applicationFormOpen, setApplicationFormOpen] = useState(false)
         const {openApplicationForm, ApplicationModal} = useApplicationForm()
         const {openImage, ImageViewerModal} = useImageViewer()
+        const flierUrl = project.projectFlierUrl || project.projectCardUrl;
+        const locationLabel = [project.location?.lga, project.location?.state].filter(Boolean).join(", ");
 
         return (
             <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 group flex flex-col h-full">
                {applicationFormOpen? <ApplicationModal/>: <>
-                    {project.projectFlierUrl && (
+                    {flierUrl && (
                         <div className="group/img relative -mx-8 -mt-8 mb-6 overflow-hidden rounded-t-[2rem] cursor-pointer">
                             <img
-                                src={project.projectFlierUrl}
+                                src={flierUrl}
                                 alt={`${project.title} flier`}
                                 className="w-full h-44 object-cover"
-                                onClick={() => openImage({ url: project.projectFlierUrl!, title: project.title, downloadName: `${project.title}-flier` })}
+                                onClick={() => openImage({ url: flierUrl, title: project.title, downloadName: `${project.title}-flier` })}
                             />
                             <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity">
                                 <button
                                     type="button"
-                                    onClick={(e) => { e.stopPropagation(); openImage({ url: project.projectFlierUrl!, title: project.title, downloadName: `${project.title}-flier` }); }}
+                                    onClick={(e) => { e.stopPropagation(); openImage({ url: flierUrl, title: project.title, downloadName: `${project.title}-flier` }); }}
                                     className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow hover:bg-gray-100"
                                 >
                                     <ZoomIn size={14} /> View
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={(e) => { e.stopPropagation(); void downloadFile(project.projectFlierUrl!, `${project.title}-flier`); }}
+                                    onClick={(e) => { e.stopPropagation(); void downloadFile(flierUrl, `${project.title}-flier`); }}
                                     className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow hover:bg-gray-100"
                                 >
                                     <Download size={14} /> Download
@@ -349,10 +353,12 @@ export const useOrganizationView = ()=>{
                     </p>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6 py-4 border-y border-gray-200">
-                        <InfoCell icon={<CalendarIcon/>} info={project.startDate? project.startDate.split(",")[0]: "Jan 20, 2025"}/>
-                        {/* <InfoCell icon={<ClockIcon color="#676879" className="w-6 w-6"/>} info={attendanceHours && `${attendanceHours.from.toUpperCase()}-${attendanceHours.to.toUpperCase()}`}/> */}
+                        <InfoCell icon={<CalendarIcon/>} info={formatDisplayDate(project.startDate)}/>
                         <InfoCell icon= {<Hourglass/>} info={`${Math.round(duration)} days`}/>
-                        {project.status == "OPEN"? <InfoCell icon={<GroupIcon/>} info={`${project.totalApplicants?project.totalApplicants: 0 }/${project.maxVolunteers?project.maxVolunteers: 20}` }/>
+                        {locationLabel && <InfoCell icon={<MapPin size={16} className="text-indigo-500"/>} info={locationLabel}/>}
+                        <InfoCell icon={<Clock size={16} className="text-indigo-500"/>} info={`Apply by ${formatDisplayDate(project.applicationDeadline)}`}/>
+                        {project.status == "OPEN"
+                            ? <InfoCell icon={<GroupIcon/>} info={`${project.totalApplicants ? project.totalApplicants : 0}/${project.maxVolunteers ? project.maxVolunteers : 20} volunteers`}/>
                             : <InfoCell icon={<Star/>} info={`${project.rating}/5`}/>}
                     </div>
                     {

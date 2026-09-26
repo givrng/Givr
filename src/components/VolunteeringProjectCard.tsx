@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { MyVolunteeringProps, ProjectProps } from "../interface/interfaces";
 import { Button } from "./ReuseableComponents";
-import { PageLoader } from "./icons";
+import { GroupIcon, LocationIcon, PageLoader } from "./icons";
 import { ChatNavItem } from "./ChatNavItem";
 import { useSocketConnection } from "./Chat/socketConnection";
 import { useImageViewer } from "./hooks/useImageViewer";
@@ -79,28 +79,31 @@ export default function VolunteeringProjectCard({volunteered, onCancelClick, onV
       }
     }
   };
+
+  const flierUrl = volunteered.project?.projectFlierUrl || volunteered.project?.projectCardUrl;
+
   return (
-    <div className="relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-200 w-full">
+    <div className="relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-200 w-full">
       {isLoading && <PageLoader color="blue" message={"Rating"} />}
-      {volunteered.project?.projectFlierUrl && (
+      {flierUrl && (
         <div className="group/img relative w-full overflow-hidden cursor-pointer">
           <img
-            src={volunteered.project.projectFlierUrl}
+            src={flierUrl}
             alt={`${volunteered.project.title} flier`}
             className="w-full h-40 object-cover transition-transform duration-500 group-hover/img:scale-105"
-            onClick={() => openImage({ url: volunteered.project.projectFlierUrl!, title: volunteered.project.title, downloadName: `${volunteered.project.title}-flier` })}
+            onClick={() => openImage({ url: flierUrl, title: volunteered.project.title, downloadName: `${volunteered.project.title}-flier` })}
           />
           <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity">
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); openImage({ url: volunteered.project.projectFlierUrl!, title: volunteered.project.title, downloadName: `${volunteered.project.title}-flier` }); }}
+              onClick={(e) => { e.stopPropagation(); openImage({ url: flierUrl, title: volunteered.project.title, downloadName: `${volunteered.project.title}-flier` }); }}
               className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow hover:bg-gray-100"
             >
               <ZoomIn size={14} /> View
             </button>
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); void downloadFile(volunteered.project.projectFlierUrl!, `${volunteered.project.title}-flier`); }}
+              onClick={(e) => { e.stopPropagation(); void downloadFile(flierUrl, `${volunteered.project.title}-flier`); }}
               className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow hover:bg-gray-100"
             >
               <Download size={14} /> Download
@@ -147,6 +150,21 @@ export default function VolunteeringProjectCard({volunteered, onCancelClick, onV
             )}
           </div>
         )}
+
+        <div className="mt-3 flex flex-col gap-1 text-xs font-medium text-gray-600">
+          {(volunteered.project?.location?.lga || volunteered.project?.location?.state) && (
+            <span className="inline-flex items-center gap-1.5">
+              <LocationIcon className="h-4 w-4 shrink-0 text-gray-400" />
+              <span className="min-w-0 truncate">{[volunteered.project.location?.lga, volunteered.project.location?.state].filter(Boolean).join(", ")}</span>
+            </span>
+          )}
+          {volunteered.project?.maxVolunteers != null && volunteered.project.maxVolunteers > 0 && (
+            <span className="inline-flex items-center gap-1.5">
+              <GroupIcon className="h-4 w-4 shrink-0 text-gray-400" />
+              <span className="min-w-0 truncate">{volunteered.project.maxVolunteers} volunteer{volunteered.project.maxVolunteers === 1 ? "" : "s"} needed</span>
+            </span>
+          )}
+        </div>
 
         <div className="mt-auto flex items-center justify-between gap-2 border-t border-gray-100 pt-4">
           <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500">

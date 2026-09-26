@@ -1,6 +1,6 @@
 import { useState, type ReactNode} from "react";
 import type { ButtonProps, FeatureCardProps, MetricComponentProps, NavLinkProps, OrganizationComponentProps,  ProjectComponentProps, ProjectFormProps, ProjectProps } from "../interface/interfaces"
-import { ArrowIcon, CalendarIcon, DeleteBinIcon, PageLoader } from "./icons";
+import { ArrowIcon, CalendarIcon, ClockIcon, DeleteBinIcon, GroupIcon, LocationIcon, PageLoader } from "./icons";
 import { useConfirmAsk } from "./hooks/useConfirm";
 import { useAlert } from "./hooks/useAlert";
 import { useModal } from "./hooks/useModal";
@@ -12,6 +12,7 @@ import  { useShareModal } from "./shareModal";
 import { useApplicationForm } from "./Volunteer/ApplicationForm";
 import { useImageViewer } from "./hooks/useImageViewer";
 import { downloadFile } from "../utils/fileDownload";
+import { formatDisplayDate, toISODateInput } from "../utils/date";
 
 // --- Reusable Components ---
 
@@ -277,7 +278,7 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = (orgCompon
 }
 
 /**Displays details of a project */
-export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organization, specialRequirements,applicationDeadline,description,categories, attendanceHours, location,address,requiredSkills, maxVolunteers, startDate, endDate,status, totalApplicants, superVolunteer, manage=false, applied=false, isOrganization=false, isDraft=false, onEdit, onDelete, onPublish, projectFlierUrl})=>{
+export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organization, specialRequirements,applicationDeadline,description,categories, attendanceHours, location,address,requiredSkills, maxVolunteers, startDate, endDate,status, totalApplicants, superVolunteer, manage=false, applied=false, isOrganization=false, isDraft=false, onEdit, onDelete, onPublish, projectFlierUrl, projectCardUrl, rating, broadcastEnabled, createdAt, updatedAt})=>{
 
   const [displayForm, setDisplayForm] = useState(false)
   const {modal, DisplayModal} = useModal()
@@ -293,7 +294,8 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
     description,categories, attendanceHours, 
     location,address,requiredSkills, maxVolunteers, 
     startDate, endDate,status, totalApplicants, 
-    superVolunteer, projectFlierUrl
+    superVolunteer, projectFlierUrl, projectCardUrl,
+    rating, broadcastEnabled, createdAt, updatedAt
   }
 
   const {openShare, ShareModalComponent} = useShareModal()
@@ -333,12 +335,12 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
   const projectData:ProjectFormProps = {
     id: id,
     title: title,
-    startDate: startDate.split(",")[0].split("/").reverse().join("-"),
+    startDate: toISODateInput(startDate),
     attendanceHours: attendanceHours,
     categories: categories,
-    applicationDeadline: applicationDeadline.split(",")[0].split("/").reverse().join("-"),
+    applicationDeadline: toISODateInput(applicationDeadline),
     description: description?description:"",
-    endDate: endDate.split(",")[0].split("/").reverse().join("-"),
+    endDate: toISODateInput(endDate),
     location,
     maxVolunteers: maxVolunteers,
     address,
@@ -364,9 +366,17 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
     COMPLETED: "bg-gray-100 text-gray-600 ring-1 ring-gray-200",
     DRAFT: "bg-amber-100 text-amber-700 ring-1 ring-amber-200",
   };
-  const dateLabel = startDate ? startDate.split(",")[0] : "—";
+  const flierUrl = projectFlierUrl || projectCardUrl;
+  const dateLabel = formatDisplayDate(startDate);
+  const deadlineLabel = formatDisplayDate(applicationDeadline);
+  const locationLabel = location?.lga || location?.state
+    ? [location?.lga, location?.state].filter(Boolean).join(", ")
+    : address || "Location not specified";
+  const volunteersLabel = maxVolunteers != null && maxVolunteers > 0
+    ? `${maxVolunteers} volunteer${maxVolunteers === 1 ? "" : "s"} needed`
+    : "Volunteers needed: -";
 
-  return <div className="relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-200 w-full">
+  return <div className="relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-200 w-full">
     {isLoading && <PageLoader/>}
     {isEditing?<CreateProject onClose={closeEditing} projectData={projectData} isCreating={false} onSuccessfulEdit={onEdit}/>:<>
       {isDraft&&<button
@@ -387,25 +397,25 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
           onDelete(id, title)
       }}
       ><DeleteBinIcon/></button>}
-      {projectFlierUrl && (
+      {flierUrl && (
         <div className="group/img relative w-full overflow-hidden cursor-pointer">
           <img
-            src={projectFlierUrl}
+            src={flierUrl}
             alt={`${title} flier`}
             className="w-full h-44 object-cover transition-transform duration-500 group-hover/img:scale-105"
-            onClick={() => openImage({ url: projectFlierUrl, title, downloadName: `${title}-flier` })}
+            onClick={() => openImage({ url: flierUrl, title, downloadName: `${title}-flier` })}
           />
           <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity">
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); openImage({ url: projectFlierUrl, title, downloadName: `${title}-flier` }); }}
+              onClick={(e) => { e.stopPropagation(); openImage({ url: flierUrl, title, downloadName: `${title}-flier` }); }}
               className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow hover:bg-gray-100"
             >
               <ZoomIn size={14} /> View
             </button>
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); void downloadFile(projectFlierUrl, `${title}-flier`); }}
+              onClick={(e) => { e.stopPropagation(); void downloadFile(flierUrl, `${title}-flier`); }}
               className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow hover:bg-gray-100"
             >
               <Download size={14} /> Download
@@ -445,13 +455,27 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
           }
         </div>
 
-        <div className="mt-auto flex items-center justify-between gap-2 border-t border-gray-100 pt-4">
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500">
-            <CalendarIcon className="w-4 h-4" />
-            {dateLabel}
+        <div className="mt-auto flex flex-col gap-1.5 border-t border-gray-100 pt-4 text-xs font-medium text-gray-600">
+          <span className="inline-flex items-center gap-1.5">
+            <LocationIcon className="h-4 w-4 shrink-0 text-gray-400" />
+            <span className="min-w-0 truncate">{locationLabel}</span>
           </span>
+          <span className="inline-flex items-center gap-1.5">
+            <GroupIcon className="h-4 w-4 shrink-0 text-gray-400" />
+            <span className="min-w-0 truncate">{volunteersLabel}</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <CalendarIcon className="h-4 w-4 shrink-0 text-gray-400" />
+            <span className="min-w-0 truncate">Starts {dateLabel}</span>
+          </span>
+          {applicationDeadline && (
+            <span className="inline-flex items-center gap-1.5">
+              <ClockIcon className="h-4 w-4 shrink-0 text-gray-400" />
+              <span className="min-w-0 truncate">Apply by {deadlineLabel}</span>
+            </span>
+          )}
           {superVolunteer && (
-            <span className="truncate text-xs font-medium text-gray-500">Super Volunteer: <span className="font-semibold text-gray-800">{superVolunteer}</span></span>
+            <span className="min-w-0 truncate">Super Volunteer: <span className="font-semibold text-gray-800">{superVolunteer}</span></span>
           )}
         </div>
 
