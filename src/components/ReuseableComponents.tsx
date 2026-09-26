@@ -7,7 +7,7 @@ import { useModal } from "./hooks/useModal";
 import useAuthFetch from "./hooks/useAuthFetch";
 import { CreateProject } from "./Organization/createProjectForm";
 import ProjectDetailsModal from "./ProjectModalDetails";
-import { Download, LucideShare2, ZoomIn } from "lucide-react";
+import { Download, LucideShare2, Users, ZoomIn } from "lucide-react";
 import  { useShareModal } from "./shareModal";
 import { useApplicationForm } from "./Volunteer/ApplicationForm";
 import { useImageViewer } from "./hooks/useImageViewer";
@@ -375,6 +375,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
   const volunteersLabel = maxVolunteers != null && maxVolunteers > 0
     ? `${maxVolunteers} volunteer${maxVolunteers === 1 ? "" : "s"} needed`
     : "Volunteers needed: -";
+  const applicantsLabel = `${totalApplicants ?? 0} application${totalApplicants === 1 ? "" : "s"}`;
 
   return <div className="relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-200 w-full">
     {isLoading && <PageLoader/>}
@@ -459,6 +460,10 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
           <span className="inline-flex items-center gap-1.5">
             <LocationIcon className="h-4 w-4 shrink-0 text-gray-400" />
             <span className="min-w-0 truncate">{locationLabel}</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Users className="h-4 w-4 shrink-0 text-gray-400" />
+            <span className="min-w-0 truncate">{applicantsLabel}</span>
           </span>
           <span className="inline-flex items-center gap-1.5">
             <GroupIcon className="h-4 w-4 shrink-0 text-gray-400" />
