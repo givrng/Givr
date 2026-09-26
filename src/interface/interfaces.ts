@@ -98,6 +98,7 @@ export interface ProjectProps{
   broadcastEnabled?:boolean;
   rating?:number;
   projectFlierUrl?: string;
+  projectCardUrl?: string;
   }
 
 export interface ProjectFormProps{
