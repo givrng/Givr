@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { MyVolunteeringProps, ProjectProps } from "../interface/interfaces";
 import { Button } from "./ReuseableComponents";
 import { GroupIcon, LocationIcon, PageLoader } from "./icons";
+import { pluralize } from "../utils/pluralize";
 import { ChatNavItem } from "./ChatNavItem";
 import { useSocketConnection } from "./Chat/socketConnection";
 import { useImageViewer } from "./hooks/useImageViewer";
@@ -161,7 +162,7 @@ export default function VolunteeringProjectCard({volunteered, onCancelClick, onV
           {volunteered.project?.maxVolunteers != null && volunteered.project.maxVolunteers > 0 && (
             <span className="inline-flex items-center gap-1.5">
               <GroupIcon className="h-4 w-4 shrink-0 text-gray-400" />
-              <span className="min-w-0 truncate">{volunteered.project.maxVolunteers} volunteer{volunteered.project.maxVolunteers === 1 ? "" : "s"} needed</span>
+              <span className="min-w-0 truncate">{pluralize(volunteered.project.maxVolunteers, "volunteer")} needed</span>
             </span>
           )}
         </div>
