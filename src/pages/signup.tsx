@@ -5,6 +5,7 @@ import type { BasicNatigationProps } from "../interface/interfaces";
 import { SignupProvider } from "../components/Volunteer/sign-up/SignupContext";
 import { VolunteerSignup } from "./Volunteer/volunteerSignup";
 import { OrganizationSignup } from "./Organization/OrganizationSignupPage";
+import { IndividualProfileSignup } from "./Individual/IndividualProfilePage";
 
 
 export const SignUpPage: React.FC<BasicNatigationProps> = () => {
@@ -15,6 +16,9 @@ export const SignUpPage: React.FC<BasicNatigationProps> = () => {
                 <Route index element={<SelectRole isSignin={false} />} />
                 <Route path="volunteer/" element={<VolunteerSignup />} />
                 
+                <Route path="organization/*" element={<OrganizationSignup onToSignIn={()=>navigate("/signin/organization")}/>} />
+                <Route path="individual/*" element={<IndividualProfileSignup />} />
+
                 <Route path="organization/*" element={<OrganizationSignup onToSignIn={()=>navigate("/signin/organization")}/>} />
             </Routes>
         </SignupProvider>

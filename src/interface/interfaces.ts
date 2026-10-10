@@ -47,6 +47,7 @@ export interface BasicNatigationProps{
   onToDashboard?: ()=>void;
   onToVolunteerSignUp?: ()=>void;
   onToOrgSignUp?:()=>void;
+  onToIndividualSignUp?: () => void;
   toForgotPassword?:string;
   toSignUp?:string;
   toVolunteerDetails?:string;
