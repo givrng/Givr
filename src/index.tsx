@@ -4,6 +4,7 @@ import { SignInPage } from "./pages/signIn"
 import { SignUpPage } from "./pages/signup"
 import { VolunteerApp } from "./volunteerApp"
 import { OrganizationApp } from "./organizationApp"
+import { IndividualApp } from "./individualApp"
 import { PageNotFound } from "./pages/Volunteer/404 Page"
 
 import { AuthenticatedFlagProvider } from "./components/Auth/AuthContext"
@@ -23,6 +24,7 @@ export const IndexPage = ()=>{
                 <LandingPage
                   onToVolunteerSignUp={() => navigate("/signup/volunteer")}
                   onToOrgSignUp={() => navigate("/signup/organization")}
+                  onToIndividualSignUp={() => navigate("/signup/individual")}
                   onToSignIn={() => navigate("/signin")}
                   onToSignUp={() => navigate("/signup")}
                 />
@@ -42,6 +44,7 @@ export const IndexPage = ()=>{
             <Route path="signup/*" element={<SignUpPage />} />
             <Route path="volunteer/*" element={<VolunteerApp />} />
             <Route path="organization/*" element={<OrganizationApp />} />
+            <Route path="individual/*" element={<IndividualApp />} />
             <Route
               path="*"
               element={<PageNotFound toDashBoard="/" />}
