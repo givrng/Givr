@@ -4,6 +4,7 @@ import { SignInPage } from "./pages/signIn"
 import { SignUpPage } from "./pages/signup"
 import { VolunteerApp } from "./volunteerApp"
 import { OrganizationApp } from "./organizationApp"
+import { IndividualApp } from "./individualApp"
 import { PageNotFound } from "./pages/Volunteer/404 Page"
 
 import { AuthenticatedFlagProvider } from "./components/Auth/AuthContext"
@@ -16,11 +17,12 @@ export const IndexPage = ()=>{
     return <>
         <AuthenticatedFlagProvider>
           <Routes>
-          <Route index element={<LandingPage onToVolunteerSignUp={() => navigate("/signup/volunteer")} onToOrgSignUp={() => navigate("/signup/organization")} onToSignIn={()=>navigate("/signin")} onToSignUp={()=>navigate("/signup")}/>} />
+          <Route index element={<LandingPage onToVolunteerSignUp={() => navigate("/signup/volunteer")} onToOrgSignUp={() => navigate("/signup/organization")} onToIndividualSignUp={() => navigate("/signup/individual")} onToSignIn={()=>navigate("/signin")} onToSignUp={()=>navigate("/signup")}/>} />
           <Route path='signin/*' element={<SignInPage onToDashboard={() => navigate("/dashboard")} onToSignUp={() => navigate("/signin")} toForgotPassword="/forgot-password" toSignUp="/signup" />} />
           <Route path='signup/*' element={<SignUpPage />} />  
           <Route path='volunteer/*' element={<VolunteerApp/>}/>
           <Route path='organization/*' element={<OrganizationApp/>}/>
+          <Route path='individual/*' element={<IndividualApp/>}/>
 
           <Route path="*" element={<PageNotFound toDashBoard="/dashboard" />} />
         </Routes>

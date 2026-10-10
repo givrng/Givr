@@ -120,7 +120,7 @@ const ProblemSection: React.FC = () => {
   );
 };
 
-const MoreInfoSection: React.FC<BasicNatigationProps> = ({ onToOrgSignUp, onToVolunteerSignUp }) => {
+const MoreInfoSection: React.FC<BasicNatigationProps> = ({ onToOrgSignUp, onToVolunteerSignUp, onToIndividualSignUp }) => {
 
   const platformCategories: Array<FeatureCardProps> = [
     {
@@ -146,6 +146,18 @@ const MoreInfoSection: React.FC<BasicNatigationProps> = ({ onToOrgSignUp, onToVo
       color: 'green',
       cta: "Sign up as an Organization",
       action: onToOrgSignUp
+    },
+    {
+      title: "For Individual Initiatives",
+      description: [
+        "Register and get verified by our team",
+        "Post projects with clear requirements",
+        "Review volunteer with clear requirements",
+        "Rate volunteer and build relationships"
+      ],
+      color: 'blue',
+      cta: "Sign up as an Individual",
+          action: onToIndividualSignUp
     }
 
   ]
@@ -160,8 +172,8 @@ const MoreInfoSection: React.FC<BasicNatigationProps> = ({ onToOrgSignUp, onToVo
       </p>
 
       {/* Feature Cards Grid */}
-      <div className="max-w-5xl mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="max-w-8xl mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {platformCategories.map((category, index) => <PlatformCategory key={index} {...category} />)}
         </div>
       </div>
@@ -311,7 +323,7 @@ export default function LandingPage(navigation: BasicNatigationProps) {
       <main>
         <HeroSection onToOrgSignUp={navigation.onToOrgSignUp} onToVolunteerSignUp={navigation.onToVolunteerSignUp} />
         <ProblemSection />
-        <MoreInfoSection onToOrgSignUp={navigation.onToOrgSignUp} onToVolunteerSignUp={navigation.onToVolunteerSignUp}  />
+        <MoreInfoSection onToOrgSignUp={navigation.onToOrgSignUp} onToVolunteerSignUp={navigation.onToVolunteerSignUp} onToIndividualSignUp={navigation.onToIndividualSignUp} />
         <CredibilitySection />
         <CTASection onToOrgSignUp={navigation.onToOrgSignUp} onToVolunteerSignUp={navigation.onToVolunteerSignUp} />
         <Footer />

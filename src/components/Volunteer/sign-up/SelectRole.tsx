@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { HeartHandIcon, OrganizationIcon } from "../../icons";
+import { HeartHandIcon, OrganizationIcon, UsersIcon} from "../../icons";
 
 type rolesprops ={
     id: string;
@@ -16,6 +16,7 @@ const SelectRole:React.FC<{isSignin:boolean}> = ({isSignin}) => {
     const roles: rolesprops[] = [
         { id: "volunteer", icon: HeartHandIcon, title: 'Volunteer', desc: "Find and Join volunteering oportunities", path:"volunteer" },
         { id: "organisation", icon: OrganizationIcon, title: 'Organization', desc: "Post projects and recruit volunteers", path:"organization" },
+        { id: "individual", icon: UsersIcon, title: 'Individual', desc: "Create a personal profile and manage your volunteering activities", path:"individual" }
     ]
 
     return (

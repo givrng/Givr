@@ -20,6 +20,11 @@ export const SignInPage:React.FC<BasicNatigationProps> = ()=>{
                 toSignUp:"/signup"
             }} />} /> 
 
+            <Route path="individual/*" element={<SignInComp onToDashboard={()=>navigate("/individual")} toSignUp="/signup/individual" toForgotPassword="forgot" />} />
+            <Route path='individual/forgot' element={<ForgotPasswordForm navProps={{
+                toSignUp:"/signup"
+            }} />} /> 
+
         </Routes>
     )
 }
