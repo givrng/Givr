@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import DropdownSelect from "./DropdownSelect";
 
 type Props = {
   onChange: (value: { state: string; lga: string }) => void;
@@ -7,9 +8,10 @@ type Props = {
   error?: { state?: string; lga?: string };
   state?:string;
   lga?:string;
+  mobileFriendly?: boolean;
 };
 
-const LocationSelect: React.FC<Props> = ({ onChange, error, state, lga }) => {
+const LocationSelect: React.FC<Props> = ({ onChange, error, state, lga, mobileFriendly = false }) => {
   const [states, setStates] = useState<string[]>([]);
   const [lgas, setLgas] = useState<string[]>([]);
   const [selectedState, setSelectedState] = useState<string>("");
@@ -66,26 +68,41 @@ const LocationSelect: React.FC<Props> = ({ onChange, error, state, lga }) => {
     <div className={"flex flex-col gap-4"}>
       {/* State Select */}
       <div className="flex flex-col">
-        <label className="text-xs sm:text-sm   text-[#323338]">
+        <label htmlFor={mobileFriendly ? "location-state" : undefined} className="text-xs sm:text-sm   text-[#323338]">
           Select State
         </label>
-        <select
-          value={selectedState}
-          onChange={(e) => {
-            setSelectedState(e.target.value);
-            setSelectedLga("");
-          }}
-          className={`border rounded-md p-2 text-black ${
-            error?.state ? "border-red-500" : "border-gray-300"
-          }`}
-        >
-          <option value="">Select State</option>
-          {states.map((item, index) => (
-            <option key={`${item}-${index}`} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
+        {mobileFriendly ? (
+          <DropdownSelect
+            id="location-state"
+            value={selectedState}
+            options={states}
+            placeholder="Select State"
+            onChange={(value) => {
+              setSelectedState(value);
+              setSelectedLga("");
+            }}
+            invalid={Boolean(error?.state)}
+            className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-black"
+          />
+        ) : (
+          <select
+            value={selectedState}
+            onChange={(e) => {
+              setSelectedState(e.target.value);
+              setSelectedLga("");
+            }}
+            className={`border rounded-md p-2 text-black ${
+              error?.state ? "border-red-500" : "border-gray-300"
+            }`}
+          >
+            <option value="">Select State</option>
+            {states.map((item, index) => (
+              <option key={`${item}-${index}`} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        )}
         {error?.state && (
           <p className="text-red-500 text-sm mt-1">Please select a state.</p>
         )}
@@ -93,24 +110,37 @@ const LocationSelect: React.FC<Props> = ({ onChange, error, state, lga }) => {
 
       {/* LGA Select */}
       <div className="flex flex-col">
-        <label className="text-xs sm:text-sm   text-[#323338]">
+        <label htmlFor={mobileFriendly ? "location-lga" : undefined} className="text-xs sm:text-sm   text-[#323338]">
           Select LGA
         </label>
-        <select
-          value={selectedLga}
-          onChange={(e) => setSelectedLga(e.target.value)}
-          disabled={!selectedState}
-          className={`border rounded-md p-2 text-black ${
-            error?.lga ? "border-red-500" : "border-gray-300"
-          }`}
-        >
-          <option value="">Select LGA</option>
-          {lgas.map((item, index) => (
-            <option key={`${item}-${index}`} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
+        {mobileFriendly ? (
+          <DropdownSelect
+            id="location-lga"
+            value={selectedLga}
+            options={lgas}
+            placeholder="Select LGA"
+            onChange={setSelectedLga}
+            disabled={!selectedState}
+            invalid={Boolean(error?.lga)}
+            className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-black"
+          />
+        ) : (
+          <select
+            value={selectedLga}
+            onChange={(e) => setSelectedLga(e.target.value)}
+            disabled={!selectedState}
+            className={`border rounded-md p-2 text-black ${
+              error?.lga ? "border-red-500" : "border-gray-300"
+            }`}
+          >
+            <option value="">Select LGA</option>
+            {lgas.map((item, index) => (
+              <option key={`${item}-${index}`} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        )}
         {error?.lga && (
           <p className="text-red-500 text-sm mt-1">Please select an LGA.</p>
         )}

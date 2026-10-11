@@ -4,6 +4,7 @@ import { ArrowRight, CalendarDays, MapPin, Plus, Trash2, UsersRound } from "luci
 import type { BasicNatigationProps, location } from "../../interface/interfaces";
 import { interestCategories } from "../../components/interest";
 import LocationSelect from "../../components/form/LocationSelect";
+import DropdownSelect from "../../components/form/DropdownSelect";
 
 type InitiativeFields = {
   title: string;
@@ -153,7 +154,7 @@ export const IndividualSignup: React.FC<BasicNatigationProps> = () => {
           </p>
         </header>
 
-        <form onSubmit={handleSubmit} noValidate className="overflow-hidden rounded-xl border border-[#DDE3E8] bg-white shadow-sm">
+        <form onSubmit={handleSubmit} noValidate className="rounded-xl border border-[#DDE3E8] bg-white shadow-sm">
           <section className="border-b border-[#E7EAEE] px-5 py-6 sm:px-8">
             <div className="mb-5">
               <h2 className="text-lg font-semibold text-[#323338]">Basic information</h2>
@@ -197,16 +198,15 @@ export const IndividualSignup: React.FC<BasicNatigationProps> = () => {
 
               <div>
                 <label className={labelClassName} htmlFor="initiative-category">Cause / category <span className="text-[#1A73E8]">*</span></label>
-                <select
+                <DropdownSelect
                   id="initiative-category"
-                  className={inputClassName}
+                  className={`${inputClassName} min-h-11`}
                   value={form.category}
-                  onChange={(event) => updateField("category", event.target.value)}
-                  aria-invalid={Boolean(errors.category)}
-                >
-                  <option value="">Choose a cause</option>
-                  {categories.map((category) => <option key={category} value={category}>{category}</option>)}
-                </select>
+                  options={categories}
+                  placeholder="Choose a cause"
+                  onChange={(value) => updateField("category", value)}
+                  invalid={Boolean(errors.category)}
+                />
                 {errors.category && <p className="mt-1 text-xs text-red-600">{errors.category}</p>}
               </div>
             </div>
@@ -223,7 +223,7 @@ export const IndividualSignup: React.FC<BasicNatigationProps> = () => {
 
             <div className="mb-5">
               <p className={labelClassName}>Location <span className="text-[#1A73E8]">*</span></p>
-              <LocationSelect onChange={handleLocationChange} state={form.location.state} lga={form.location.lga} />
+              <LocationSelect onChange={handleLocationChange} state={form.location.state} lga={form.location.lga} mobileFriendly />
               {errors.location && <p className="mt-1 text-xs text-red-600">{errors.location}</p>}
             </div>
 
@@ -249,10 +249,7 @@ export const IndividualSignup: React.FC<BasicNatigationProps> = () => {
             <div className="space-y-5">
               <div>
                 <label className={labelClassName} font-bold text-lg htmlFor="initiative-sdg">Which Sustainable Development Goal does your initiative address? <span className="text-[#1A73E8]">*</span></label>
-                <select id="initiative-sdg" className={inputClassName} value={form.sdg} onChange={(event) => updateField("sdg", event.target.value)} aria-invalid={Boolean(errors.sdg)}>
-                  <option value="">Choose an SDG</option>
-                  {sdgGoals.map((goal) => <option key={goal} value={goal}>{goal}</option>)}
-                </select>
+                <DropdownSelect id="initiative-sdg" className={`${inputClassName} min-h-11`} value={form.sdg} options={sdgGoals} placeholder="Choose an SDG" onChange={(value) => updateField("sdg", value)} invalid={Boolean(errors.sdg)} />
                 {errors.sdg && <p className="mt-1 text-xs text-red-600">{errors.sdg}</p>}
               </div>
               <div>

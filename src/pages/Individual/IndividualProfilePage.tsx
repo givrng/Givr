@@ -160,7 +160,7 @@ export const IndividualProfileSignup: React.FC = () => {
             </div>
             <div className="mt-5">
               <p className={profileLabelClassName}>Personal location <span className="text-[#1A73E8]">*</span></p>
-              <LocationSelect onChange={handleLocationChange} state={profile.state} lga={profile.lga} />
+              <LocationSelect onChange={handleLocationChange} state={profile.state} lga={profile.lga} mobileFriendly />
               {(errors.state || errors.lga) && <p className="mt-1 text-xs text-red-600">{errors.state || errors.lga}</p>}
             </div>
           </section>
@@ -200,7 +200,7 @@ export const IndividualProfileSignup: React.FC = () => {
           </section>
 
           <footer className="flex flex-col-reverse gap-3 border-t border-[#E7EAEE] bg-[#FAFCFD] px-5 py-5 sm:flex-row sm:justify-between sm:px-8">
-            <button type="button" onClick={() => navigate("/signup/individual", { state: routeLocation.state })} className="rounded-md border border-[#C3C6D4] px-4 py-2 text-sm font-semibold text-[#323338] hover:bg-[#F3FAFA] cursor-pointer">Back to initiative</button>
+            <button type="button" onClick={() => navigate("/")} className="rounded-md border border-[#C3C6D4] px-4 py-2 text-sm font-semibold text-[#323338] hover:bg-[#F3FAFA] cursor-pointer">Back to home</button>
             <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-md bg-[#1A73E8] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#155FC0] sm:w-auto cursor-pointer">Create profile</button>
           </footer>
           {notice && <p role="status" className="border-t border-red-100 bg-red-50 px-5 py-3 text-sm text-red-700 sm:px-8">{notice}</p>}
