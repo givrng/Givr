@@ -127,21 +127,38 @@ const PickInterests: React.FC<BasicNatigationProps> = ({onToSignIn}) => {
       interests: selectedInterests
     }
 
-    API().post(`/auth/signup`, {
+    try{
+
+      await API().post(`/auth/signup`, {
       method: 'POST', 
       headers: {
         "Content-type": "application/json"
       },
       body: JSON.stringify(payload)
-    }
-    ).then(()=>{
+      }
+      )
       if(onToSignIn)
-        onToSignIn()
-    }, ()=>{
-      alertMessage("Account Creation failed, please try again")
-      setIsloading(false) 
-    })
+          onToSignIn()
+
+      
+    }catch(err:any){
+      let status:number = err?.status;
+      
+        if(status == 409){
+          alertMessage("Account exists already, sign in instead")
+        }else if(status>=500) {
+          alertMessage("Server error, contact admin")
+        }else{
+          alertMessage("An error occured, failed to create account")
+        }
+      
+    }finally{
+      setIsloading(false)
+    }
+
+    
   }
+
   
   return (
     <div className=" flex flex-col justify-center items-center  min-h-screen pt-5 px-3 sm:px-4 lg:px-4 mx-auto w-full text-[#323338]">

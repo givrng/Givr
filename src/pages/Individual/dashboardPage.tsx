@@ -23,7 +23,8 @@ export const DashboardPage = () => {
             draftProjects: [],
             openProjects: [],
             ongoingProjects: [],
-            completedProjects: []
+            completedProjects: [],
+            closedProjects: []
         },
     
         rating: 0.0,
@@ -32,8 +33,7 @@ export const DashboardPage = () => {
             numApproved: 0,
             numRejected:0
         },
-        isRestricted: false
-
+        status: "UNVERIFIED"
     });
     
     const metrics = useMemo<MetricProps[]>(()=>[
@@ -115,9 +115,9 @@ export const DashboardPage = () => {
         <main className="">
             <DashboardHeader isOrganization={true} />
             {<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-15">
-                <UserDashboardInformation activeButton={active} buttons={[...buttons.keys()]} onClick={activateNavButton} username={dashboard.name} />
+                <UserDashboardInformation activeButton={active} buttons={[...buttons.keys()]} onClick={activateNavButton} username={dashboard.name} notificationCount={0} />
                 {active == "Dashboard" && dashboard && <Dashboard projects={[]} metrics={metrics} orgTriggerAction={quickAction} hasMounted={()=>setDashboardIsMounted(!dashboardIsMounted)} />}
-                {active == "Project Management" && <ProjectHub isOrganization={true} isDisabled={dashboard.isRestricted}/>}
+                {active == "Project Management" && <ProjectHub isOrganization={true}/>}
                 {active == "Applications" && <ApplicationHub/>}
                 {active == "Profile" && <OrganizationProfilePage/>}
             </div>}

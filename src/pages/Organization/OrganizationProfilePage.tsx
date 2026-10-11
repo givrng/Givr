@@ -8,12 +8,18 @@ import useAuthFetch from "../../components/hooks/useAuthFetch";
 import OrganizationProfile from "../../components/Organization/OrgProfile";
 import { EditOrgProfileModal } from "../../components/Organization/editOrgProfile";
 import { EditOrgContactProfile } from "../../components/Organization/editOrgContactProfile";
+import { useAlert } from "../../components/hooks/useAlert";
 
 
-
+type CheckoutResponse = {
+  checkoutUrl:string;
+}
 export const OrganizationProfilePage:React.FC<{editing?:boolean}> = ({editing = false})=> {
 
   const [isEditing, setIsEditing] = useState(editing)
+  const {alertMessage, AlertDialog} = useAlert({
+    isOrg: true
+  })
   const [orgEdit, setOrgEdit] = useState(false)
   const [profile, setProfile] = useState<OrganizationProfileProps>({
     organization: {
@@ -21,10 +27,12 @@ export const OrganizationProfilePage:React.FC<{editing?:boolean}> = ({editing = 
     },
     organizationContact: {
       contactFirstname:"",
+      contactPersonProfileUrl:"",
       contactLastname:"",
       contactMiddleName:"",
       phoneNumber:"", 
       email:"",
+      emailEditable:true,
       emailVerified:false
     }
   })
@@ -47,15 +55,21 @@ export const OrganizationProfilePage:React.FC<{editing?:boolean}> = ({editing = 
   }, [])
 
   const handleUpdate = async (data: OrganizationProps)=>{
-    try{
-      let response = await API().patch("/profile", data)
-      setProfile(response.data as OrganizationProfileProps)
-    }catch{
-      return Promise.reject()
-    }
+  
+      let response = await API().post("/verification/initiate", data)
+      let checkout = response.data as CheckoutResponse
+      if(response.status == 200){
+        setTimeout(()=>{
+          alertMessage("You will be redirected to Paystack to complete payment")
+        }, 1000)
+
+        window.location.href = checkout.checkoutUrl
+      }
+      return response;
   }
 
-  const handleContactUpdate =  async (data: OrgContantProfileProps)=>{
+  const handleContactUpdate =  async (data: OrgContantProfileProps| OrganizationProps)=>{
+    
     try{
       let response = await API().patch("/profile", data)
       setProfile(response.data as OrganizationProfileProps)
@@ -65,7 +79,8 @@ export const OrganizationProfilePage:React.FC<{editing?:boolean}> = ({editing = 
   }
 
   return (
-    <div className="p-6 space-y-6 flex flex-col justify-center items-center">
+    <div className="space-y-6 flex flex-col justify-center items-center">
+      <AlertDialog/>
       {isLoading&&<PageLoader message="Loading your profile"/> }
 
       { isEditing? orgEdit? <EditOrgProfileModal org={profile.organization} onSave={handleUpdate} onClose={()=>{
@@ -83,6 +98,8 @@ export const OrganizationProfilePage:React.FC<{editing?:boolean}> = ({editing = 
         onEditProfile={()=>{
           setIsEditing(true) 
         } }
+        updateProfile={setProfile}
+        save={handleContactUpdate}
         editOrgInfo={()=>setOrgEdit(true)}
         reload={()=>setReload(!reload)}
       />}

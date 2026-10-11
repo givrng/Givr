@@ -7,12 +7,13 @@ import { useAlert } from "../hooks/useAlert";
 import { interestCategories } from "../interest";
 
 
-const PickInterests: React.FC<{nav: BasicNatigationProps, back:()=>void, selectedInterests:string[], setSelectedInterests:(e:React.SetStateAction<string[]>)=>void}> = ({nav, back, selectedInterests, setSelectedInterests}) => {
+const PickInterests: React.FC<{nav?: BasicNatigationProps, back?:()=>void, selectedInterests:string[], setSelectedInterests:(e:React.SetStateAction<string[]>)=>void}> = ({nav, back, selectedInterests, setSelectedInterests}) => {
   
   const usesignup = useSignup()
   const [isLoading, setIsloading] = useState(false)
   const {alertMessage, AlertDialog} = useAlert({})
 
+ 
   // Toggle selection
   const handleSelect = (item: string): void => {
     setSelectedInterests(
@@ -25,26 +26,41 @@ const PickInterests: React.FC<{nav: BasicNatigationProps, back:()=>void, selecte
   const handleSubmit = async ()=>{
     setIsloading(true)
     // make a patch request to add interests for volunteer
-    const baseUrl = import.meta.env.VITE_API_BASE_URL
+   
     const payload = {
       ...usesignup?.formData,
       interests: selectedInterests
     }
 
-    const response = await fetch(`${baseUrl}/volunteer/auth/signup`, {
-      method: 'POST', 
-      headers: {
-        "Content-type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    }
+    try{
+      const baseUrl = import.meta.env.VITE_API_BASE_URL
+
+      let response = await fetch(`${baseUrl}/volunteer/auth/signup`, {
+            method: 'POST', 
+            headers: {
+              "Content-type": "application/json"
+            },
+            body: JSON.stringify(payload), 
+            signal: AbortSignal.timeout(7000)
+          }
     )
-    console.log(payload)
-  
-    if(response.ok && nav.onToSignIn){
-      nav.onToSignIn()
-    }else{
-      alertMessage("Account Creation failed, please try again")
+    
+      if(response.ok && nav?.onToSignIn){
+        nav.onToSignIn()
+      }else{
+        let status = response.status
+        
+        if(status == 409){
+          alertMessage("This account exists already, login instead")
+        }else if(status >= 500){
+          alertMessage("Server error, please contact admin");
+        }else{
+        alertMessage("Account Creation failed, please try again")
+        }
+
+      }
+      
+    }finally{
       setIsloading(false) 
     }
     
@@ -123,7 +139,6 @@ const PickInterests: React.FC<{nav: BasicNatigationProps, back:()=>void, selecte
           variant={selectedInterests.length == 0? "disabled":"primary"}
           className="text-sm px-4 py-2 sm:w-60 w-full "
           onClick={handleSubmit}
-
         >
           {isLoading? <LoadingEffect message="Creating Account..."/>: "Create Account"}
         </Button>

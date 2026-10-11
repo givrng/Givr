@@ -225,7 +225,9 @@ export const OrganizationProfilePage:React.FC<{editing?:boolean}> = ({editing = 
       contactLastname:"",
       contactMiddleName:"",
       phoneNumber:"", 
+      contactPersonProfileUrl:"",
       email:"",
+      emailEditable:false,
       emailVerified:false
     }
   })
@@ -251,18 +253,24 @@ export const OrganizationProfilePage:React.FC<{editing?:boolean}> = ({editing = 
     try{
       let response = await API().patch("/profile", data)
       setProfile(response.data as OrganizationProfileProps)
+      return response
     }catch{
       return Promise.reject()
     }
   }
 
-  const handleContactUpdate =  async (data: OrgContantProfileProps)=>{
-    try{
-      let response = await API().patch("/profile", data)
+  const save = async (data: OrgContantProfileProps | OrganizationProps): Promise<undefined> => {
+    try {
+      const response = await API().patch("/profile", data)
       setProfile(response.data as OrganizationProfileProps)
-    }catch {
+      return undefined
+    } catch {
       return Promise.reject()
     }
+  }
+
+  const handleContactUpdate =  async (data: OrgContantProfileProps)=>{
+    return save(data)
   }
 
   return (
@@ -280,12 +288,14 @@ export const OrganizationProfilePage:React.FC<{editing?:boolean}> = ({editing = 
       profileProps={profile.organizationContact}
       /> : <OrganizationProfile
         profile={profile}
-        org={profile?.organization}
+        org={profile.organization}
         onEditProfile={()=>{
           setIsEditing(true) 
         } }
         editOrgInfo={()=>setOrgEdit(true)}
         reload={()=>setReload(!reload)}
+        updateProfile={setProfile}
+        save={save}
       />}
 
     </div>

@@ -3,59 +3,54 @@ import React, { useEffect, useState } from "react";
 import UserDashboardInformation from "../../components/Volunteer/userDashBoardInfo";
 import Dashboard from "../../components/Volunteer/dashboard";
 
-import type { MetricProps, NavTypes, VolunteerQuickActions, VolunteerDashboardProps } from "../../interface/interfaces";
-import { ProjectHub } from "../../components/Volunteer/projectHub";
+import type { MetricProps, NavTypes, VolunteerQuickActions, VolunteerDashboardProps, ProjectProps } from "../../interface/interfaces";
 import { DashboardHeader } from "../../components/dashboardHeader";
 import useAuthFetch from "../../components/hooks/useAuthFetch";
 import MyVolunteering from "../../components/Volunteer/MyVolunteering";
 import ProfilePage from "../../components/Profile";
+import { ProjectHub } from "../../components/Volunteer/projectHub";
+import { useSearchParams } from "react-router-dom";
+import { ProjectCard } from "../../components/ReuseableComponents";
+import { useGenericModal } from "../../components/hooks/useGenericModal";
+import { useAlert } from "../../components/hooks/useAlert";
+import { useSocketConnection } from "../../components/Chat/socketConnection";
 
 export const DashboardPage = () => {
-
     const [active, setActive] = useState<NavTypes>("Dashboard");
     const [dashboardIsMounted, setDashboardIsMounted] = useState(false)
     const [volunteerDashboard, setVolunteerDashboard] = useState<VolunteerDashboardProps>({
-        firstname: "Daniel",
-        projectApplications: [
-            {
-                appliedAt: "2025-12-13",
-                id: 10,
-                project: 20,
-                status: "APPLIED",
-                volunteer: 10,
-                title: "Testing"
-            }
-
-        ]
+        firstname: "",
+        profileCompleted: false,
+        projectApplications: []
     });
 
     const [metrics, setMetrics] = useState<MetricProps[]>([
         {
             title: "Projects Applied",
-            context: "+12 hours this month",
+            context: "",
             icon: <ClockIcon />,
-            value: "124",
+            value: "",
             color: "#1A73E8"
         },
         {
             title: "Approved Projects",
-            context: "+2 this month",
+            context: "",
             icon: <BriefcaseIcon />,
-            value: "8",
+            value: "",
             color: "#34A853"
         },
         {
             title: "Badges Earned",
-            context: "0 badges earned",
+            context: "",
             icon: <ShieldIcon fill="none" color="#FBBC05" />,
-            value: "0",
+            value: "",
             color: "#FBBC05"
         },
         {
             title: "Rating",
-            context: "0.0 rating from organizations",
+            context: "",
             icon: <StarIcon color="#237238" fill="none" />,
-            value: "0",
+            value: "",
             color: "#34A853"
         }
     ])
@@ -71,13 +66,12 @@ export const DashboardPage = () => {
     // Makes requests with automatic refresh logic when access token expires
     const {API} = useAuthFetch("volunteer")
 
-    
+
     // const projects = rawProjects as ProjectProps[]
     const activateNavButton = (event: React.MouseEvent<HTMLButtonElement>) => {
         let selectButtonValue = buttons.get(event.currentTarget.textContent);
         setActive(selectButtonValue ? selectButtonValue as NavTypes : "Dashboard")
     }
-
 
 
     const quickAction = (action: VolunteerQuickActions) => {
@@ -98,7 +92,7 @@ export const DashboardPage = () => {
         .then(response=>{
             setVolunteerDashboard(response.data as VolunteerDashboardProps)
         })
-    
+
         return null
     }
 
@@ -106,7 +100,6 @@ export const DashboardPage = () => {
     useEffect(() => {
         (() => {
             loadUserProfile()
-           
         })()
     }, [dashboardIsMounted])
 
@@ -144,21 +137,65 @@ export const DashboardPage = () => {
                     context: `+${approvedThisMonth} this month`
                 }
             }
+
+            // Badges and Rating may not be returned by the dashboard API yet.
+            // Set them to a neutral placeholder so the UI shows "—" instead of
+            // an infinite loading skeleton pulse.
+            if (metric.title === "Badges Earned" && metric.value === "") {
+                return {
+                    ...metric,
+                    value: "0",
+                    context: "No badges earned yet",
+                }
+            }
+
+            if (metric.title === "Rating" && metric.value === "") {
+                return {
+                    ...metric,
+                    value: "—",
+                    context: "No ratings yet",
+                }
+            }
+
             return metric
         }))
     }, [volunteerDashboard])
 
+    const [searchParams, setSearchParams] = useSearchParams()
+    const {openModal, ModalComponent} = useGenericModal()
+    const {alertMessage, AlertDialog} = useAlert({isOrg: false})
+    useEffect(()=>{
+       ( async ()=>{
+            let projectId = searchParams.get("project")
+            if(!projectId)
+                return
+            try{
+                const response = await API().get(`/projects/${projectId}`)
+                let project = response.data as ProjectProps
+                openModal(<ProjectCard {...project}/>, ()=>{
+                    searchParams.delete("project")
+                    setSearchParams(searchParams)
+                })
+            }catch{
+                alertMessage("Failed to fetch project")
+            }
+        })()
 
+    }, [])
+
+    const notificationCount = useSocketConnection()?.totalCount || 0
     return <>
         <main className="">
             <DashboardHeader />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-15">
-                <UserDashboardInformation activeButton={active} buttons={[...buttons.keys()]} onClick={activateNavButton} username={volunteerDashboard?.firstname} />
-                {active == "Dashboard" && <Dashboard metrics={metrics} triggerAction={quickAction} hasMounted={()=>setDashboardIsMounted(!dashboardIsMounted)}/>}
+            <div className="max-w-7xl h-svh mx-auto px-4 sm:px-6 lg:px-8 mt-15">
+                <UserDashboardInformation notificationCount={notificationCount} activeButton={active} buttons={[...buttons.keys()]} onClick={activateNavButton} username={volunteerDashboard?.firstname} />
+                {active == "Dashboard" && <Dashboard metrics={metrics} triggerAction={quickAction} hasMounted={()=>setDashboardIsMounted(!dashboardIsMounted)} profileCompleted={volunteerDashboard.profileCompleted}/>}
                 {active == "Find Opportunities" && <ProjectHub />}
                 {active == "My Volunteering" && <MyVolunteering/>}
                 {active == "Profile & Achievements" && <ProfilePage/>}
             </div>
+            <ModalComponent/>
+            <AlertDialog/>
         </main>
     </>
 }

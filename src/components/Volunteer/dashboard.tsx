@@ -2,16 +2,21 @@ import { useEffect, useState } from "react";
 import { projectStatuses, type DashboardProps, type OrganizationProps, type OrganizationQuickActions, type ProjectProps, type VolunteerQuickActions } from "../../interface/interfaces";
 import { Banner, MetricCard, OrganizationCard, ProjectCard, RadioButton } from "../ReuseableComponents";
 import useAuthFetch from "../hooks/useAuthFetch";
+import { useOrganizationView } from "./ViewOrganization";
 // import useAuthFetch from "../hooks/useAuthFetch";
 
-const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerAction, hasMounted})=>{
+const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerAction, hasMounted, profileCompleted})=>{
     const [active, setActive] = useState("")
     const {API} = useAuthFetch(orgTriggerAction?"organization":"volunteer")
     const [projects, setProjects] = useState<ProjectProps[]>([])
     const [organizations, setOrganizations] = useState<OrganizationProps[]>([])
+    const [selectedProjectCategory, setSelectedProjectCategory] = useState("")
 
-    const [selectedProjectCategory, setSelectedProjectCategory]= useState("")
-
+    // ------------- View organization properties start ----------------
+    // Hook to render the details of a specific organization
+    const {OpenOrganizationView, OrganizationViewModal} = useOrganizationView()
+    const [viewOpen, setViewOpen] = useState(false)
+    // --------- View organization properties end ---------
 
     useEffect(()=>{
         // Fetch projects when component is mounted
@@ -91,12 +96,32 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
             })
     }
 
-    const renderContent = () => {
-      
+    const handleOpenViewOrganization = (organization: OrganizationProps)=>{
+        setViewOpen(true)
+        OpenOrganizationView(organization, ()=>setViewOpen(false))
+    }
 
+    useEffect(() => {
+    const handleBack = () => {
+        // unmount logic (e.g. set state)
+        if(viewOpen)
+            setViewOpen(false);
+    };
+
+    window.addEventListener("popstate", handleBack);
+
+    return () => {
+        window.removeEventListener("popstate", handleBack);
+    };
+    }, []);
+
+    
+    const renderContent = () => {
         if (organizations && active === "View Organizations") {
+        
             return (
-            <div className="border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2">
+                <>
+                {viewOpen? <OrganizationViewModal/>: <div className="border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2">
                 <p className="text-xl font-bold text-gray-800">Organizations</p>
                 <span className="text-sm font-medium text-gray-500">
                 Based on your skills and location
@@ -105,9 +130,11 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
                 <OrganizationCard
                     {...organization}
                     key={`${organization.name}-${index}`}
+                    showOrganizationDetails={handleOpenViewOrganization}
                 />
                 ))}
-            </div>
+            </div>}
+                </>
             );
         }
 
@@ -116,15 +143,22 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
     
         setSelectedProjectCategory(selectButtonValue != selectedProjectCategory? selectButtonValue : "")
     }
-        // Default (List of projects)
+
+        // Organization dashboard: no project cards here (moved to Project Management tab)
+        if (orgTriggerAction) {
+            return null;
+        }
+
+        // Volunteer dashboard: show projects with recommendations
         return (
-            <div className={`border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2 `}>
+            <div className="border border-gray-300 rounded-xl p-4 grid grid-cols-1 gap-y-2">
             <p className="text-xl font-bold text-gray-800">{triggerAction? "Recommended for you": "Your Projects"}</p>
             <span className="text-sm font-medium text-gray-500">
                 {triggerAction && "Based on your skills and location"}
             </span>
             <div className="flex gap-x-2">
-                {orgTriggerAction&&projectStatuses.filter(p=>p!="DRAFT")
+                {triggerAction && projectStatuses
+                    .filter(status => status !== "DRAFT")
                     .map((status, index)=><RadioButton 
                         key={index}
                         active={selectedProjectCategory == status}
@@ -132,15 +166,33 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
                         onClick={activateSelectedProjectCategory}
                         >{status}</RadioButton>)}
             </div>
+            {!profileCompleted && triggerAction && (
+                <div className="flex items-center justify-between gap-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                    <span>
+                    Add your <strong>location</strong> and <strong>interests</strong> to complete your profile and get better recommendations.
+                    </span>
+                    <button className="whitespace-nowrap font-medium underline hover:opacity-80"
+                        onClick={()=>{
+                            if(triggerAction)
+                                triggerAction("Update Profile")
+                        }}
+                    >
+                    Update profile
+                    </button>
+                </div>
+                )}
 
-            {projects?.filter(prj=>{
-                // Display only project categories user wants to see
-                if(selectedProjectCategory != "")
-                    return prj.status == selectedProjectCategory
-                return true
-            }).map((project, index) => (
-                <ProjectCard {...project} key={index} isOrganization={orgTriggerAction&&true}/>
-            ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+                {projects?.filter(prj=>{
+                    if(selectedProjectCategory != "")
+                        return prj.status == selectedProjectCategory
+                    return true
+                }).map((project, index) => (
+                    <ProjectCard {...project} key={index} isOrganization={false} manage={true}  onEdit={(project)=>{
+                        setProjects(prev =>[project, ...prev.filter(prj=>prj.id != project.id)])
+                    }}/>
+                ))}
+            </div>
 
             </div>
         );

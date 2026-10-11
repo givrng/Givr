@@ -1,12 +1,18 @@
 import { useState, type ReactNode} from "react";
-import type { ButtonProps, FeatureCardProps, MetricComponentProps, NavLinkProps, OrganizationComponentProps, ProjectComponentProps, ProjectFormProps } from "../interface/interfaces"
-import { ArrowIcon, CalendarIcon, ClockIcon, DeleteBinIcon, GroupIcon, LocationIcon } from "./icons";
+import type { ButtonProps, FeatureCardProps, MetricComponentProps, NavLinkProps, OrganizationComponentProps,  ProjectComponentProps, ProjectFormProps, ProjectProps } from "../interface/interfaces"
+import { ArrowIcon, CalendarIcon, ClockIcon, DeleteBinIcon, GroupIcon, LocationIcon, PageLoader } from "./icons";
 import { useConfirmAsk } from "./hooks/useConfirm";
 import { useAlert } from "./hooks/useAlert";
 import { useModal } from "./hooks/useModal";
 import useAuthFetch from "./hooks/useAuthFetch";
 import { CreateProject } from "./Organization/createProjectForm";
-
+import ProjectDetailsModal from "./ProjectModalDetails";
+import { Download, LucideShare2, ZoomIn } from "lucide-react";
+import  { useShareModal } from "./shareModal";
+import { useApplicationForm } from "./Volunteer/ApplicationForm";
+import { useImageViewer } from "./hooks/useImageViewer";
+import { downloadFile } from "../utils/fileDownload";
+import { formatDisplayDate, toISODateInput } from "../utils/date";
 
 // --- Reusable Components ---
 
@@ -137,19 +143,40 @@ export const Card: React.FC<{children: React.ReactNode}> = ({ children }) => (
   </div>
 );
 
+/** Color map for MetricCard - avoids dynamic Tailwind classes that JIT can't resolve */
+const METRIC_COLOR_MAP: Record<string, string> = {
+  "#1A73E8": "text-[#1A73E8]",
+  "#34A853": "text-[#34A853]",
+  "#FBBC05": "text-[#FBBC05]",
+  "#B86705": "text-[#B86705]",
+  "#237238": "text-[#237238]",
+};
+
 /**Used to display the performance information */
 export const MetricCard: React.FC<MetricComponentProps> = ({title, context, icon, value, className = "w-full ", color})=>{
+  const isLoading = value === undefined || value === null || value === "" || value === "undefined";
+  const colorClass = color ? METRIC_COLOR_MAP[color] ?? "text-gray-900" : "text-gray-900";
+
   return (
     <div className={`bg-white p-6 rounded-xl shadow-lg max-w-sm ${className}`}>
 
     <div className="flex justify-between items-center mb-4">
-        <h2 className="text-sm font-bold text-gray-700">{title? title: "Hours Logged"}</h2>
+        <h2 className="text-sm font-bold text-gray-700">{title || "—"}</h2>
         {icon}
     </div>
 
     <div className="flex flex-col">
-        <span className={`text-2xl font-extrabold text-[${color}] leading-none`}>{value?value:"124"}</span>
-        <span className="text-sm font-medium text-gray-500 mt-2">{context? context: "+12 hours this month"}</span>
+        {isLoading ? (
+          <>
+            <div className="h-8 w-16 bg-gray-200 rounded-md animate-pulse" />
+            <div className="h-4 w-36 bg-gray-100 rounded-sm animate-pulse mt-2" />
+          </>
+        ) : (
+          <>
+            <span className={`text-2xl font-extrabold ${colorClass} leading-none`}>{value}</span>
+            <span className="text-sm font-medium text-gray-500 mt-2">{context || "—"}</span>
+          </>
+        )}
     </div>
 </div>
   )
@@ -171,121 +198,196 @@ export const Banner:React.FC<{className?:string; title:string; content:string}> 
 )
 
 export const InfoCell:React.FC<{icon:ReactNode, info:string}> = ({icon, info})=>(
-  <div className="flex items-center text-sm text-gray-600">
-    {icon}
-    <span>{info}</span>
+  <div className="flex items-center gap-2 text-sm text-gray-600">
+    <span className="shrink-0">{icon}</span>
+    <span className="min-w-0 flex-1 truncate">{info}</span>
   </div>
 
 )
 
 /**Displays an organization's information */
-export const OrganizationCard: React.FC<OrganizationComponentProps> = ({name, description, numOfActiveProjects,location, category, status, hasVolunteered=false})=>{
+export const OrganizationCard: React.FC<OrganizationComponentProps> = (orgComponentProps)=>{
   const {confirmAsk, ConfirmDialog} = useConfirmAsk({})
   const {alertMessage, AlertDialog} = useAlert({isOrg:true})
 
-
   const handleApplication = async ()=>{
-    const ok = hasVolunteered? await confirmAsk({
-      question: "Are you sure you want to cancel your application for this particular project?",
-      trueAnswer: "Proceed",
-      falseAnswer: "Cancel"
-    }): await await confirmAsk({
-      question: "Are you sure you want to apply for this particular project?",
-      trueAnswer: "Apply",
-      falseAnswer: "Cancel"
-    })
+    const ok = orgComponentProps.hasVolunteered
+      ? await confirmAsk({
+          question: "Are you sure you want to cancel your application for this particular project?",
+          trueAnswer: "Proceed",
+          falseAnswer: "Cancel"
+        })
+      : await confirmAsk({
+          question: "Are you sure you want to apply for this particular project?",
+          trueAnswer: "Apply",
+          falseAnswer: "Cancel"
+        })
 
     if(ok){
-      let message =hasVolunteered?`Your application to ${name} has been cancelled`:`Your application to ${name} has been submitted`
+      const orgName = orgComponentProps.name || "this organization";
+      const message = orgComponentProps.hasVolunteered
+        ? `Your application to ${orgName} has been cancelled`
+        : `Your application to ${orgName} has been submitted`
       await alertMessage(message)
     }
   }
 
-  return <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full ">
-
-    <div className="flex justify-between items-start mb-4">
+  return (
+    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full ">
+      <div className="flex justify-between items-start mb-4">
         <div className="flex flex-col pr-4">
-            <h3 className="text-xl font-bold text-gray-900 mb-1">{name}</h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-                {description}
-            </p>
+          <h3 className="text-xl font-bold text-gray-900 mb-1">{orgComponentProps.name}</h3>
+          <p className="text-sm text-gray-600 leading-relaxed">{orgComponentProps.description}</p>
         </div>
         <div className="flex-shrink-0 flex space-x-2">
-            {/* <span className="bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
+          {/* <span className="bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
                 Applied
             </span> */}
-            <span className={`${status=="VERIFIED"?"bg-green-600": "bg-red-600"} text-white text-xs font-semibold px-3 py-1 rounded-full`}>
-               {status}
-            </span>
+          <span
+            className={`${orgComponentProps.status == "VERIFIED" ? "bg-green-600" : "bg-red-600"} text-white text-xs font-semibold px-3 py-1 rounded-full`}
+          >
+            {orgComponentProps.status}
+          </span>
         </div>
-    </div>
+      </div>
 
-    <div className="text-sm text-gray-700 space-y-2 mb-4">
-        <p>
-            <span className="font-semibold text-blue-600">Adress: </span> 
-            {`${location?.lga}, ${location?.state}`}
-        </p>
-        <p>
-            <span className="font-semibold text-blue-600">Active Projects: </span>
-            {numOfActiveProjects? numOfActiveProjects: 0}
-        </p>
-    </div>
 
-    <div className="flex justify-between items-end">
+      <div className="flex flex-col justify-between gap-y-2">
         <div className="flex space-x-2">
-            <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{category}</span>
+          <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">
+            {orgComponentProps.organizationType}
+          </span>
         </div>
-        <Button variant="primary">View Projects</Button>
-        {hasVolunteered?<Button variant="outline" onClick={handleApplication} > Cancel Application</Button>: null}
+        <div className="flex gap-x-2 justify-end">
+          <Button variant="outline" onClick={()=>{
+              // Only call if method is not null
+              orgComponentProps.showOrganizationDetails && orgComponentProps.showOrganizationDetails({...orgComponentProps})
+          }}>View</Button>
+        </div>
+        {orgComponentProps.hasVolunteered ? (
+          <Button variant="outline" onClick={handleApplication}>
+            {" "}
+            Cancel Application
+          </Button>
+        ) : null}
+      </div>
+      <ConfirmDialog />
+      <AlertDialog />
     </div>
-    <ConfirmDialog/>
-    <AlertDialog/>
-</div>
+  );
 }
 
 /**Displays details of a project */
-export const ProjectCard:React.FC<ProjectComponentProps> = ({id, title, organization, specialRequirements,applicationDeadline,description,categories, attendanceHours, location,requiredSkills, maxVolunteers, startDate, endDate,status, totalApplicants, superVolunteer, manage=false, applied=false, isOrganization=false, isDraft=false, onEdit, onDelete, onPublish})=>{
+export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organization, specialRequirements,applicationDeadline,description,categories, attendanceHours, location,address,requiredSkills, maxVolunteers, startDate, endDate,status, totalApplicants, superVolunteer, manage=false, applied=false, isOrganization=false, isDraft=false, onEdit, onDelete, onPublish, projectFlierUrl, projectCardUrl, rating, broadcastEnabled, createdAt, updatedAt})=>{
 
   const [displayForm, setDisplayForm] = useState(false)
   const {modal, DisplayModal} = useModal()
   const [isEditing, setIsEditing] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const {API} = useAuthFetch(isOrganization? "organization": "volunteer")
+  const {openImage, ImageViewerModal} = useImageViewer()
 
+  const project:ProjectProps = {
+    id,
+    title, organization, 
+    specialRequirements,applicationDeadline,
+    description,categories, attendanceHours, 
+    location,address,requiredSkills, maxVolunteers, 
+    startDate, endDate,status, totalApplicants, 
+    superVolunteer, projectFlierUrl, projectCardUrl,
+    rating, broadcastEnabled, createdAt, updatedAt
+  }
+
+  const {openShare, ShareModalComponent} = useShareModal()
+  const {alertMessage, AlertDialog} = useAlert({isOrg: isOrganization})
   // Makes request to backend to get organization information
   const handleView = ()=>{
-    modal(<OrganizationCard {...organization} description={organization?.description!}  hasVolunteered={false} />)
+    modal(<ProjectDetailsModal project={project}/>)
 
   }
-  const {state, lga} = location
+  // const {state, lga} = location
 
   const closeEditing = ()=>{
     setIsEditing(false);
   }
+  
 
-  // Project data to prepopulate when editing 
+  const handleShareProject = async ()=>{
+    try{
+      setIsLoading(true)
+      let response = await API().get(`/share/project/${project.id}`);
+      let url = response.data as string
+
+      // Open share modal only when there's a link
+      openShare({
+        text: "",
+        title: project.title, 
+        url
+      })
+      
+    }catch(err){
+      await alertMessage("Failed to create link")
+    }finally{
+      setIsLoading(false)
+    }
+  }
+  // Project data to prepopulate when editing
   const projectData:ProjectFormProps = {
     id: id,
     title: title,
-    startDate: startDate.split(",")[0].split("/").reverse().join("-"),
+    startDate: toISODateInput(startDate),
     attendanceHours: attendanceHours,
-    category: categories[0],
-    applicationDeadline: applicationDeadline.split(",")[0].split("/").reverse().join("-"),
+    categories: categories,
+    applicationDeadline: toISODateInput(applicationDeadline),
     description: description?description:"",
-    endDate: endDate.split(",")[0].split("/").reverse().join("-"),
-    location: location,
+    endDate: toISODateInput(endDate),
+    location,
     maxVolunteers: maxVolunteers,
+    address,
     requiredSkills: requiredSkills,
     specialRequirements: specialRequirements,
+    projectFlierUrl: projectFlierUrl,
   }
 
-  return <div className="relative bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full">
+  const {openApplicationForm, ApplicationModal} = useApplicationForm()
+  
+  const handleApply = ()=>{
+    setDisplayForm(true)
+
+    openApplicationForm({
+      onCancel: ()=>setDisplayForm(false),
+      projectId: id,
+      organization: organization?.name
+    })
+  }
+  const statusStyles: Record<string, string> = {
+    OPEN: "bg-green-100 text-green-700 ring-1 ring-green-200",
+    ONGOING: "bg-blue-100 text-blue-700 ring-1 ring-blue-200",
+    COMPLETED: "bg-gray-100 text-gray-600 ring-1 ring-gray-200",
+    DRAFT: "bg-amber-100 text-amber-700 ring-1 ring-amber-200",
+  };
+  const flierUrl = projectFlierUrl || projectCardUrl;
+  const dateLabel = formatDisplayDate(startDate);
+  const deadlineLabel = formatDisplayDate(applicationDeadline);
+  const locationLabel = location?.lga || location?.state
+    ? [location?.lga, location?.state].filter(Boolean).join(", ")
+    : address || "Location not specified";
+  const volunteersLabel = maxVolunteers != null && maxVolunteers > 0
+    ? `${maxVolunteers} volunteer${maxVolunteers === 1 ? "" : "s"} needed`
+    : "Volunteers needed: -";
+
+  return <div className="relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-200 w-full">
+    {isLoading && <PageLoader/>}
     {isEditing?<CreateProject onClose={closeEditing} projectData={projectData} isCreating={false} onSuccessfulEdit={onEdit}/>:<>
       {isDraft&&<button
-      className="absolute top-0 right-0 m-1
+      type="button"
+      className="absolute top-2 right-2 z-10
       rounded-full
-      border border-red-500
-      p-1
+      border border-red-200 bg-white
+      p-1.5
       text-red-500
       cursor-pointer
+      shadow-sm
       transition-all duration-200
       hover:bg-red-500
       hover:text-white
@@ -295,153 +397,144 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({id, title, organiza
           onDelete(id, title)
       }}
       ><DeleteBinIcon/></button>}
-      <div className=" flex justify-between items-start mb-4">
-          <div className="flex flex-col">
-              <h3 className="text-xl font-bold text-gray-800">{title?title: "Community Health Screening"}</h3>
-              {!isOrganization && <p className="text-sm font-medium text-gray-500">{organization? organization.name: "Abuja Health Initiative"}</p>}
+      {flierUrl && (
+        <div className="group/img relative w-full overflow-hidden cursor-pointer">
+          <img
+            src={flierUrl}
+            alt={`${title} flier`}
+            className="w-full h-44 object-cover transition-transform duration-500 group-hover/img:scale-105"
+            onClick={() => openImage({ url: flierUrl, title, downloadName: `${title}-flier` })}
+          />
+          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); openImage({ url: flierUrl, title, downloadName: `${title}-flier` }); }}
+              className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow hover:bg-gray-100"
+            >
+              <ZoomIn size={14} /> View
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); void downloadFile(flierUrl, `${title}-flier`); }}
+              className="inline-flex items-center gap-1.5 bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow hover:bg-gray-100"
+            >
+              <Download size={14} /> Download
+            </button>
           </div>
-        
-          <span className={`${status=="OPEN"? "bg-green-600": "bg-red-600 "} text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider`}>
-              {status? status: "Verified"}
+        </div>
+      )}
+      <div className="flex flex-1 flex-col p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h3 className="line-clamp-2 text-base font-bold leading-snug text-gray-900">{title || "—"}</h3>
+            {!isOrganization && <p className="mt-0.5 truncate text-sm font-medium text-gray-500">{organization?.name || "—"}</p>}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${statusStyles[status] || statusStyles.DRAFT}`}>
+              {status || "—"}
+            </span>
+            {status != "DRAFT" && (
+              <button type="button" onClick={handleShareProject} className="text-gray-400 transition-colors hover:text-blue-600" aria-label="Share project">
+                <LucideShare2 size={16}/>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {description && (
+          <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-gray-500">{description}</p>
+        )}
+
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {categories && categories.length > 0
+            ? (<>
+                {categories.slice(0, 3).map((cat, i)=>(<span key={i} className="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-[11px] font-medium text-gray-600">{cat}</span>))}
+                {categories.length > 3 && <span className="rounded-full px-2.5 py-1 text-[11px] font-semibold text-gray-400">+{categories.length - 3}</span>}
+              </>)
+            : <span className="text-xs text-gray-400">No categories assigned</span>
+          }
+        </div>
+
+        <div className="mt-auto flex flex-col gap-1.5 border-t border-gray-100 pt-4 text-xs font-medium text-gray-600">
+          <span className="inline-flex items-center gap-1.5">
+            <LocationIcon className="h-4 w-4 shrink-0 text-gray-400" />
+            <span className="min-w-0 truncate">{locationLabel}</span>
           </span>
-      </div>
+          <span className="inline-flex items-center gap-1.5">
+            <GroupIcon className="h-4 w-4 shrink-0 text-gray-400" />
+            <span className="min-w-0 truncate">{volunteersLabel}</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <CalendarIcon className="h-4 w-4 shrink-0 text-gray-400" />
+            <span className="min-w-0 truncate">Starts {dateLabel}</span>
+          </span>
+          {applicationDeadline && (
+            <span className="inline-flex items-center gap-1.5">
+              <ClockIcon className="h-4 w-4 shrink-0 text-gray-400" />
+              <span className="min-w-0 truncate">Apply by {deadlineLabel}</span>
+            </span>
+          )}
+          {superVolunteer && (
+            <span className="min-w-0 truncate">Super Volunteer: <span className="font-semibold text-gray-800">{superVolunteer}</span></span>
+          )}
+        </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-6 py-4 border-y border-gray-200">
-          <InfoCell icon={<CalendarIcon/>} info={startDate? startDate.split(",")[0]: "Jan 20, 2025"}/>
-          <InfoCell icon={<ClockIcon color="#676879" className="w-6 w-6"/>} info={attendanceHours && typeof attendanceHours !="string"? `${attendanceHours.from.toUpperCase()}-${attendanceHours.to.toUpperCase()}`: "9:00 AM - 3:00 PM"}/>
-          <InfoCell icon={<LocationIcon/>} info={location? `${lga}, ${state}`: "Wuse District, Abuja"}/>
-          <InfoCell icon={<GroupIcon/>} info={`${totalApplicants?totalApplicants: 0 }/${maxVolunteers?maxVolunteers: 20}` }/>
-      </div>
-
-      <div className="flex flex-col justify-between pt-4 gap-y-2">
-
-          <div className="flex flex-col space-y-3">
-            <div className="flex space-x-2">
-                {categories? categories.map((cat, i)=>(<span key= {i} className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">{cat}</span>)): <>
-                <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">Healthcare</span>
-                <span className="text-xs px-3 py-1 border border-gray-300 rounded-full text-gray-700">Community Outreach</span>
-                </>}
-            </div>
-              {superVolunteer&& (<p className="text-sm font-normal text-gray-600">Super Volunteer: <span className="font-medium text-gray-800">{superVolunteer}</span></p>)}
-          </div>
-          
-          {!isOrganization?
-        <div className="flex gap-x-2 self-end">
-              {manage && <Button variant="outline" onClick={handleView}>View details</Button>}
-              {!applied?(<Button variant="primary" onClick={()=>setDisplayForm(true)}>Apply Now</Button>): <Button variant="disabled">Applied</Button>}
-          </div>:
-          <div className="flex gap-x-2 self-end">
-            {status!="COMPLETED" &&<Button variant="outline" onClick={()=>setIsEditing(true)}>Edit</Button>}
-              {status!="COMPLETED" &&manage&&<Button variant="outline" > Manage Volunteers</Button>}  
-              {isDraft && <Button variant="green" onClick={()=>{
-                if(onPublish)
-                  onPublish(id, title)
-
-              }}>Publish</Button>}
-          </div>  
-        }
+        <div className="mt-4 flex flex-col gap-2">
+          <Button variant="outline" className="w-full" onClick={handleView}>View Details</Button>
+          {!isOrganization ? (
+            !applied ? (
+              <Button variant="primary" className="w-full" onClick={handleApply}>Apply Now</Button>
+            ) : (
+              <Button variant="disabled" className="w-full">Applied</Button>
+            )
+          ) : (
+            status !== "COMPLETED" && (
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setIsEditing(true)}>Edit</Button>
+                {isDraft && (
+                  <Button variant="green" className="flex-1" onClick={() => { if (onPublish) onPublish(id, title); }}>
+                    Publish
+                  </Button>
+                )}
+              </div>
+            )
+          )}
+        </div>
       </div>
 
       {/* Volunteer can views details of an organization after applying, therefore, application form should not be shown */}
-      {(displayForm && (!manage || !applied))&& <ApplicationForm organization={organization?.name} onCancel={()=>setDisplayForm(false)} projectId={id}/>}
+      {(displayForm && (!manage || !applied))&& <ApplicationModal/>}
       <DisplayModal/>
     </>}
-
+    <ShareModalComponent/>
+    <AlertDialog/>
+    <ImageViewerModal/>
 </div>
 }
 
 
 {/*Highlights only active button, used for navigation, allowing user toggle*/}
-export const RadioButton: React.FC<{children: React.ReactNode;  value?:string; activeSyle?:string; inActiveStyle?:string; active?: boolean; onClick?: (event:React.MouseEvent<HTMLButtonElement>) => void;}> = ({ children, active, onClick, activeSyle, inActiveStyle, value}) => {
+export const RadioButton: React.FC<{children: React.ReactNode;  value?:string; activeSyle?:string; inActiveStyle?:string; active?: boolean; onClick?: (event:React.MouseEvent<HTMLButtonElement>) => void; notificationCount?:number}> = ({ children, active, onClick, activeSyle, inActiveStyle, value}) => {
   let activeStyle_ = activeSyle;
   let notActiveStyle = inActiveStyle;
 
   if(!activeSyle)
     activeStyle_ = "bg-white rounded-xl w-full text-black shadow-md rounded-t-lg py-2"
   if(!inActiveStyle)
-    notActiveStyle = "bg-[#E7E9EF] rounded-xl w-full text-gray-600 hover:bg-gray-300 py-2"
+    notActiveStyle = "bg-[#E7E9EF] w-full rounded-xl text-gray-600 hover:bg-gray-300 py-2"
 
   return (
         <button
         onClick={onClick}
-        className={`font-semibold text-sm  px-4 relative z-10 transition-all
+        className={`relative z-10 flex items-center justify-center gap-2 px-4 text-sm font-semibold transition-all
             ${active
             ? activeStyle_
             : notActiveStyle}`}
         value={value}
         >
-        {children}
+        <span>{children}</span>
+
+        
         </button>
     );
 };
-
-/**Promts volunteer to provide their reason for applying for a project before application */
-export const ApplicationForm:React.FC<{onCancel:()=>void, organization?:string, projectId:number}> = ({onCancel, organization, projectId})=>{
-  interface ApplicationFields {
-    projectId:number;
-    reason: string;
-    availableDays:string
-  }
-  const [applicationForm, setApplicationForm] = useState<ApplicationFields>({
-    projectId: projectId,
-    reason: "",
-    availableDays: ""
-  })
-
-  const {API} = useAuthFetch("volunteer")
-
-  let {confirmAsk, ConfirmDialog}= useConfirmAsk({})
-  let {alertMessage, AlertDialog} = useAlert({isOrg:false})
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>)=>{
-    e.preventDefault()
-    console.log(applicationForm)
-    // Prompt the volunteer to confirm their application
-    const ok = await confirmAsk({
-      question: "Are you sure you want to apply for this particular project?",
-      trueAnswer: "Apply",
-      falseAnswer: "Cancel"
-    })
-    if(ok){
-      let message = `Thank you for Applying! ${organization} will reach out to you if you fit the selection criteria`
-      await API().post("/projects/apply", applicationForm ) 
-      .then(async ()=>{
-        await alertMessage(message)
-      }, async ()=>{
-        await alertMessage(`Application ${organization}'s project failed. Please try again`)
-      })     
-      
-    }
-
-    onCancel()
-  }
-
-
-  return <>
-    <div className="bg-white p-8 rounded-xl mt-2 shadow-2xl w-full max-full">
-      {/* <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-6 leading-tight">Appply for {project}</h2> */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-
-        <label htmlFor="reason" className="block text-base font-semibold text-gray-700 mb-2">Why do you want to volunteer for this project?</label>
-
-        <textarea name="reason" rows={5}  value={applicationForm["reason"]} onChange={(e)=>setApplicationForm({...applicationForm, reason:e.currentTarget.value })} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 resize-y text-gray-800" required></textarea>
-        <label htmlFor="availability" className="block text-base font-semibold text-gray-700 mb-2">Confirm you availability</label>
-        <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800" type="text" name="availability" placeholder="e.g available all day" value={applicationForm.availableDays} onChange={e=>setApplicationForm({...applicationForm, availableDays: e.currentTarget.value})} required/>
-
-        <div className="flex justify-between pt-2 space-x-4">
-          <Button variant="primary" className="w-full">Submit application</Button>
-           <Button variant="outline"  className="w-full" onClick={onCancel}>Cancel</Button>
-        </div>
-      </form>
-      <ConfirmDialog/>
-      <AlertDialog/>
-    </div>
-  </>
-}
-
-
-// // Runtime validation function using regex
-// function isValidAttendanceHours(hours: string): hours is AttendanceHours {
-//     const regex = /^(1[0-2]|[1-9])(Am|Pm) - (1[0-2]|[1-9])(Am|Pm)$/;
-//     return regex.test(hours);
-// }

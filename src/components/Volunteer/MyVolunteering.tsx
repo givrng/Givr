@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import ProjectDetailsModal from "../ProjectModalDetails";
-import type { MyVolunteeringProps } from "../../interface/interfaces";
+import type { MyVolunteeringProps, ProjectProps } from "../../interface/interfaces";
 import VolunteeringProjectCard from "../VolunteeringProjectCard";
 import { useConfirmAsk } from "../hooks/useConfirm";
 import { useModal } from "../hooks/useModal";
 import useAuthFetch from "../hooks/useAuthFetch";
 import {  PageLoader } from "../icons";
 import { useAlert } from "../hooks/useAlert";
+import useMessageThread from "../Chat/MessageThread";
 
 export default function MyVolunteering() {
   const [projects, setProjects] = useState<MyVolunteeringProps[]>([]);
@@ -15,7 +16,10 @@ export default function MyVolunteering() {
   const {API} = useAuthFetch("volunteer")
   const {confirmAsk, ConfirmDialog} = useConfirmAsk({isOrg: false})
   const {alertMessage, AlertDialog} = useAlert({isOrg:false})
-  // Simulate backend fetch
+  const [chatOpen, setChatOpen] = useState(false)
+  const {openGroupMessage, GroupMessageComp} = useMessageThread()
+
+  // Backend fetch
   useEffect(() => {
     async function fetchProjects() {
       try{
@@ -32,6 +36,22 @@ export default function MyVolunteering() {
     fetchProjects();
   }, []);
 
+   const handleRatingUpdate = async (volunteered:MyVolunteeringProps, rating:number)=>{
+    try{
+      await API().post(`volunteering/${volunteered.id}/review`, {
+        rating
+      })
+    }catch(err:any){
+      let status = err?.response?.status;
+      let errMsg = err?.response?.body?.message 
+
+      if(status == 400){
+        alertMessage(errMsg)
+      }else{
+        alertMessage("Failed to leave review")
+      }
+    }
+   }
 
   const handleCancel = async (volunteered:MyVolunteeringProps) => {
     let confirmation = await confirmAsk({
@@ -55,61 +75,71 @@ export default function MyVolunteering() {
     }
   };
 
-  const handleViewDetailsClick = (project: MyVolunteeringProps) => {
+  const handleViewDetailsClick = ({project }: MyVolunteeringProps) => {
     modal(<ProjectDetailsModal project={project}/>)
   };
 
+  const handleOpenGroupChat = (project:ProjectProps)=>{
+    
+    setChatOpen(true)
+    openGroupMessage(project, "volunteer", ()=>{
+      setChatOpen(false)
+    })
+
+  }
   return (
     <>
-      <ConfirmDialog/>
-      <DisplayModal/>
-      <AlertDialog/>
-      <div className="min-h-screen flex flex-col gap-y-3">
-      {isLoading?<PageLoader message="Loading Projects" />:
+      {chatOpen?<GroupMessageComp/>:<>
       
-      <>
-      <div className="border border-ui rounded-2xl p-5">
-        <h2 className=" text-[#676879] text-base font-semibold mb-4 ">
-          Ongoing Commitments
-        </h2>
+        <ConfirmDialog/>
+        <DisplayModal/>
+        <AlertDialog/>
+        <div className="min-h-screen flex flex-col gap-y-3">
+        {isLoading?<PageLoader message="Loading Projects" />:
+        
+        <>
+        <div className="border border-ui rounded-2xl p-5">
+          <h2 className=" text-[#676879] text-base font-semibold mb-4 ">
+            Ongoing Commitments
+          </h2>
 
-        <div className="grid md:grid-cols-2 gap-2">
-          {projects.filter(p=>p.status=="IN_PROGRESS").map((project) => (
-            <VolunteeringProjectCard
-              key={project.id}
-              volunteered={project}
-              onCancelClick={handleCancel}
-              onViewDetailsClick={handleViewDetailsClick}
-            />
-          ))}
-        </div> 
-      </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {projects.filter(p=>p.status=="IN_PROGRESS").map((project) => (
+              <VolunteeringProjectCard
+              onRateSubmit={handleRatingUpdate}
+                key={project.id}
+                volunteered={project}
+                onCancelClick={handleCancel}
+                onViewDetailsClick={handleViewDetailsClick}
+                onChatOpen={handleOpenGroupChat}
+              />
+            ))}
+          </div> 
+        </div>
 
-      <div className="border border-ui rounded-2xl  p-5">
-        <h2 className=" text-[#676879] text-base font-semibold mb-4 ">
-          Completed Commitments
-        </h2>
-        <div className="grid md:grid-cols-2 gap-2">
-          {projects.filter(p=>p.status=="COMPLETED").map((project) => (
-            <VolunteeringProjectCard
-              key={project.id}
-              volunteered={project}
-              onCancelClick={handleCancel}
-              onViewDetailsClick={handleViewDetailsClick}
-            />
-          ))}
-        </div> 
+        <div className="border border-ui rounded-2xl  p-5">
+          <h2 className=" text-[#676879] text-base font-semibold mb-4 ">
+            Completed Commitments
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {projects.filter(p=>p.status=="COMPLETED").map((project) => (
+              <VolunteeringProjectCard
+                onRateSubmit={handleRatingUpdate}
+                key={project.id}
+                volunteered={project}
+                onCancelClick={handleCancel}
+                onViewDetailsClick={handleViewDetailsClick}
+                onChatOpen={handleOpenGroupChat}
+              />
+            ))}
+          </div> 
+        </div>
+        </>}
+
+        {/* Modals */}
+        
       </div>
       </>}
-
-      {/* Modals */}
-      
-      {/* {showDetails&&<ProjectDetailsModal
-        visible={showDetails}
-        project={selectedJob}
-        onClose={() => setShowDetails(false)}
-      />} */}
-    </div>
     </>
   );
 }
