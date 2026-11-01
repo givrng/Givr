@@ -342,6 +342,8 @@ export interface ParticipantProps{
   endDate?:string;
   volunteer: ProfileProps;
   reason:string;
+  // Optional: participants who applied before this field was introduced won't have it
+  phoneNumber?:string | null;
 }
 
 export type organizationType = "NGO/Non profit" | "Community Group" | "Religious Group"| "Educational Institution" | "Government Agency"|"Corporate Foundation"|""
