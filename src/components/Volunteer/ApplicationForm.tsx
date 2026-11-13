@@ -4,6 +4,7 @@ import { useConfirmAsk } from '../hooks/useConfirm';
 import useAuthFetch from '../hooks/useAuthFetch';
 import { useAlert } from '../hooks/useAlert';
 import { LoadingEffect } from '../icons';
+import { isValidPhoneNumber, PHONE_MAX_DIGITS, PHONE_MIN_DIGITS, sanitizePhoneInput } from '../../utils/phone';
 
 /**
  * Interface for the component props
@@ -24,13 +25,14 @@ interface ApplicationFields {
   mySkills: string[];
   isAvailable: boolean | null;
   additionalInfo: string;
+  phoneNumber: string;
 }
 
 /**
  * Configuration for form fields to ensure type-safe mapping
  */
 interface FieldConfig {
-  id: keyof Omit<ApplicationFields, 'projectId' | 'isAvailable'>;
+  id: keyof Omit<ApplicationFields, 'projectId' | 'isAvailable' | 'phoneNumber'>;
   label: string;
   placeholder: string;
   required?: boolean;
@@ -48,15 +50,18 @@ export const useApplicationForm = ()=>{
     const [skillInput, setSkillInput] = useState("");
     const sessionId = `project_${projectId}`
     const [applicationForm, setApplicationForm] = useState<ApplicationFields>(()=>{
-        let data = sessionStorage.getItem(sessionId)
-        return data? JSON.parse(data) as ApplicationFields: {
-        projectId: projectId,
-        aboutMe: "",
-        reason: "",
-        mySkills: [],
-        isAvailable: null,
-        additionalInfo: ""
-    }
+        const defaults: ApplicationFields = {
+            projectId: projectId,
+            aboutMe: "",
+            reason: "",
+            mySkills: [],
+            isAvailable: null,
+            additionalInfo: "",
+            phoneNumber: ""
+        }
+        const data = sessionStorage.getItem(sessionId)
+        // Merge over defaults so drafts saved before new fields were added still load correctly
+        return data? { ...defaults, ...(JSON.parse(data) as Partial<ApplicationFields>) }: defaults
     });
 
     const [errors, setErrors] = useState<Partial<ApplicationFields>>({})
@@ -66,7 +71,7 @@ export const useApplicationForm = ()=>{
     const [isLoading, setIsLoading] = useState(false)
     const {API} = useAuthFetch("volunteer")
     
-    const maxCharsByField: Record<keyof Omit<ApplicationFields, 'isAvailable'|'projectId' >, number> = {
+    const maxCharsByField: Record<keyof Omit<ApplicationFields, 'isAvailable'|'projectId'|'phoneNumber' >, number> = {
         aboutMe: 300,
         additionalInfo: 200,
         mySkills: 150,
@@ -87,7 +92,12 @@ export const useApplicationForm = ()=>{
     const validateForm = ():boolean=>{
         const newErrors: Partial<ApplicationFields> = {}
 
-        const {aboutMe, isAvailable, reason} = applicationForm
+        const {aboutMe, isAvailable, reason, phoneNumber} = applicationForm
+        if(!phoneNumber){
+            newErrors.phoneNumber = "Please provide a phone number organizations can reach you on"
+        }else if(!isValidPhoneNumber(phoneNumber)){
+            newErrors.phoneNumber = `Phone number must be between ${PHONE_MIN_DIGITS} to ${PHONE_MAX_DIGITS} digits long`
+        }
         if(!aboutMe){
             newErrors.aboutMe = "Organizations want to know more about you"
         }
@@ -197,7 +207,32 @@ export const useApplicationForm = ()=>{
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-            
+
+            {/* Phone Number */}
+            <div className="space-y-1.5">
+                <p className="text-red-500 text-sm mt-1">
+                    {errors.phoneNumber}
+                </p>
+                <label htmlFor="phoneNumber" className="block text-sm font-bold text-gray-700">
+                Phone Number <span className="text-red-700">*</span>
+                </label>
+                <input
+                id="phoneNumber"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
+                value={applicationForm.phoneNumber}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('phoneNumber', sanitizePhoneInput(e.target.value))}
+                placeholder="e.g. 08012345678"
+                aria-invalid={!!errors.phoneNumber}
+                aria-describedby="phoneNumber-hint"
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-200 text-sm text-gray-800 outline-none"
+                />
+                <p id="phoneNumber-hint" className="text-[11px] text-gray-400">
+                    Shared with the organization so they can contact you about this project. Digits only, {PHONE_MIN_DIGITS}–{PHONE_MAX_DIGITS} digits.
+                </p>
+            </div>
+
             {/* First 2 text fields */}
             {textFields.splice(0, 2).map((field) => (
             <div key={field.id} className="space-y-1.5">

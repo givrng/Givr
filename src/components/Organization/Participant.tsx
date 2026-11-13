@@ -8,7 +8,7 @@ import {
   Calendar,
   Layers,
   Info,
- 
+  Phone,
 } from 'lucide-react';
 import type { ParticipantProps, ParticipationStatus, ProjectProps } from '../../interface/interfaces';
 import { Button } from '../ReuseableComponents';
@@ -32,6 +32,9 @@ export interface ParticipantCardComponentProps{
 
 export const ParticipantCard: React.FC<ParticipantCardComponentProps> = ({ participant, onComplete, onReject }) => {
   const { volunteer, project, status } = participant;
+  // Prefer the number given on the application; fall back to the profile number for
+  // participants who applied before phone numbers were collected on applications
+  const phoneNumber = participant.phoneNumber?.trim() || volunteer.phoneNumber?.trim() || null;
 
   // Status Badge Configuration
   const statusConfig = {
@@ -99,6 +102,14 @@ export const ParticipantCard: React.FC<ParticipantCardComponentProps> = ({ parti
               <span className="flex items-center">
                 <Calendar size={14} className="mr-1 shrink-0" />
                 <span className="truncate">Joined {volunteer?.createdAt &&formatDate(volunteer?.createdAt)}</span>
+              </span>
+              <span className="flex items-center">
+                <Phone size={14} className="mr-1 shrink-0" />
+                {phoneNumber ? (
+                  <a href={`tel:${phoneNumber}`} className="truncate hover:text-green-700 hover:underline">{phoneNumber}</a>
+                ) : (
+                  <span className="truncate italic text-gray-400">Not provided</span>
+                )}
               </span>
 
             </div>
