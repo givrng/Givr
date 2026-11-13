@@ -3,6 +3,7 @@ import SelectRole from "../components/Volunteer/sign-up/SelectRole";
 import type { BasicNatigationProps } from "../interface/interfaces";
 import { SignInComp } from "../components/signinComponent";
 import { ForgotPasswordForm } from "../components/forgotPassword";
+import { LegacyRedirect } from "../components/Auth/LegacyRedirect";
 
 export const SignInPage:React.FC<BasicNatigationProps> = ()=>{
     const navigate = useNavigate();
@@ -27,10 +28,8 @@ export const SignInPage:React.FC<BasicNatigationProps> = ()=>{
                 toSignUp:"/signup"
             }} />} /> 
 
-            <Route path="individual/*" element={<SignInComp onToDashboard={()=>navigate("/individual")} toSignUp="/signup/individual" toForgotPassword="forgot" />} />
-            <Route path='individual/forgot' element={<ForgotPasswordForm navProps={{
-                toSignUp:"/signup"
-            }} />} /> 
+            {/* Individual accounts are now volunteer accounts; keep old links working */}
+            <Route path="individual/*" element={<LegacyRedirect to="/signin/volunteer" />} />
 
         </Routes>
     )

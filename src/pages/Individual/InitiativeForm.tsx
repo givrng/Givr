@@ -1,7 +1,6 @@
-import { useCallback, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { ArrowRight, CalendarDays, MapPin, Plus, Trash2, UsersRound } from "lucide-react";
-import type { BasicNatigationProps, location } from "../../interface/interfaces";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { CalendarDays, MapPin, Plus, Send, Trash2, UsersRound } from "lucide-react";
+import type { location } from "../../interface/interfaces";
 import { interestCategories } from "../../components/interest";
 import LocationSelect from "../../components/form/LocationSelect";
 import DropdownSelect from "../../components/form/DropdownSelect";
@@ -33,29 +32,51 @@ type InitiativeErrors = Partial<Record<keyof InitiativeFields | "location", stri
 const inputClassName = "w-full rounded-md border border-[#C3C6D4] bg-white px-3.5 py-3 text-sm text-[#323338] outline-none transition focus:border-[#1A73E8] focus:ring-2 focus:ring-[#1A73E8]/15";
 const labelClassName = "mb-1.5 block text-sm font-medium text-[#323338]";
 
-export const IndividualSignup: React.FC<BasicNatigationProps> = () => {
-  const routeLocation = useLocation();
-  const initialDraft = (routeLocation.state as { initiative?: InitiativeFields } | null)?.initiative;
-  const [form, setForm] = useState<InitiativeFields>(() => initialDraft ?? ({
-    title: "",
-    description: "",
-    category: "",
-    location: { state: "", lga: "" },
-    startDate: "",
-    endDate: "",
-    expectedSupporters: "",
-    coverImage: "",
-    sdg: "",
-    plannedApproach: "",
-    beneficiaries: "",
-    motivation: "",
-    supportTypes: [],
-    volunteersNeeded: "",
-    serviceNeeds: [],
-    itemNeeds: [],
-  }));
+const emptyInitiative: InitiativeFields = {
+  title: "",
+  description: "",
+  category: "",
+  location: { state: "", lga: "" },
+  startDate: "",
+  endDate: "",
+  expectedSupporters: "",
+  coverImage: "",
+  sdg: "",
+  plannedApproach: "",
+  beneficiaries: "",
+  motivation: "",
+  supportTypes: [],
+  volunteersNeeded: "",
+  serviceNeeds: [],
+  itemNeeds: [],
+};
+
+// Drafts survive closing the modal or a refresh, so a long form is never lost by accident
+const DRAFT_KEY = "initiative_draft";
+
+const loadDraft = (): InitiativeFields => {
+  try {
+    const data = sessionStorage.getItem(DRAFT_KEY);
+    // Merge over defaults so drafts saved before new fields were added still load correctly
+    return data ? { ...emptyInitiative, ...(JSON.parse(data) as Partial<InitiativeFields>) } : emptyInitiative;
+  } catch {
+    return emptyInitiative;
+  }
+};
+
+export const InitiativeForm: React.FC<{ onCancel: () => void }> = ({ onCancel }) => {
+  const [form, setForm] = useState<InitiativeFields>(loadDraft);
   const [errors, setErrors] = useState<InitiativeErrors>({});
   const [notice, setNotice] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(form));
+    } catch {
+      // Storage can be unavailable (e.g. private mode); the form still works without drafts
+    }
+  }, [form]);
 
   const handleLocationChange = useCallback((nextLocation: location) => {
     setForm((current) => ({ ...current, location: nextLocation }));
@@ -75,6 +96,7 @@ export const IndividualSignup: React.FC<BasicNatigationProps> = () => {
         ? current.supportTypes.filter((item) => item !== supportType)
         : [...current.supportTypes, supportType],
     }));
+    setErrors((current) => ({ ...current, supportTypes: "" }));
     setNotice("");
   };
 
@@ -113,10 +135,15 @@ export const IndividualSignup: React.FC<BasicNatigationProps> = () => {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
       setNotice("Please complete the required fields to continue.");
+      // Take the user straight to the first field that needs attention
+      requestAnimationFrame(() => {
+        const firstInvalid = formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]');
+        firstInvalid?.scrollIntoView({ behavior: "smooth", block: "center" });
+        firstInvalid?.focus({ preventScroll: true });
+      });
       return;
     }
 
-    setNotice("");
     setNotice("Initiative details are complete and ready for publishing by a verified individual.");
   };
 
@@ -142,19 +169,8 @@ export const IndividualSignup: React.FC<BasicNatigationProps> = () => {
   ];
 
   return (
-    <div className="bg-[#F3FAFA] px-4 py-8 sm:px-6 sm:py-12">
-      <div className="mx-auto w-full max-w-3xl">
-        <header className="mb-7 text-center sm:mb-9">
-          <p className="mb-3 text-3xl font-bold text-blue-700">
-            INDIVIDUAL INITIATIVE
-          </p>
-          
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#676879] sm:text-base">
-            Share the initiative you want to lead and help people understand how they can support it.
-          </p>
-        </header>
-
-        <form onSubmit={handleSubmit} noValidate className="rounded-xl border border-[#DDE3E8] bg-white shadow-sm">
+        <form ref={formRef} onSubmit={handleSubmit} noValidate className="flex min-h-0 flex-1 flex-col bg-white">
+          <div className="min-h-0 flex-1 overflow-y-auto">
           <section className="border-b border-[#E7EAEE] px-5 py-6 sm:px-8">
             <div className="mb-5">
               <h2 className="text-lg font-semibold text-[#323338]">Basic information</h2>
@@ -248,7 +264,7 @@ export const IndividualSignup: React.FC<BasicNatigationProps> = () => {
             </div>
             <div className="space-y-5">
               <div>
-                <label className={labelClassName} font-bold text-lg htmlFor="initiative-sdg">Which Sustainable Development Goal does your initiative address? <span className="text-[#1A73E8]">*</span></label>
+                <label className={labelClassName} htmlFor="initiative-sdg">Which Sustainable Development Goal does your initiative address? <span className="text-[#1A73E8]">*</span></label>
                 <DropdownSelect id="initiative-sdg" className={`${inputClassName} min-h-11`} value={form.sdg} options={sdgGoals} placeholder="Choose an SDG" onChange={(value) => updateField("sdg", value)} invalid={Boolean(errors.sdg)} />
                 {errors.sdg && <p className="mt-1 text-xs text-red-600">{errors.sdg}</p>}
               </div>
@@ -387,15 +403,20 @@ export const IndividualSignup: React.FC<BasicNatigationProps> = () => {
               {errors.coverImage && <p className="mt-1 text-xs text-red-600">{errors.coverImage}</p>}
             </div> */}
           </section>
+          </div>
 
-          <footer className="border-t border-[#E7EAEE] bg-[#FAFCFD] px-5 py-5 sm:px-8">
-            {notice && <p role="status" className={`mb-4 rounded-md px-3 py-2 text-sm ${Object.keys(errors).length ? "bg-red-50 text-red-700" : "bg-[#E7F4EA] text-[#287D3C]"}`}>{notice}</p>}
-            <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-md bg-[#1A73E8] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#155FC0] focus:outline-none sm:ml-auto sm:w-auto">
-              Sign Up <ArrowRight size={17} />
-            </button>
+          {/* Pinned footer keeps the actions reachable however far the user has scrolled */}
+          <footer className="shrink-0 border-t border-[#E7EAEE] bg-[#FAFCFD] px-5 py-4 sm:px-8">
+            {notice && <p role="status" className={`mb-3 rounded-md px-3 py-2 text-sm ${Object.values(errors).some(Boolean) ? "bg-red-50 text-red-700" : "bg-[#E7F4EA] text-[#287D3C]"}`}>{notice}</p>}
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button type="button" onClick={onCancel} className="rounded-md border border-[#C3C6D4] bg-white px-4 py-2.5 text-sm font-semibold text-[#323338] transition hover:bg-[#F8FAFC]">
+                Cancel
+              </button>
+              <button type="submit" className="flex items-center justify-center gap-2 rounded-md bg-[#1A73E8] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#155FC0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1A73E8]/40">
+                <Send size={16} /> Submit
+              </button>
+            </div>
           </footer>
         </form>
-      </div>
-    </div>
   );
 };

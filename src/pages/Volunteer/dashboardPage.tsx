@@ -9,7 +9,7 @@ import useAuthFetch from "../../components/hooks/useAuthFetch";
 import MyVolunteering from "../../components/Volunteer/MyVolunteering";
 import ProfilePage from "../../components/Profile";
 import { ProjectHub } from "../../components/Volunteer/projectHub";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ProjectCard } from "../../components/ReuseableComponents";
 import { useGenericModal } from "../../components/hooks/useGenericModal";
 import { useAlert } from "../../components/hooks/useAlert";
@@ -18,6 +18,7 @@ import { useSocketConnection } from "../../components/Chat/socketConnection";
 export const DashboardPage = () => {
     const [active, setActive] = useState<NavTypes>("Dashboard");
     const [dashboardIsMounted, setDashboardIsMounted] = useState(false)
+    const navigate = useNavigate()
     const [volunteerDashboard, setVolunteerDashboard] = useState<VolunteerDashboardProps>({
         firstname: "",
         profileCompleted: false,
@@ -76,8 +77,8 @@ export const DashboardPage = () => {
 
     const quickAction = (action: VolunteerQuickActions) => {
         switch (action) {
-            case "Find Opportunities":
-                setActive(action as NavTypes)
+            case "Initiatives":
+                navigate("/individual")
                 break;
             case "Update Profile":
                 setActive("Profile & Achievements")

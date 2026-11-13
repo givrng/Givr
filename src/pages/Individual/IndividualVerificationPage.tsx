@@ -16,7 +16,7 @@ export const IndividualVerificationPage: React.FC = () => {
       <DashboardHeader roleLabel="Individual" />
       <div className="mx-auto max-w-4xl px-4 pb-12 pt-24 sm:px-6 lg:px-8">
         <button type="button" onClick={() => navigate("/individual")} className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-[#676879] hover:text-[#1A73E8]">
-          <ArrowLeft size={16} /> Back to dashboard
+          <ArrowLeft size={16} /> Back to initiatives
         </button>
 
         <header className="border-b border-[#DDE3E8] pb-6">

@@ -251,7 +251,7 @@ export interface DashboardProps{
 
 
 export type NavTypes = "Dashboard" | "Find Opportunities"| "My Volunteering"| "Profile & Achievements";
-export type VolunteerQuickActions = "Find Opportunities"| "View Organizations" | "Update Profile"|""
+export type VolunteerQuickActions = "Initiatives"| "View Organizations" | "Update Profile"|""
 
 export type OrganizationNavTypes = "Dashboard" | "Project Management" | "Applications" | "Profile"
 export type OrganizationQuickActions = "Create New Project"| "Review pending applications"| "Edit Profile"

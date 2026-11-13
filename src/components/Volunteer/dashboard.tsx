@@ -26,7 +26,7 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
 
     let quickActions = new Map<OrganizationQuickActions|VolunteerQuickActions, string>(); 
     if(triggerAction){
-        quickActions.set("Find Opportunities", "Find Opportunities")
+        quickActions.set("Initiatives", "Start and manage your own initiatives")
         quickActions.set("View Organizations", "View Organizations")
         quickActions.set("Update Profile", "Update Profile")
     }else{
@@ -49,9 +49,9 @@ const Dashboard:React.FC<DashboardProps> = ({metrics, triggerAction, orgTriggerA
 
         switch(action){
             // Volunteer Actions
-            case "Find Opportunities":
+            case "Initiatives":
                 if(triggerAction)
-                    triggerAction("Find Opportunities")
+                    triggerAction("Initiatives")
                 break;
             case "View Organizations":
                 fetchOrganization()

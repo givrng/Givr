@@ -24,7 +24,7 @@ export const IndexPage = ()=>{
                 <LandingPage
                   onToVolunteerSignUp={() => navigate("/signup/volunteer")}
                   onToOrgSignUp={() => navigate("/signup/organization")}
-                  onToIndividualSignUp={() => navigate("/signup/individual")}
+                  onToIndividualSignUp={() => navigate("/signup/volunteer")}
                   onToSignIn={() => navigate("/signin")}
                   onToSignUp={() => navigate("/signup")}
                 />
