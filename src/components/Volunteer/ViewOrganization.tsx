@@ -301,7 +301,8 @@ export const useOrganizationView = ()=>{
             openApplicationForm({
                 onCancel: ()=>setApplicationFormOpen(false),
                 projectId: project.id,
-                organization: organization?.name
+                organization: organization?.name,
+                itemsNeeded: project.itemsNeeded
             })
         }  
 

@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CalendarDays, MapPin, Plus, Send, Trash2, UsersRound } from "lucide-react";
-import type { location } from "../../interface/interfaces";
+import { CalendarDays, HandHeart, MapPin, Package, Plus, Send, Trash2, UsersRound } from "lucide-react";
+import type { ItemNeed, location } from "../../interface/interfaces";
 import { interestCategories } from "../../components/interest";
 import LocationSelect from "../../components/form/LocationSelect";
 import DropdownSelect from "../../components/form/DropdownSelect";
+import { ItemNeedsEditor } from "../../components/form/ItemNeedsEditor";
+import { ITEM_NAME_MAX, MAX_ITEM_ROWS, parseQuantity, sanitizeItemNeeds, validateItemNeeds } from "../../utils/items";
 
 type InitiativeFields = {
   title: string;
@@ -18,16 +20,13 @@ type InitiativeFields = {
   plannedApproach: string;
   beneficiaries: string;
   motivation: string;
-  supportTypes: SupportType[];
-  volunteersNeeded: string;
   serviceNeeds: ServiceNeed[];
   itemNeeds: ItemNeed[];
 };
 
-type SupportType = "volunteer" | "service" | "item";
-type ServiceNeed = { name: string; quantity: string };
-type ItemNeed = { name: string; quantity: string; description: string };
-type InitiativeErrors = Partial<Record<keyof InitiativeFields | "location", string>>;
+// A skill or service the initiative needs, and how many people should provide it
+type ServiceNeed = { name: string; quantity: number };
+type InitiativeErrors = Partial<Record<keyof InitiativeFields | "location" | "supportNeeds", string>>;
 
 const inputClassName = "w-full rounded-md border border-[#C3C6D4] bg-white px-3.5 py-3 text-sm text-[#323338] outline-none transition focus:border-[#1A73E8] focus:ring-2 focus:ring-[#1A73E8]/15";
 const labelClassName = "mb-1.5 block text-sm font-medium text-[#323338]";
@@ -45,8 +44,6 @@ const emptyInitiative: InitiativeFields = {
   plannedApproach: "",
   beneficiaries: "",
   motivation: "",
-  supportTypes: [],
-  volunteersNeeded: "",
   serviceNeeds: [],
   itemNeeds: [],
 };
@@ -57,8 +54,15 @@ const DRAFT_KEY = "initiative_draft";
 const loadDraft = (): InitiativeFields => {
   try {
     const data = sessionStorage.getItem(DRAFT_KEY);
-    // Merge over defaults so drafts saved before new fields were added still load correctly
-    return data ? { ...emptyInitiative, ...(JSON.parse(data) as Partial<InitiativeFields>) } : emptyInitiative;
+    if (!data) return emptyInitiative;
+    const draft = JSON.parse(data) as Partial<InitiativeFields>;
+    // Merge over defaults so older drafts still load; older drafts stored quantities as strings
+    return {
+      ...emptyInitiative,
+      ...draft,
+      serviceNeeds: (draft.serviceNeeds ?? []).map((need) => ({ ...need, quantity: Number(need.quantity) || 0 })),
+      itemNeeds: (draft.itemNeeds ?? []).map((need) => ({ ...need, quantity: Number(need.quantity) || 0 })),
+    };
   } catch {
     return emptyInitiative;
   }
@@ -89,15 +93,9 @@ export const InitiativeForm: React.FC<{ onCancel: () => void }> = ({ onCancel })
     setNotice("");
   };
 
-  const toggleSupportType = (supportType: SupportType) => {
-    setForm((current) => ({
-      ...current,
-      supportTypes: current.supportTypes.includes(supportType)
-        ? current.supportTypes.filter((item) => item !== supportType)
-        : [...current.supportTypes, supportType],
-    }));
-    setErrors((current) => ({ ...current, supportTypes: "" }));
-    setNotice("");
+  const updateSupportNeeds = <Key extends "serviceNeeds" | "itemNeeds">(key: Key, value: InitiativeFields[Key]) => {
+    updateField(key, value);
+    setErrors((current) => ({ ...current, supportNeeds: "" }));
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -120,15 +118,14 @@ export const InitiativeForm: React.FC<{ onCancel: () => void }> = ({ onCancel })
     if (!form.plannedApproach.trim()) nextErrors.plannedApproach = "Explain how you plan to carry this out.";
     if (!form.beneficiaries.trim()) nextErrors.beneficiaries = "Say who this initiative is for.";
     if (!form.motivation.trim()) nextErrors.motivation = "Tell people why this matters to you.";
-    if (form.supportTypes.length === 0) nextErrors.supportTypes = "Choose at least one type of support.";
-    if (form.supportTypes.includes("volunteer") && (!form.volunteersNeeded || Number(form.volunteersNeeded) < 1)) {
-      nextErrors.volunteersNeeded = "Enter the number of volunteers needed.";
-    }
-    if (form.supportTypes.includes("service") && (!form.serviceNeeds.length || form.serviceNeeds.some((need) => !need.name.trim() || Number(need.quantity) < 1))) {
-      nextErrors.serviceNeeds = "Add a service and the number of people needed for each.";
-    }
-    if (form.supportTypes.includes("item") && (!form.itemNeeds.length || form.itemNeeds.some((need) => !need.name.trim() || Number(need.quantity) < 1))) {
-      nextErrors.itemNeeds = "Add an item and the quantity needed for each.";
+    // Services and items are both optional individually, but an initiative must ask for at least one of them.
+    // Services share the item rules (name, quantity, no duplicates); "quantity" is the number of people.
+    const serviceError = validateItemNeeds(form.serviceNeeds, { noun: "service", quantityLabel: "a number of people" });
+    if (serviceError) nextErrors.serviceNeeds = serviceError;
+    const itemError = validateItemNeeds(form.itemNeeds);
+    if (itemError) nextErrors.itemNeeds = itemError;
+    if (!serviceError && !itemError && sanitizeItemNeeds(form.serviceNeeds).length + sanitizeItemNeeds(form.itemNeeds).length === 0) {
+      nextErrors.supportNeeds = "Add at least one skill/service or item you need.";
     }
     // if (!form.coverImage) nextErrors.coverImage = "Add a cover image for your initiative.";
 
@@ -288,70 +285,46 @@ export const InitiativeForm: React.FC<{ onCancel: () => void }> = ({ onCancel })
 
           <section className="border-b border-[#E7EAEE] px-5 py-6 sm:px-8">
             <div className="mb-5">
-              <h2 className="text-lg font-semibold text-[#323338]">What support do you need?</h2>
-              <p className="mt-1 text-sm text-[#676879]">Select one or more ways people can contribute. Monetary donations aren’t supported.</p>
+              <h2 className="text-lg font-semibold text-[#323338]">What support do you need? <span className="text-[#1A73E8]">*</span></h2>
+              <p className="mt-1 text-sm text-[#676879]">Add the skills, services and items your initiative needs. Fill in either or both. Monetary donations aren’t supported.</p>
+              {errors.supportNeeds && <p role="alert" className="mt-2 text-xs text-red-600">{errors.supportNeeds}</p>}
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {([
-                ["volunteer", "Volunteers", "People to participate directly"],
-                ["service", "Skills / services", "Specific skills or professional help"],
-                ["item", "Physical items", "Supplies or materials needed"],
-              ] as const).map(([type, title, description]) => (
-                <label key={type} className={`flex cursor-pointer items-start gap-3 border p-4 transition ${form.supportTypes.includes(type) ? "border-[#1A73E8] bg-[#EAF2FE]" : "border-[#DDE3E8] hover:border-[#9BBDEB]"}`}>
-                  <input type="checkbox" className="mt-1 accent-[#1A73E8]" checked={form.supportTypes.includes(type)} onChange={() => toggleSupportType(type)} />
-                  <span><span className="block text-sm font-semibold text-[#323338]">{title}</span><span className="mt-1 block text-xs leading-5 text-[#676879]">{description}</span></span>
-                </label>
+
+            <div>
+              <div className="mb-3 flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#EAF2FE] text-[#1A73E8]"><HandHeart size={18} /></span>
+                <div><h3 className="font-semibold">Skills and services</h3><p className="text-xs text-[#676879]">Time or expertise people can give, and how many people you need for each.</p></div>
+              </div>
+              {form.serviceNeeds.length === 0 && (
+                <p className="rounded-md border border-dashed border-[#C3C6D4] px-4 py-3 text-sm text-[#8A8D98]">No skills or services added yet.</p>
+              )}
+              {form.serviceNeeds.map((need, index) => (
+                <div key={index} className="mb-3 grid grid-cols-[1fr_6.5rem_auto] gap-2 border border-[#E7EAEE] p-3 sm:grid-cols-[1fr_8rem_auto]">
+                  <label className="sr-only" htmlFor={`service-name-${index}`}>Service or skill</label>
+                  <input id={`service-name-${index}`} className={inputClassName} placeholder="e.g. Graphic design" value={need.name} maxLength={ITEM_NAME_MAX} aria-invalid={Boolean(errors.serviceNeeds) && !need.name.trim()} onChange={(event) => updateSupportNeeds("serviceNeeds", form.serviceNeeds.map((item, itemIndex) => itemIndex === index ? { ...item, name: event.target.value } : item))} />
+                  <label className="sr-only" htmlFor={`service-quantity-${index}`}>Number of people needed</label>
+                  <input id={`service-quantity-${index}`} type="text" inputMode="numeric" className={inputClassName} placeholder="People" value={need.quantity || ""} aria-invalid={Boolean(errors.serviceNeeds) && !need.quantity} onChange={(event) => updateSupportNeeds("serviceNeeds", form.serviceNeeds.map((item, itemIndex) => itemIndex === index ? { ...item, quantity: parseQuantity(event.target.value) } : item))} />
+                  <button type="button" aria-label={`Remove ${need.name.trim() || `service ${index + 1}`}`} onClick={() => updateSupportNeeds("serviceNeeds", form.serviceNeeds.filter((_, itemIndex) => itemIndex !== index))} className="flex h-11 w-11 items-center justify-center text-[#676879] hover:text-red-600"><Trash2 size={17} /></button>
+                </div>
               ))}
+              {errors.serviceNeeds && <p role="alert" className="mb-2 text-xs text-red-600">{errors.serviceNeeds}</p>}
+              <button type="button" disabled={form.serviceNeeds.length >= MAX_ITEM_ROWS} onClick={() => updateSupportNeeds("serviceNeeds", [...form.serviceNeeds, { name: "", quantity: 0 }])} className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-[#1A73E8] disabled:cursor-not-allowed disabled:opacity-50"><Plus size={16} /> Add skill or service</button>
             </div>
-            {errors.supportTypes && <p className="mt-2 text-xs text-red-600">{errors.supportTypes}</p>}
 
-            {form.supportTypes.includes("volunteer") && (
-              <div className="mt-5 max-w-xs">
-                <label className={labelClassName} htmlFor="volunteers-needed">Number of volunteers needed <span className="text-[#1A73E8]">*</span></label>
-                <input id="volunteers-needed" type="number" min="1" className={inputClassName} value={form.volunteersNeeded} onChange={(event) => updateField("volunteersNeeded", event.target.value)} aria-invalid={Boolean(errors.volunteersNeeded)} />
-                {errors.volunteersNeeded && <p className="mt-1 text-xs text-red-600">{errors.volunteersNeeded}</p>}
+            <div className="mt-6 border-t border-[#E7EAEE] pt-5">
+              <div className="mb-3 flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FFF4E5] text-[#B86705]"><Package size={18} /></span>
+                <div><h3 className="font-semibold">Physical items</h3><p className="text-xs text-[#676879]">Supplies or materials people can donate, and the quantity required.</p></div>
               </div>
-            )}
-
-            {form.supportTypes.includes("service") && (
-              <div className="mt-6 border-t border-[#E7EAEE] pt-5">
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                  <div><h3 className="font-semibold">Skills and services</h3><p className="text-xs text-[#676879]">Add each service and the number of contributors needed.</p></div>
-                  <button type="button" onClick={() => updateField("serviceNeeds", [...form.serviceNeeds, { name: "", quantity: "" }])} className="inline-flex items-center gap-1 text-sm font-semibold text-[#1A73E8]"><Plus size={16} /> Add service</button>
-                </div>
-                {form.serviceNeeds.map((need, index) => (
-                  <div key={index} className="mb-3 grid grid-cols-1 gap-3 border border-[#E7EAEE] p-3 sm:grid-cols-[1fr_10rem_auto]">
-                    <label className="sr-only" htmlFor={`service-name-${index}`}>Service or skill</label>
-                    <input id={`service-name-${index}`} className={inputClassName} placeholder="e.g. Graphic design" value={need.name} onChange={(event) => updateField("serviceNeeds", form.serviceNeeds.map((item, itemIndex) => itemIndex === index ? { ...item, name: event.target.value } : item))} />
-                    <label className="sr-only" htmlFor={`service-quantity-${index}`}>Number of people needed</label>
-                    <input id={`service-quantity-${index}`} type="number" min="1" className={inputClassName} placeholder="People needed" value={need.quantity} onChange={(event) => updateField("serviceNeeds", form.serviceNeeds.map((item, itemIndex) => itemIndex === index ? { ...item, quantity: event.target.value } : item))} />
-                    <button type="button" aria-label={`Remove service ${index + 1}`} onClick={() => updateField("serviceNeeds", form.serviceNeeds.filter((_, itemIndex) => itemIndex !== index))} className="flex h-11 w-11 items-center justify-center text-[#676879] hover:text-red-600"><Trash2 size={17} /></button>
-                  </div>
-                ))}
-                {errors.serviceNeeds && <p className="text-xs text-red-600">{errors.serviceNeeds}</p>}
-              </div>
-            )}
-
-            {form.supportTypes.includes("item") && (
-              <div className="mt-6 border-t border-[#E7EAEE] pt-5">
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                  <div><h3 className="font-semibold">Physical items</h3><p className="text-xs text-[#676879]">List each item and the quantity required.</p></div>
-                  <button type="button" onClick={() => updateField("itemNeeds", [...form.itemNeeds, { name: "", quantity: "", description: "" }])} className="inline-flex items-center gap-1 text-sm font-semibold text-[#1A73E8]"><Plus size={16} /> Add item</button>
-                </div>
-                {form.itemNeeds.map((need, index) => (
-                  <div key={index} className="mb-3 grid grid-cols-1 gap-3 border border-[#E7EAEE] p-3 sm:grid-cols-[1fr_10rem_auto]">
-                    <label className="sr-only" htmlFor={`item-name-${index}`}>Item name</label>
-                    <input id={`item-name-${index}`} className={inputClassName} placeholder="e.g. School bags" value={need.name} onChange={(event) => updateField("itemNeeds", form.itemNeeds.map((item, itemIndex) => itemIndex === index ? { ...item, name: event.target.value } : item))} />
-                    <label className="sr-only" htmlFor={`item-quantity-${index}`}>Quantity required</label>
-                    <input id={`item-quantity-${index}`} type="number" min="1" className={inputClassName} placeholder="Quantity" value={need.quantity} onChange={(event) => updateField("itemNeeds", form.itemNeeds.map((item, itemIndex) => itemIndex === index ? { ...item, quantity: event.target.value } : item))} />
-                    <button type="button" aria-label={`Remove item ${index + 1}`} onClick={() => updateField("itemNeeds", form.itemNeeds.filter((_, itemIndex) => itemIndex !== index))} className="flex h-11 w-11 items-center justify-center text-[#676879] hover:text-red-600"><Trash2 size={17} /></button>
-                    <label className="sr-only" htmlFor={`item-description-${index}`}>Item condition or details</label>
-                    <input id={`item-description-${index}`} className={`${inputClassName} sm:col-span-2`} placeholder="Optional details or condition" value={need.description} onChange={(event) => updateField("itemNeeds", form.itemNeeds.map((item, itemIndex) => itemIndex === index ? { ...item, description: event.target.value } : item))} />
-                  </div>
-                ))}
-                {errors.itemNeeds && <p className="text-xs text-red-600">{errors.itemNeeds}</p>}
-              </div>
-            )}
+              <ItemNeedsEditor
+                idPrefix="initiative-item"
+                items={form.itemNeeds}
+                error={errors.itemNeeds}
+                inputClassName={inputClassName}
+                accentClassName="text-[#1A73E8]"
+                onChange={(itemNeeds) => updateSupportNeeds("itemNeeds", itemNeeds)}
+              />
+            </div>
           </section>
 
           <section className="px-5 py-6 sm:px-8">

@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { LucidePlus, LucideSend, LucideX } from 'lucide-react';
+import { LucideMinus, LucidePlus, LucideSend, LucideX } from 'lucide-react';
 import { useConfirmAsk } from '../hooks/useConfirm';
 import useAuthFetch from '../hooks/useAuthFetch';
 import { useAlert } from '../hooks/useAlert';
 import { LoadingEffect } from '../icons';
 import { isValidPhoneNumber, PHONE_MAX_DIGITS, PHONE_MIN_DIGITS, sanitizePhoneInput } from '../../utils/phone';
+import { parseQuantity, sanitizeItemContributions } from '../../utils/items';
+import type { ItemContribution, ItemNeed } from '../../interface/interfaces';
 
 /**
  * Interface for the component props
@@ -13,6 +15,7 @@ interface ApplicationFormProps {
   onCancel: () => void;
   organization?: string;
   projectId: number;
+  itemsNeeded?: ItemNeed[];
 }
 
 /**
@@ -26,13 +29,14 @@ interface ApplicationFields {
   isAvailable: boolean | null;
   additionalInfo: string;
   phoneNumber: string;
+  itemContributions: ItemContribution[];
 }
 
 /**
  * Configuration for form fields to ensure type-safe mapping
  */
 interface FieldConfig {
-  id: keyof Omit<ApplicationFields, 'projectId' | 'isAvailable' | 'phoneNumber'>;
+  id: keyof Omit<ApplicationFields, 'projectId' | 'isAvailable' | 'phoneNumber' | 'itemContributions'>;
   label: string;
   placeholder: string;
   required?: boolean;
@@ -46,7 +50,7 @@ export const useApplicationForm = ()=>{
      * Prompts volunteer to provide their reason for applying for a project.
      * Refactored with TypeScript for robust type checking.
      */
-    const ApplicationForm: React.FC<ApplicationFormProps> = ({ onCancel, organization,  projectId }) => {
+    const ApplicationForm: React.FC<ApplicationFormProps> = ({ onCancel, organization,  projectId, itemsNeeded = [] }) => {
     const [skillInput, setSkillInput] = useState("");
     const sessionId = `project_${projectId}`
     const [applicationForm, setApplicationForm] = useState<ApplicationFields>(()=>{
@@ -57,21 +61,23 @@ export const useApplicationForm = ()=>{
             mySkills: [],
             isAvailable: null,
             additionalInfo: "",
-            phoneNumber: ""
+            phoneNumber: "",
+            itemContributions: []
         }
         const data = sessionStorage.getItem(sessionId)
         // Merge over defaults so drafts saved before new fields were added still load correctly
         return data? { ...defaults, ...(JSON.parse(data) as Partial<ApplicationFields>) }: defaults
     });
 
-    const [errors, setErrors] = useState<Partial<ApplicationFields>>({})
+    const [errors, setErrors] = useState<Partial<Omit<ApplicationFields, 'itemContributions'>>>({})
+    const [itemsError, setItemsError] = useState<string>()
 
     const {confirmAsk, ConfirmDialog} = useConfirmAsk({isOrg: false})
     const {alertMessage, AlertDialog} = useAlert({isOrg: false})
     const [isLoading, setIsLoading] = useState(false)
     const {API} = useAuthFetch("volunteer")
     
-    const maxCharsByField: Record<keyof Omit<ApplicationFields, 'isAvailable'|'projectId'|'phoneNumber' >, number> = {
+    const maxCharsByField: Record<keyof Omit<ApplicationFields, 'isAvailable'|'projectId'|'phoneNumber'|'itemContributions' >, number> = {
         aboutMe: 300,
         additionalInfo: 200,
         mySkills: 150,
@@ -89,8 +95,34 @@ export const useApplicationForm = ()=>{
         setErrors({})
     };
 
+    /**
+     * Item pledges: volunteers can only pledge items the project asked for, up to the quantity needed
+     */
+    const toggleItemContribution = (need: ItemNeed) => {
+        const isSelected = applicationForm.itemContributions.some(item => item.name === need.name)
+        setApplicationForm(prev => ({
+            ...prev,
+            itemContributions: isSelected
+                ? prev.itemContributions.filter(item => item.name !== need.name)
+                : [...prev.itemContributions, { name: need.name, quantity: 1 }]
+        }))
+        setItemsError(undefined)
+    }
+
+    const setItemQuantity = (need: ItemNeed, quantity: number) => {
+        setApplicationForm(prev => ({
+            ...prev,
+            itemContributions: prev.itemContributions.map(item =>
+                item.name === need.name ? { ...item, quantity: Math.min(Math.max(quantity, 0), need.quantity) } : item)
+        }))
+        setItemsError(undefined)
+    }
+
     const validateForm = ():boolean=>{
-        const newErrors: Partial<ApplicationFields> = {}
+        const newErrors: Partial<Omit<ApplicationFields, 'itemContributions'>> = {}
+
+        const missingQuantity = applicationForm.itemContributions.some(item => item.quantity < 1)
+        setItemsError(missingQuantity ? "Enter how many of each selected item you can contribute" : undefined)
 
         const {aboutMe, isAvailable, reason, phoneNumber} = applicationForm
         if(!phoneNumber){
@@ -110,7 +142,7 @@ export const useApplicationForm = ()=>{
 
         setErrors(newErrors)
 
-        return Object.keys(newErrors).length == 0;
+        return Object.keys(newErrors).length == 0 && !missingQuantity;
     }
 
     /**
@@ -128,12 +160,14 @@ export const useApplicationForm = ()=>{
             falseAnswer: "Cancel"
         });
         
-        setIsLoading(true)
-
         if (confirmed) {
+            setIsLoading(true)
             try {
-                // Note: Replace with your actual API call logic
-                await API().post("/projects/apply", applicationForm);
+                await API().post("/projects/apply", {
+                    ...applicationForm,
+                    // Drop pledges for items the project no longer needs (e.g. a stale draft)
+                    itemContributions: sanitizeItemContributions(applicationForm.itemContributions, itemsNeeded)
+                });
                 sessionStorage.removeItem(sessionId)
                 await alertMessage("Your aplication has been submitted successfully")
                 onCancel();
@@ -306,6 +340,71 @@ export const useApplicationForm = ()=>{
             </div>
             </div>
 
+            {/* Item Contributions (optional) */}
+            <fieldset className="space-y-2">
+            <legend className="block text-sm font-bold text-gray-700">
+                Items you can contribute <span className="font-normal text-gray-400">(optional)</span>
+            </legend>
+            {itemsNeeded.length === 0 ? (
+                <p className="text-xs text-gray-400 italic">This project isn't requesting any items.</p>
+            ) : (
+                <>
+                <p className="text-xs text-gray-500">Select any items you can bring and how many. You'll still be contributing your time.</p>
+                <ul className="space-y-2">
+                {itemsNeeded.map((need) => {
+                    const pledge = applicationForm.itemContributions.find(item => item.name === need.name)
+                    const inputId = `pledge-${need.name.replace(/\W+/g, '-')}`
+                    return (
+                    <li key={need.name} className={`rounded-xl border p-3 transition-colors ${pledge ? 'border-blue-300 bg-blue-50/50' : 'border-gray-200'}`}>
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                        <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-3">
+                            <input
+                            type="checkbox"
+                            className="mt-1 accent-blue-600"
+                            checked={Boolean(pledge)}
+                            onChange={() => toggleItemContribution(need)}
+                            />
+                            <span className="min-w-0">
+                            <span className="block text-sm font-semibold text-gray-800 break-words">{need.name}</span>
+                            <span className="block text-xs text-gray-500">
+                                {need.quantity.toLocaleString()} needed{need.description ? ` · ${need.description}` : ''}
+                            </span>
+                            </span>
+                        </label>
+                        {pledge && (
+                            <div className="flex items-center gap-1" role="group" aria-label={`Quantity of ${need.name}`}>
+                            <button type="button" aria-label="Decrease quantity" disabled={pledge.quantity <= 1}
+                                onClick={() => setItemQuantity(need, pledge.quantity - 1)}
+                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40">
+                                <LucideMinus size={14} />
+                            </button>
+                            <label htmlFor={inputId} className="sr-only">Quantity</label>
+                            <input
+                                id={inputId}
+                                type="text"
+                                inputMode="numeric"
+                                value={pledge.quantity || ''}
+                                onChange={(e) => setItemQuantity(need, parseQuantity(e.target.value, need.quantity))}
+                                aria-invalid={Boolean(itemsError) && pledge.quantity < 1}
+                                className="h-8 w-14 rounded-lg border border-gray-200 bg-white text-center text-sm text-gray-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                            />
+                            <button type="button" aria-label="Increase quantity" disabled={pledge.quantity >= need.quantity}
+                                onClick={() => setItemQuantity(need, pledge.quantity + 1)}
+                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40">
+                                <LucidePlus size={14} />
+                            </button>
+                            </div>
+                        )}
+                        </div>
+                    </li>
+                    )
+                })}
+                </ul>
+                </>
+            )}
+            {itemsError && <p role="alert" className="text-red-500 text-sm">{itemsError}</p>}
+            </fieldset>
+
             {/* Remaining text field */}
             {textFields.splice(2).map((field) => (
             <div key={field.id} className="space-y-1.5">
@@ -398,7 +497,7 @@ export const useApplicationForm = ()=>{
     }, [])
 
     const ApplicationModal = ()=>(
-        isOpen &&applicationProps? <ApplicationForm onCancel={applicationProps?.onCancel} projectId={applicationProps?.projectId} organization={applicationProps?.organization}/> : null
+        isOpen &&applicationProps? <ApplicationForm onCancel={applicationProps?.onCancel} projectId={applicationProps?.projectId} organization={applicationProps?.organization} itemsNeeded={applicationProps?.itemsNeeded}/> : null
     )
 
     return {openApplicationForm, ApplicationModal}

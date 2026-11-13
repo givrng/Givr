@@ -100,7 +100,22 @@ export interface ProjectProps{
   rating?:number;
   projectFlierUrl?: string;
   projectCardUrl?: string;
+  // Optional: projects created before item requests were introduced won't have it
+  itemsNeeded?: ItemNeed[];
   }
+
+/** A physical item a project or initiative is asking supporters to provide */
+export interface ItemNeed{
+  name:string;
+  quantity:number;
+  description?:string;
+}
+
+/** An item a volunteer pledges towards one of a project's item needs */
+export interface ItemContribution{
+  name:string;
+  quantity:number;
+}
 
 export interface ProjectFormProps{
   id?:number;
@@ -123,7 +138,7 @@ export interface ProjectFormProps{
   requiredSkills:string[];
   specialRequirements:string;
   projectFlierUrl?: string;
-
+  itemsNeeded:ItemNeed[];
 }
 
 export interface ProjectComponentProps extends ProjectProps{
@@ -332,6 +347,7 @@ export interface VolunteerApplicationProps{
   additionalInfo?:string;
   profileUrl?:string;
   projectApplied: VolunteerProjectApplicationProps
+  itemContributions?: ItemContribution[];
 }
 
 export type ParticipationStatus = "IN_PROGRESS" | "COMPLETED" | "REJECTED"
@@ -345,6 +361,7 @@ export interface ParticipantProps{
   reason:string;
   // Optional: participants who applied before this field was introduced won't have it
   phoneNumber?:string | null;
+  itemContributions?: ItemContribution[];
 }
 
 export type organizationType = "NGO/Non profit" | "Community Group" | "Religious Group"| "Educational Institution" | "Government Agency"|"Corporate Foundation"|""

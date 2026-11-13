@@ -8,11 +8,13 @@ import useAuthFetch from "../hooks/useAuthFetch";
 import { useAlert } from "../hooks/useAlert";
 import { LoadingEffect } from "../icons";
 import { CloudinaryUpload } from "../CloudinaryWidget";
+import { ItemNeedsEditor } from "../form/ItemNeedsEditor";
+import { sanitizeItemNeeds, validateItemNeeds } from "../../utils/items";
 
 export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updProject: ProjectProps)=>void, projectData?:ProjectFormProps, isCreating?:boolean, handlesave?: (projects:ProjectProps[])=>Promise<void>}> = ({onClose, projectData, isCreating=true, onSuccessfulEdit, handlesave})=>{
 
     const {confirmAsk, ConfirmDialog} = useConfirmAsk({isOrg:true})
-    const [errors, setErrors] = useState<Partial<ProjectFormProps>>();
+    const [errors, setErrors] = useState<Partial<Omit<ProjectFormProps, 'itemsNeeded'>>>();
     const {alertMessage, AlertDialog} = useAlert({
         isOrg:true
     })
@@ -39,8 +41,10 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
         address:"",
         requiredSkills:[],
         specialRequirements:'',
-        projectFlierUrl: ''
+        projectFlierUrl: '',
+        itemsNeeded: []
     });
+    const [itemsError, setItemsError] = useState<string>();
     const MAX_CHARS = 1000
     const [selectedSkillCat, setSelectedSkillCat] = useState("");
     const handleLocationChange = useCallback(
@@ -77,8 +81,9 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
         "Infrastructure & Construction"
     ]
     useEffect(()=>{
+        // Projects created before item requests existed have no itemsNeeded
         if(projectData)
-            setFormFields(projectData)
+            setFormFields({...projectData, itemsNeeded: projectData.itemsNeeded ?? []})
     }, [])
 
     const handleClose = async ()=>{
@@ -107,7 +112,7 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
             setIsLoading(true)
             
             try{
-                let response = await API().post("/projects", formFields)
+                let response = await API().post("/projects", toPayload())
                 let projects = response.data as ProjectProps[]
 
                 if(handlesave)
@@ -142,7 +147,7 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
        try{
             setIsLoading(true)
             if(userConfirm){   
-                let project = await API().patch(`/projects/${projectData?.id}`, formFields)
+                let project = await API().patch(`/projects/${projectData?.id}`, toPayload())
                 if(onSuccessfulEdit){
                         let updatedProject = project.data as ProjectProps
                         onSuccessfulEdit(updatedProject)
@@ -175,8 +180,17 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
         
     }
 
+    // Trim item rows and drop empty ones before sending
+    const toPayload = (): ProjectFormProps => ({
+        ...formFields,
+        itemsNeeded: sanitizeItemNeeds(formFields.itemsNeeded)
+    })
+
     const validateForm = ()=>{
-          const newErrors: Partial<ProjectFormProps> = {}
+          const newErrors: Partial<Omit<ProjectFormProps, 'itemsNeeded'>> = {}
+
+          const itemsValidationError = validateItemNeeds(formFields.itemsNeeded)
+          setItemsError(itemsValidationError)
     
           if (!formFields.title) {
             newErrors.title = "Project title is required";
@@ -220,7 +234,7 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
             newErrors.specialRequirements = "Maximum participants is required"           
     
           setErrors(newErrors);
-          return Object.keys(newErrors).length === 0;
+          return Object.keys(newErrors).length === 0 && !itemsValidationError;
       }
     useEffect(()=>{
         setErrors({
@@ -632,6 +646,25 @@ export const CreateProject:React.FC<{onClose?:()=>void, onSuccessfulEdit?:(updPr
                             }))} className="ml-1 text-red-500">×</button>
                         </span>)}
                     </div>
+                </div>
+
+                {/* Items Needed */}
+                <div>
+                    <label className="block text-base font-semibold text-gray-700 mb-1">
+                        Items needed (optional)
+                    </label>
+                    <p className="text-sm text-gray-500 mb-3">List supplies or materials volunteers can contribute, and how many you need. Volunteers can pledge these when they apply.</p>
+                    <ItemNeedsEditor
+                        idPrefix="project-item"
+                        items={formFields.itemsNeeded}
+                        error={itemsError}
+                        accentClassName="text-green-700"
+                        inputClassName="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition duration-150 text-sm text-gray-800 bg-white"
+                        onChange={(itemsNeeded)=>{
+                            setItemsError(undefined)
+                            setFormFields(prev=>({...prev, itemsNeeded}))
+                        }}
+                    />
                 </div>
 
                 {/* Special Requirements */}

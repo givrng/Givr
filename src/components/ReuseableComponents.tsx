@@ -279,7 +279,7 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = (orgCompon
 }
 
 /**Displays details of a project */
-export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organization, specialRequirements,applicationDeadline,description,categories, attendanceHours, location,address,requiredSkills, maxVolunteers, startDate, endDate,status, totalApplicants, superVolunteer, manage=false, applied=false, isOrganization=false, isDraft=false, onEdit, onDelete, onPublish, projectFlierUrl, projectCardUrl, rating, broadcastEnabled, createdAt, updatedAt})=>{
+export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organization, specialRequirements,applicationDeadline,description,categories, attendanceHours, location,address,requiredSkills, maxVolunteers, startDate, endDate,status, totalApplicants, superVolunteer, manage=false, applied=false, isOrganization=false, isDraft=false, onEdit, onDelete, onPublish, projectFlierUrl, projectCardUrl, rating, broadcastEnabled, createdAt, updatedAt, itemsNeeded})=>{
 
   const [displayForm, setDisplayForm] = useState(false)
   const {modal, DisplayModal} = useModal()
@@ -296,7 +296,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
     location,address,requiredSkills, maxVolunteers, 
     startDate, endDate,status, totalApplicants, 
     superVolunteer, projectFlierUrl, projectCardUrl,
-    rating, broadcastEnabled, createdAt, updatedAt
+    rating, broadcastEnabled, createdAt, updatedAt, itemsNeeded
   }
 
   const {openShare, ShareModalComponent} = useShareModal()
@@ -348,6 +348,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
     requiredSkills: requiredSkills,
     specialRequirements: specialRequirements,
     projectFlierUrl: projectFlierUrl,
+    itemsNeeded: itemsNeeded ?? [],
   }
 
   const {openApplicationForm, ApplicationModal} = useApplicationForm()
@@ -358,7 +359,8 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
     openApplicationForm({
       onCancel: ()=>setDisplayForm(false),
       projectId: id,
-      organization: organization?.name
+      organization: organization?.name,
+      itemsNeeded
     })
   }
   const statusStyles: Record<string, string> = {
