@@ -2,7 +2,7 @@ import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from "
 import { useCallback } from "react";
 import type { UserTypes } from "../../interface/interfaces";
 
-interface PendindRequest {
+interface PendingRequest {
     resolve:(response:any)=>void;
     reject:(error:unknown)=>void;
 }
@@ -41,7 +41,7 @@ export default function useAuthFetch(path:UserTypes){
     
     const API = useCallback(()=>{
         let isRefreshing = false
-        let requestQueue:PendindRequest[] = []
+        let requestQueue:PendingRequest[] = []
 
         const instance = axios.create({
             baseURL: `${ApiBaseUrl}/${path}`,
