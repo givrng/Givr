@@ -410,7 +410,82 @@ export interface OrganizationDashboardProps {
   status:VerificationStatus;
 }
 
-export type UserTypes = "volunteer"|"organization"|"";
+export type IndividualInitiativeStatus = "DRAFT" | "OPEN" | "CLOSE" | "ONGOING" | "COMPLETED" | "ALL";
+
+export interface IndividualInitiativeProps {
+  id: number;
+  title: string;
+  description?: string;
+  status: IndividualInitiativeStatus;
+  startDate?: string;
+  endDate?: string;
+  totalApplicants?: number;
+  maxVolunteers?: number;
+}
+
+export type IndividualDonationStatus = "Pending_acceptance" | "Promised_Accepted" | "Promise_Fulfilled" | "Promise_Rejected";
+
+export interface IndividualDonationProps {
+  id: string;
+  itemName: string;
+  initiative?: Pick<IndividualInitiativeProps, "id" | "title">;
+  status: IndividualDonationStatus;
+  quantityDonated: number;
+}
+
+export interface IndividualApplicationProps {
+  firstname: string;
+  lastname: string;
+  skills: string[];
+  reason: string;
+  isAvailable?: boolean;
+  specialSkills?: string[];
+  aboutVolunteer?: string;
+  additionalInfo?: string;
+  profileUrl?: string;
+  projectApplied: {
+    id: number;
+    status: "APPLIED" | "APPROVED" | "REJECTED";
+    title: string;
+    appliedAt: string;
+  };
+}
+
+export interface IndividualParticipationProps {
+  id: number;
+  status: ParticipationStatus;
+  project: {
+    id: number;
+    title: string;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+  };
+  volunteer: {
+    firstname?: string;
+    middleName?: string;
+    lastname?: string;
+    profileUrl?: string | null;
+    phoneNumber?: string | null;
+    skills?: string[];
+    location?: location;
+  };
+  reviewable?: boolean;
+  reason?: string;
+  endDate?: string;
+}
+
+export interface PagedResponse<T> {
+  content: T[];
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+  };
+}
+
+export type UserTypes = "volunteer"|"organization"|"individual"|"";
 
 export type OtpPurpose = "EMAIL_VERIFICATION" | "PASSWORD_UPDATE"
 

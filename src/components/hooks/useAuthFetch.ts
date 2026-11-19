@@ -1,4 +1,5 @@
 import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from "axios";
+import { useCallback } from "react";
 import type { UserTypes } from "../../interface/interfaces";
 
 interface PendindRequest {
@@ -38,7 +39,7 @@ export default function useAuthFetch(path:UserTypes){
         return 10;
     }
     
-    const API = ()=>{
+    const API = useCallback(()=>{
         let isRefreshing = false
         let requestQueue:PendindRequest[] = []
 
@@ -106,10 +107,10 @@ export default function useAuthFetch(path:UserTypes){
         })
 
         return instance
-    }
+    }, [ApiBaseUrl, path])
 
-   const Logout = async ()=>{
+   const Logout = useCallback(async ()=>{
         await API().post("/logout", null)
-   }
+   }, [API])
     return {API, Logout, authFetch };
 }

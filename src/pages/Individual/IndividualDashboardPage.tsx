@@ -1,14 +1,253 @@
-import { useState } from "react";
-import { ArrowLeft, ArrowRight, BadgeCheck, BriefcaseBusiness, CircleHelp, HandHeart, LockKeyhole, Plus, UsersRound } from "lucide-react";
+import axios from "axios";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, BadgeCheck, BriefcaseBusiness, CircleHelp, HandHeart, Inbox, LockKeyhole, Plus, UsersRound, UserRound } from "lucide-react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { DashboardHeader } from "../../components/dashboardHeader";
+import useAuthFetch from "../../components/hooks/useAuthFetch";
+import { useConfirmAsk } from "../../components/hooks/useConfirm";
+import type { IndividualApplicationProps, IndividualDonationProps, IndividualDonationStatus, IndividualInitiativeProps, IndividualParticipationProps, PagedResponse, ParticipationStatus } from "../../interface/interfaces";
 
-const tabs = ["Overview", "My initiatives", "Contributions"] as const;
+const tabs = ["Overview", "My initiatives", "Applications", "Participants", "Contributions"] as const;
 type DashboardTab = typeof tabs[number];
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as { message?: unknown } | undefined;
+    if (typeof data?.message === "string") return data.message;
+    if (error.response?.status === 403) {
+      return "Your account may need identity verification before this action is available.";
+    }
+  }
+  return error instanceof Error ? error.message : fallback;
+};
+
+const donationStatusLabel: Record<IndividualDonationStatus, string> = {
+  Pending_acceptance: "Pending acceptance",
+  Promised_Accepted: "Pledge accepted",
+  Promise_Fulfilled: "Fulfilled",
+  Promise_Rejected: "Rejected",
+};
+
+const formatDate = (dateValue: string) => {
+  const date = new Date(dateValue);
+  return Number.isNaN(date.getTime()) ? "Date unavailable" : date.toLocaleDateString();
+};
 
 export const IndividualDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<DashboardTab>("Overview");
+  const [initiatives, setInitiatives] = useState<IndividualInitiativeProps[]>([]);
+  const [initiativeTotal, setInitiativeTotal] = useState(0);
+  const [initiativePage, setInitiativePage] = useState(0);
+  const [initiativeTotalPages, setInitiativeTotalPages] = useState(0);
+  const [initiativesLoading, setInitiativesLoading] = useState(true);
+  const [initiativesError, setInitiativesError] = useState("");
+  const [donations, setDonations] = useState<IndividualDonationProps[]>([]);
+  const [donationPage, setDonationPage] = useState(0);
+  const [donationTotalPages, setDonationTotalPages] = useState(0);
+  const [donationsLoading, setDonationsLoading] = useState(true);
+  const [donationsError, setDonationsError] = useState("");
+  const [applications, setApplications] = useState<IndividualApplicationProps[]>([]);
+  const [applicationPage, setApplicationPage] = useState(0);
+  const [applicationTotalPages, setApplicationTotalPages] = useState(0);
+  const [applicationsLoading, setApplicationsLoading] = useState(false);
+  const [applicationsError, setApplicationsError] = useState("");
+  const [participants, setParticipants] = useState<IndividualParticipationProps[]>([]);
+  const [participantsLoading, setParticipantsLoading] = useState(false);
+  const [participantsError, setParticipantsError] = useState("");
+  const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
+  const [verificationError, setVerificationError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [pendingAction, setPendingAction] = useState("");
   const navigate = useNavigate();
+  const { confirmAsk, ConfirmDialog } = useConfirmAsk({ isOrg: false });
+
+  const { API: createIndividualApi } = useAuthFetch("individual");
+  const { API: createVolunteerApi } = useAuthFetch("volunteer");
+  const individualApi = useMemo(() => createIndividualApi(), [createIndividualApi]);
+  const volunteerApi = useMemo(() => createVolunteerApi(), [createVolunteerApi]);
+
+  const loadInitiatives = useCallback(async (pageNum = 0) => {
+    setInitiativesLoading(true);
+    setInitiativesError("");
+    try {
+      const response = await individualApi.get<PagedResponse<IndividualInitiativeProps>>("/initiative", {
+        params: { status: "ALL", pageNum, pageSize: 20 },
+      });
+      if (!Array.isArray(response.data?.content)) {
+        throw new Error("The initiatives response was not in the expected format.");
+      }
+      setInitiatives(response.data.content);
+      setInitiativeTotal(response.data.page?.totalElements ?? response.data.content.length);
+      setInitiativePage(response.data.page?.number ?? pageNum);
+      setInitiativeTotalPages(response.data.page?.totalPages ?? 0);
+    } catch (error) {
+      setInitiativesError(getErrorMessage(error, "Could not load your initiatives."));
+    } finally {
+      setInitiativesLoading(false);
+    }
+  }, [individualApi]);
+
+  const loadDonations = useCallback(async (pageNum = 0) => {
+    setDonationsLoading(true);
+    setDonationsError("");
+    try {
+      const response = await individualApi.get<PagedResponse<IndividualDonationProps>>("/initiative/donations", {
+        params: { pageNum, pageSize: 30 },
+      });
+      if (!Array.isArray(response.data?.content)) {
+        throw new Error("The donations response was not in the expected format.");
+      }
+      setDonations(response.data.content);
+      setDonationPage(response.data.page?.number ?? pageNum);
+      setDonationTotalPages(response.data.page?.totalPages ?? 0);
+    } catch (error) {
+      setDonationsError(getErrorMessage(error, "Could not load donations to your initiatives."));
+    } finally {
+      setDonationsLoading(false);
+    }
+  }, [individualApi]);
+
+  const loadApplications = useCallback(async (pageNum = 0) => {
+    setApplicationsLoading(true);
+    setApplicationsError("");
+    try {
+      const response = await individualApi.get<PagedResponse<IndividualApplicationProps>>("/initiative/applications", {
+        params: { pageNum, pageSize: 30 },
+      });
+      if (!Array.isArray(response.data?.content)) {
+        throw new Error("The applications response was not in the expected format.");
+      }
+      setApplications(response.data.content);
+      setApplicationPage(response.data.page?.number ?? pageNum);
+      setApplicationTotalPages(response.data.page?.totalPages ?? 0);
+    } catch (error) {
+      setApplicationsError(getErrorMessage(error, "Could not load initiative applications."));
+    } finally {
+      setApplicationsLoading(false);
+    }
+  }, [individualApi]);
+
+  const loadParticipants = useCallback(async () => {
+    setParticipantsLoading(true);
+    setParticipantsError("");
+    try {
+      const response = await individualApi.get<IndividualParticipationProps[]>("/initiative/participants");
+      if (!Array.isArray(response.data)) {
+        throw new Error("The participants response was not in the expected format.");
+      }
+      setParticipants(response.data);
+    } catch (error) {
+      setParticipantsError(getErrorMessage(error, "Could not load initiative participants."));
+    } finally {
+      setParticipantsLoading(false);
+    }
+  }, [individualApi]);
+
+  useEffect(() => {
+    void loadInitiatives();
+    void loadDonations();
+    void volunteerApi.get<{ verificationStatus?: string }>("/profile")
+      .then((response) => setVerificationStatus(response.data.verificationStatus ?? null))
+      .catch((error: unknown) => setVerificationError(getErrorMessage(error, "Could not check your verification status.")));
+  }, [loadDonations, loadInitiatives, volunteerApi]);
+
+  useEffect(() => {
+    if (activeTab === "Applications") void loadApplications();
+    if (activeTab === "Participants") void loadParticipants();
+  }, [activeTab, loadApplications, loadParticipants]);
+
+  const updateInitiativeStatus = async (initiative: IndividualInitiativeProps, action: "publish" | "completed") => {
+    setPendingAction(`initiative-${initiative.id}`);
+    setActionError("");
+    try {
+      await individualApi.patch(`/initiative/${initiative.id}/${action}`);
+      await loadInitiatives(initiativePage);
+    } catch (error) {
+      setActionError(getErrorMessage(error, "Could not update the initiative."));
+    } finally {
+      setPendingAction("");
+    }
+  };
+
+  const updateDonationStatus = async (donation: IndividualDonationProps, status: IndividualDonationStatus) => {
+    setPendingAction(`donation-${donation.id}`);
+    setActionError("");
+    try {
+      await individualApi.patch(`/initiative/donations/${encodeURIComponent(donation.id)}`, {
+        donationId: donation.id,
+        status,
+      });
+      await loadDonations(donationPage);
+    } catch (error) {
+      setActionError(getErrorMessage(error, "Could not update the donation status."));
+    } finally {
+      setPendingAction("");
+    }
+  };
+
+  const updateApplicationStatus = async (application: IndividualApplicationProps, status: "APPROVED" | "REJECTED") => {
+    if (application.projectApplied.status !== "APPLIED") return;
+    const confirmed = await confirmAsk({
+      question: `Are you sure you want to ${status === "APPROVED" ? "accept" : "reject"} this application?`,
+      trueAnswer: status === "APPROVED" ? "Accept" : "Reject",
+      falseAnswer: "Cancel",
+    });
+    if (!confirmed) return;
+
+    const id = application.projectApplied.id;
+    setPendingAction(`application-${id}`);
+    setActionError("");
+    try {
+      const endpoint = status === "APPROVED"
+        ? `/initiative/applications/${id}/accept`
+        : `/projects/applications/${id}/reject`;
+      await individualApi.patch(endpoint, null);
+      await loadApplications(applicationPage);
+    } catch (error) {
+      setActionError(getErrorMessage(error, "Could not update the application."));
+    } finally {
+      setPendingAction("");
+    }
+  };
+
+  const updateParticipantStatus = async (participant: IndividualParticipationProps, status: ParticipationStatus) => {
+    if (status === "COMPLETED" && participant.reviewable !== true) {
+      setActionError("The participant response does not include completion eligibility, so this action is unavailable.");
+      return;
+    }
+    if (participant.status !== "IN_PROGRESS") return;
+
+    const confirmed = await confirmAsk({
+      question: `Are you sure you want to ${status === "COMPLETED" ? "mark this participation completed" : "reject this participant"}?`,
+      trueAnswer: status === "COMPLETED" ? "Complete" : "Reject",
+      falseAnswer: "Cancel",
+    });
+    if (!confirmed) return;
+
+    setPendingAction(`participant-${participant.id}`);
+    setActionError("");
+    try {
+      await individualApi.patch("/initiative/participant", { id: participant.id, status });
+      await loadParticipants();
+    } catch (error) {
+      setActionError(getErrorMessage(error, "Could not update the participant status."));
+    } finally {
+      setPendingAction("");
+    }
+  };
+
+  const participantGroups = useMemo(() => {
+    const groups = new Map<number, { title: string; participants: IndividualParticipationProps[] }>();
+    participants.forEach((participant) => {
+      const group = groups.get(participant.project.id) ?? { title: participant.project.title, participants: [] };
+      group.participants.push(participant);
+      groups.set(participant.project.id, group);
+    });
+    return [...groups.entries()];
+  }, [participants]);
+
+  const totalSupporters = initiatives.reduce((total, initiative) => total + (initiative.totalApplicants ?? 0), 0);
+  const totalItemsDonated = donations.reduce((total, donation) => total + donation.quantityDonated, 0);
 
   return (
     <main className="min-h-screen bg-[#F3FAFA] text-[#323338]">
@@ -34,20 +273,24 @@ export const IndividualDashboardPage: React.FC = () => {
           </div>
         </header>
 
-        <section className="mt-6 border-l-4 border-[#FBBC05] bg-white px-5 py-4 shadow-sm" aria-labelledby="verification-status-title">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3">
-              <span className="mt-0.5 rounded-md bg-[#FFF7DF] p-2 text-[#9A6B00]"><CircleHelp size={19} /></span>
-              <div>
-                <h2 id="verification-status-title" className="font-semibold">Identity verification required</h2>
-                <p className="mt-1 max-w-3xl text-sm leading-5 text-[#676879]">Unverified individuals can browse, but must be verified before creating or joining an individual-led initiative.</p>
+        {verificationStatus && verificationStatus !== "VERIFIED" && (
+          <section className="mt-6 border-l-4 border-[#FBBC05] bg-white px-5 py-4 shadow-sm" aria-labelledby="verification-status-title">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 rounded-md bg-[#FFF7DF] p-2 text-[#9A6B00]"><CircleHelp size={19} /></span>
+                <div>
+                  <h2 id="verification-status-title" className="font-semibold">Identity verification required</h2>
+                  <p className="mt-1 max-w-3xl text-sm leading-5 text-[#676879]">You need a verified account to create and publish individual-led initiatives.</p>
+                </div>
               </div>
+              <button type="button" onClick={() => navigate("/individual/verification")} className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-[#1A73E8] hover:underline">
+                View verification steps <ArrowRight size={16} />
+              </button>
             </div>
-            <button type="button" onClick={() => navigate("/individual/verification")} className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-[#1A73E8] hover:underline">
-              View verification steps <ArrowRight size={16} />
-            </button>
-          </div>
-        </section>
+          </section>
+        )}
+        {verificationError && <p role="alert" className="mt-4 text-sm text-red-700">{verificationError}</p>}
+        {actionError && <p role="alert" className="mt-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{actionError}</p>}
 
         <nav className="mt-7 flex gap-1 overflow-x-auto border-b border-[#DDE3E8]" aria-label="Individual dashboard sections">
           {tabs.map((tab) => (
@@ -62,26 +305,31 @@ export const IndividualDashboardPage: React.FC = () => {
             <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3" aria-label="Initiative activity">
               <article className="border border-[#DDE3E8] bg-white p-5">
                 <div className="flex items-center justify-between text-sm text-[#676879]"><span>Initiatives</span><BriefcaseBusiness size={18} className="text-[#1A73E8]" /></div>
-                <p className="mt-3 text-3xl font-bold">0</p>
+                <p className="mt-3 text-3xl font-bold">{initiativesLoading ? "…" : initiativeTotal}</p>
                 <p className="mt-1 text-xs text-[#8A8D98]">Created by you</p>
               </article>
               <article className="border border-[#DDE3E8] bg-white p-5">
                 <div className="flex items-center justify-between text-sm text-[#676879]"><span>People supporting</span><UsersRound size={18} className="text-[#34A853]" /></div>
-                <p className="mt-3 text-3xl font-bold">0</p>
-                <p className="mt-1 text-xs text-[#8A8D98]">Across your initiatives</p>
+                <p className="mt-3 text-3xl font-bold">{initiativesLoading ? "…" : totalSupporters}</p>
+                <p className="mt-1 text-xs text-[#8A8D98]">Applicants on this page</p>
               </article>
               <article className="border border-[#DDE3E8] bg-white p-5">
-                <div className="flex items-center justify-between text-sm text-[#676879]"><span>Contributions tracked</span><HandHeart size={18} className="text-[#B86705]" /></div>
-                <p className="mt-3 text-3xl font-bold">0</p>
-                <p className="mt-1 text-xs text-[#8A8D98]">Time, services, and items</p>
+                <div className="flex items-center justify-between text-sm text-[#676879]"><span>Items pledged</span><HandHeart size={18} className="text-[#B86705]" /></div>
+                <p className="mt-3 text-3xl font-bold">{donationsLoading ? "…" : totalItemsDonated}</p>
+                <p className="mt-1 text-xs text-[#8A8D98]">Across this donations page</p>
               </article>
             </section>
-
+            {(initiativesError || donationsError) && (
+              <div role="alert" className="mt-5 space-y-1 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+                {initiativesError && <p>{initiativesError}</p>}
+                {donationsError && <p>{donationsError}</p>}
+              </div>
+            )}
             <section className="mt-8 border border-[#DDE3E8] bg-white p-6 sm:p-8">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold">Your first initiative starts with verification</h2>
-                  <p className="mt-1 max-w-2xl text-sm leading-6 text-[#676879]">Once verified, you can publish an initiative, recruit contributors, and track volunteer, service, and item commitments. Givr does not support monetary donations.</p>
+                  <h2 className="text-lg font-semibold">Lead an initiative and coordinate support</h2>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-[#676879]">Volunteers can pledge time, skills, or physical items. Monetary donations are not part of the initiative donation API.</p>
                 </div>
                 <BadgeCheck className="hidden shrink-0 text-[#34A853] sm:block" size={34} />
               </div>
@@ -90,25 +338,260 @@ export const IndividualDashboardPage: React.FC = () => {
         )}
 
         {activeTab === "My initiatives" && (
-          <section className="mt-6 border border-dashed border-[#C3C6D4] bg-white px-6 py-12 text-center">
-            <BriefcaseBusiness className="mx-auto text-[#1A73E8]" size={30} />
-            <h2 className="mt-4 text-lg font-semibold">No initiatives yet</h2>
-            <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#676879]">Complete identity verification to create and manage your own initiatives.</p>
-            <button type="button" onClick={() => navigate("/individual/verification")} className="mt-5 inline-flex items-center gap-2 rounded-md border border-[#1A73E8] px-4 py-2.5 text-sm font-semibold text-[#1A73E8] hover:bg-[#EAF2FE]">Review verification <ArrowRight size={16} /></button>
+          <section className="mt-6">
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <h2 className="text-lg font-semibold">Initiatives you lead</h2>
+              <button type="button" onClick={() => void loadInitiatives(initiativePage)} disabled={initiativesLoading} className="text-sm font-semibold text-[#1A73E8] hover:underline disabled:opacity-50">
+                Refresh
+              </button>
+            </div>
+            {initiativesError && <p role="alert" className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{initiativesError}</p>}
+            {initiativesLoading ? (
+              <p role="status" className="border border-[#DDE3E8] bg-white px-6 py-10 text-center text-sm text-[#676879]">Loading your initiatives…</p>
+            ) : initiatives.length === 0 && !initiativesError ? (
+              <div className="border border-dashed border-[#C3C6D4] bg-white px-6 py-12 text-center">
+                <BriefcaseBusiness className="mx-auto text-[#1A73E8]" size={30} />
+                <h3 className="mt-4 text-lg font-semibold">No initiatives yet</h3>
+                <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#676879]">Create an initiative to recruit volunteers and coordinate item or service pledges.</p>
+                <button type="button" onClick={() => navigate("/individual/create-initiative")} className="mt-5 inline-flex items-center gap-2 rounded-md bg-[#1A73E8] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#155FC0]"><Plus size={16} /> Create initiative</button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {initiatives.map((initiative) => (
+                  <article key={initiative.id} className="border border-[#DDE3E8] bg-white p-5">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="font-semibold">{initiative.title}</h3>
+                          <span className="rounded-full bg-[#F3FAFA] px-2.5 py-1 text-xs font-medium text-[#676879]">{initiative.status}</span>
+                        </div>
+                        <p className="mt-1 text-sm text-[#676879]">
+                          {initiative.startDate || "Start date not set"} – {initiative.endDate || "End date not set"}
+                          {" · "}{initiative.totalApplicants ?? 0} applicants
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {initiative.status === "DRAFT" && (
+                          <button type="button" onClick={() => void updateInitiativeStatus(initiative, "publish")} disabled={pendingAction === `initiative-${initiative.id}`} className="rounded-md bg-[#1A73E8] px-3 py-2 text-sm font-semibold text-white hover:bg-[#155FC0] disabled:opacity-50">
+                            Publish
+                          </button>
+                        )}
+                        {(initiative.status === "OPEN" || initiative.status === "ONGOING") && (
+                          <button type="button" onClick={() => void updateInitiativeStatus(initiative, "completed")} disabled={pendingAction === `initiative-${initiative.id}`} className="rounded-md border border-[#C3C6D4] px-3 py-2 text-sm font-semibold hover:bg-[#F8FAFC] disabled:opacity-50">
+                            Mark completed
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                ))}
+                {initiativeTotalPages > 1 && (
+                  <div className="flex items-center justify-between border border-[#DDE3E8] bg-white px-4 py-3 text-sm">
+                    <button type="button" onClick={() => void loadInitiatives(initiativePage - 1)} disabled={initiativesLoading || initiativePage === 0} className="font-semibold text-[#1A73E8] disabled:opacity-50">Previous</button>
+                    <span>Page {initiativePage + 1} of {initiativeTotalPages}</span>
+                    <button type="button" onClick={() => void loadInitiatives(initiativePage + 1)} disabled={initiativesLoading || initiativePage + 1 >= initiativeTotalPages} className="font-semibold text-[#1A73E8] disabled:opacity-50">Next</button>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        )}
+
+        {activeTab === "Applications" && (
+          <section className="mt-6">
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold">Volunteer applications</h2>
+                <p className="mt-1 text-sm text-[#676879]">Review people applying to your initiatives.</p>
+              </div>
+              <button type="button" onClick={() => void loadApplications(applicationPage)} disabled={applicationsLoading} className="text-sm font-semibold text-[#1A73E8] hover:underline disabled:opacity-50">
+                Refresh
+              </button>
+            </div>
+            {applicationsError && <p role="alert" className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{applicationsError}</p>}
+            {applicationsLoading ? (
+              <p role="status" className="border border-[#DDE3E8] bg-white px-6 py-10 text-center text-sm text-[#676879]">Loading applications…</p>
+            ) : applications.length === 0 && !applicationsError ? (
+              <div className="border border-dashed border-[#C3C6D4] bg-white px-6 py-12 text-center">
+                <Inbox className="mx-auto text-[#1A73E8]" size={30} />
+                <h3 className="mt-4 text-lg font-semibold">No applications to show</h3>
+                <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#676879]">Volunteer applications for your initiatives will appear here.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {applications.map((application) => (
+                  <article key={application.projectApplied.id} className="border border-[#DDE3E8] bg-white p-5">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="flex min-w-0 items-start gap-3">
+                        {application.profileUrl ? (
+                          <img src={application.profileUrl} alt="" className="h-11 w-11 rounded-full border border-[#DDE3E8] object-cover" />
+                        ) : (
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#EAF2FE] text-[#1A73E8]"><UserRound size={20} /></span>
+                        )}
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="font-semibold">{application.firstname} {application.lastname}</h3>
+                            <span className="rounded-full bg-[#F3FAFA] px-2.5 py-1 text-xs font-medium text-[#676879]">{application.projectApplied.status}</span>
+                          </div>
+                          <p className="mt-1 text-sm text-[#676879]">For {application.projectApplied.title} · Applied {formatDate(application.projectApplied.appliedAt)}</p>
+                          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-[#323338]">{application.reason}</p>
+                          {application.aboutVolunteer && <p className="mt-2 text-sm leading-6 text-[#676879]">{application.aboutVolunteer}</p>}
+                          {application.additionalInfo && <p className="mt-2 text-sm leading-6 text-[#676879]">{application.additionalInfo}</p>}
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {application.skills.map((skill) => <span key={skill} className="rounded-full bg-[#F3FAFA] px-2.5 py-1 text-xs text-[#676879]">{skill}</span>)}
+                            {application.specialSkills?.map((skill) => <span key={`special-${skill}`} className="rounded-full bg-[#EAF2FE] px-2.5 py-1 text-xs text-[#1A73E8]">{skill}</span>)}
+                            {application.isAvailable && <span className="rounded-full bg-[#E7F4EA] px-2.5 py-1 text-xs text-[#287D3C]">Available</span>}
+                          </div>
+                        </div>
+                      </div>
+                      {application.projectApplied.status === "APPLIED" && (
+                        <div className="flex shrink-0 gap-2 sm:justify-end">
+                          <button type="button" onClick={() => void updateApplicationStatus(application, "REJECTED")} disabled={pendingAction === `application-${application.projectApplied.id}`} className="rounded-md border border-[#C3C6D4] px-3 py-2 text-sm font-semibold hover:bg-[#F8FAFC] disabled:opacity-50">Reject</button>
+                          <button type="button" onClick={() => void updateApplicationStatus(application, "APPROVED")} disabled={pendingAction === `application-${application.projectApplied.id}`} className="rounded-md bg-[#1A73E8] px-3 py-2 text-sm font-semibold text-white hover:bg-[#155FC0] disabled:opacity-50">Accept</button>
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                ))}
+                {applicationTotalPages > 1 && (
+                  <div className="flex items-center justify-between border border-[#DDE3E8] bg-white px-4 py-3 text-sm">
+                    <button type="button" onClick={() => void loadApplications(applicationPage - 1)} disabled={applicationsLoading || applicationPage === 0} className="font-semibold text-[#1A73E8] disabled:opacity-50">Previous</button>
+                    <span>Page {applicationPage + 1} of {applicationTotalPages}</span>
+                    <button type="button" onClick={() => void loadApplications(applicationPage + 1)} disabled={applicationsLoading || applicationPage + 1 >= applicationTotalPages} className="font-semibold text-[#1A73E8] disabled:opacity-50">Next</button>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        )}
+
+        {activeTab === "Participants" && (
+          <section className="mt-6">
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold">Initiative participants</h2>
+                <p className="mt-1 text-sm text-[#676879]">Track people currently participating in your initiatives.</p>
+              </div>
+              <button type="button" onClick={() => void loadParticipants()} disabled={participantsLoading} className="text-sm font-semibold text-[#1A73E8] hover:underline disabled:opacity-50">
+                Refresh
+              </button>
+            </div>
+            {participantsError && <p role="alert" className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{participantsError}</p>}
+            {participantsLoading ? (
+              <p role="status" className="border border-[#DDE3E8] bg-white px-6 py-10 text-center text-sm text-[#676879]">Loading participants…</p>
+            ) : participants.length === 0 && !participantsError ? (
+              <div className="border border-dashed border-[#C3C6D4] bg-white px-6 py-12 text-center">
+                <UsersRound className="mx-auto text-[#34A853]" size={30} />
+                <h3 className="mt-4 text-lg font-semibold">No participants yet</h3>
+                <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#676879]">Approved volunteers participating in your initiatives will appear here.</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {participantGroups.map(([projectId, group]) => (
+                  <section key={projectId} aria-labelledby={`initiative-participants-${projectId}`}>
+                    <h3 id={`initiative-participants-${projectId}`} className="mb-3 text-base font-semibold">{group.title}</h3>
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      {group.participants.map((participant) => {
+                        const name = [participant.volunteer.firstname, participant.volunteer.middleName, participant.volunteer.lastname].filter(Boolean).join(" ");
+                        return (
+                          <article key={participant.id} className="border border-[#DDE3E8] bg-white p-5">
+                            <div className="flex items-start gap-3">
+                              {participant.volunteer.profileUrl ? (
+                                <img src={participant.volunteer.profileUrl} alt="" className="h-10 w-10 rounded-full border border-[#DDE3E8] object-cover" />
+                              ) : (
+                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E7F4EA] text-[#287D3C]"><UserRound size={19} /></span>
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <h4 className="font-semibold">{name || "Volunteer"}</h4>
+                                  <span className="rounded-full bg-[#F3FAFA] px-2.5 py-1 text-xs font-medium text-[#676879]">{participant.status.replace("_", " ")}</span>
+                                </div>
+                                {participant.reason && <p className="mt-2 text-sm leading-5 text-[#676879]">{participant.reason}</p>}
+                                {participant.volunteer.phoneNumber && <a className="mt-2 inline-block text-sm text-[#1A73E8] hover:underline" href={`tel:${participant.volunteer.phoneNumber}`}>{participant.volunteer.phoneNumber}</a>}
+                              </div>
+                            </div>
+                            {participant.volunteer.skills && participant.volunteer.skills.length > 0 && (
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                {participant.volunteer.skills.map((skill) => <span key={skill} className="rounded-full bg-[#F3FAFA] px-2.5 py-1 text-xs text-[#676879]">{skill}</span>)}
+                              </div>
+                            )}
+                            {participant.status === "IN_PROGRESS" && (
+                              <div className="mt-4 flex flex-wrap gap-2 border-t border-[#E7EAEE] pt-3">
+                                <button type="button" onClick={() => void updateParticipantStatus(participant, "COMPLETED")} disabled={pendingAction === `participant-${participant.id}` || participant.reviewable !== true} title={participant.reviewable === true ? undefined : "The API response does not provide completion eligibility."} className="rounded-md bg-[#34A853] px-3 py-2 text-sm font-semibold text-white hover:bg-[#287D3C] disabled:cursor-not-allowed disabled:opacity-50">Mark completed</button>
+                                <button type="button" onClick={() => void updateParticipantStatus(participant, "REJECTED")} disabled={pendingAction === `participant-${participant.id}`} className="rounded-md border border-[#C3C6D4] px-3 py-2 text-sm font-semibold hover:bg-[#F8FAFC] disabled:opacity-50">Reject participant</button>
+                              </div>
+                            )}
+                          </article>
+                        );
+                      })}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            )}
           </section>
         )}
 
         {activeTab === "Contributions" && (
-          <section className="mt-6 border border-dashed border-[#C3C6D4] bg-white px-6 py-12 text-center">
-            <HandHeart className="mx-auto text-[#34A853]" size={30} />
-            <h2 className="mt-4 text-lg font-semibold">No contributions to show</h2>
-            <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#676879]">Your commitments to initiatives will appear here, including services and item contributions.</p>
+          <section className="mt-6">
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold">Donations to your initiatives</h2>
+                <p className="mt-1 text-sm text-[#676879]">Review volunteer pledges of physical items and update their status.</p>
+              </div>
+              <button type="button" onClick={() => void loadDonations(donationPage)} disabled={donationsLoading} className="text-sm font-semibold text-[#1A73E8] hover:underline disabled:opacity-50">
+                Refresh
+              </button>
+            </div>
+            {donationsError && <p role="alert" className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{donationsError}</p>}
+            {donationsLoading ? (
+              <p role="status" className="border border-[#DDE3E8] bg-white px-6 py-10 text-center text-sm text-[#676879]">Loading donations…</p>
+            ) : donations.length === 0 && !donationsError ? (
+              <div className="border border-dashed border-[#C3C6D4] bg-white px-6 py-12 text-center">
+                <HandHeart className="mx-auto text-[#34A853]" size={30} />
+                <h3 className="mt-4 text-lg font-semibold">No donations to show</h3>
+                <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#676879]">Volunteer item pledges will appear here when someone applies to support an initiative.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {donations.map((donation) => (
+                  <article key={donation.id} className="border border-[#DDE3E8] bg-white p-5">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h3 className="font-semibold">{donation.itemName} <span className="font-normal text-[#676879]">× {donation.quantityDonated}</span></h3>
+                        <p className="mt-1 text-sm text-[#676879]">{donation.initiative?.title ?? "Initiative"} · {donationStatusLabel[donation.status] ?? donation.status}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {donation.status === "Pending_acceptance" && (
+                          <>
+                            <button type="button" onClick={() => void updateDonationStatus(donation, "Promised_Accepted")} disabled={pendingAction === `donation-${donation.id}`} className="rounded-md bg-[#1A73E8] px-3 py-2 text-sm font-semibold text-white hover:bg-[#155FC0] disabled:opacity-50">Accept pledge</button>
+                            <button type="button" onClick={() => void updateDonationStatus(donation, "Promise_Rejected")} disabled={pendingAction === `donation-${donation.id}`} className="rounded-md border border-[#C3C6D4] px-3 py-2 text-sm font-semibold hover:bg-[#F8FAFC] disabled:opacity-50">Reject</button>
+                          </>
+                        )}
+                        {donation.status === "Promised_Accepted" && (
+                          <>
+                            <button type="button" onClick={() => void updateDonationStatus(donation, "Promise_Fulfilled")} disabled={pendingAction === `donation-${donation.id}`} className="rounded-md bg-[#34A853] px-3 py-2 text-sm font-semibold text-white hover:bg-[#287D3C] disabled:opacity-50">Mark fulfilled</button>
+                            <button type="button" onClick={() => void updateDonationStatus(donation, "Promise_Rejected")} disabled={pendingAction === `donation-${donation.id}`} className="rounded-md border border-[#C3C6D4] px-3 py-2 text-sm font-semibold hover:bg-[#F8FAFC] disabled:opacity-50">Reject</button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                ))}
+                {donationTotalPages > 1 && (
+                  <div className="flex items-center justify-between border border-[#DDE3E8] bg-white px-4 py-3 text-sm">
+                    <button type="button" onClick={() => void loadDonations(donationPage - 1)} disabled={donationsLoading || donationPage === 0} className="font-semibold text-[#1A73E8] disabled:opacity-50">Previous</button>
+                    <span>Page {donationPage + 1} of {donationTotalPages}</span>
+                    <button type="button" onClick={() => void loadDonations(donationPage + 1)} disabled={donationsLoading || donationPage + 1 >= donationTotalPages} className="font-semibold text-[#1A73E8] disabled:opacity-50">Next</button>
+                  </div>
+                )}
+              </div>
+            )}
           </section>
         )}
-
       </div>
 
-      {/* Renders the create-initiative modal when its route is active */}
+      <ConfirmDialog />
       <Outlet />
     </main>
   );
