@@ -1,6 +1,6 @@
 import { FileText, Lock, ShieldCheck } from "lucide-react";
 import { useState, type JSX } from "react";
-import type { IdType,  OrganizationProps } from "../interface/interfaces";
+import type { IdType } from "../interface/interfaces";
 
 /**
  * IDCardInput Component
@@ -12,7 +12,8 @@ type IDCardInputProps = {
   dobValue?:string,
   idType?:IdType, 
   onTypeChange: (id:IdType)=>void, 
-  onChange: (e: React.ChangeEvent<HTMLInputElement>, key: keyof OrganizationProps)=>void, 
+  // "contactVerification" carries the ID number, "dateOfBirth" the date; kept generic so any form can reuse it
+  onChange: (e: React.ChangeEvent<HTMLInputElement>, key: "contactVerification" | "dateOfBirth")=>void, 
    
   disabled:boolean 
 }

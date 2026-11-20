@@ -176,9 +176,9 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>,name: keyof Organiz
               Organization Logo
             </span>
             <CloudinaryUpload
-              folder="avatars"
+              role="organization"
+              purpose="AVATAR"
               buttonText="Change Photo"
-              sources={["camera", "google_drive","local"]}
               onUploadSuccess={(url) => {
                   setForm(prev => ({
                     ...prev,

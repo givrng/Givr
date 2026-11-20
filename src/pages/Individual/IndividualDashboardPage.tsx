@@ -1,10 +1,11 @@
 import axios from "axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, BadgeCheck, BriefcaseBusiness, CircleHelp, HandHeart, Inbox, LockKeyhole, Plus, UsersRound, UserRound } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, BadgeCheck, BriefcaseBusiness, Clock3, CreditCard, Fingerprint, HandHeart, Inbox, LockKeyhole, Plus, ShieldCheck, Trash2, UserRound, UsersRound } from "lucide-react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { DashboardHeader } from "../../components/dashboardHeader";
 import useAuthFetch from "../../components/hooks/useAuthFetch";
 import { useConfirmAsk } from "../../components/hooks/useConfirm";
+import { getVerificationState, VERIFY_IDENTITY_PATH } from "../../utils/verification";
 import type { IndividualApplicationProps, IndividualDonationProps, IndividualDonationStatus, IndividualInitiativeProps, IndividualParticipationProps, PagedResponse, ParticipationStatus } from "../../interface/interfaces";
 
 const tabs = ["Overview", "My initiatives", "Applications", "Participants", "Contributions"] as const;
@@ -20,6 +21,23 @@ const getErrorMessage = (error: unknown, fallback: string) => {
   }
   return error instanceof Error ? error.message : fallback;
 };
+
+// /individual/* requires the INDIVIDUAL authority, which is granted once verification succeeds.
+// Before that the backend answers 403 (or 404 for a missing individual record). That's an empty state, not an error.
+const isMissingIndividualAccount = (error: unknown) =>
+  axios.isAxiosError(error) && (error.response?.status === 403 || error.response?.status === 404);
+
+// Statuses that can't have the INDIVIDUAL authority yet. For these we skip the /individual/* calls entirely,
+// which avoids a burst of 403s and token refresh attempts. Any other status still loads and handles 403 as empty.
+const NOT_YET_INDIVIDUAL = new Set<string | null>([null, "UNVERIFIED", "AUTOMATIC_VERIFICATION_FAILED"]);
+
+const DELETABLE_STATUSES = new Set(["DRAFT", "OPEN"]);
+
+export interface InitiativesOutletContext {
+  verificationStatus: string | null;
+  verificationLoaded: boolean;
+  onInitiativeCreated: () => void;
+}
 
 const donationStatusLabel: Record<IndividualDonationStatus, string> = {
   Pending_acceptance: "Pending acceptance",
@@ -56,6 +74,7 @@ export const IndividualDashboardPage: React.FC = () => {
   const [participantsError, setParticipantsError] = useState("");
   const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
   const [verificationError, setVerificationError] = useState("");
+  const [verificationLoaded, setVerificationLoaded] = useState(false);
   const [actionError, setActionError] = useState("");
   const [pendingAction, setPendingAction] = useState("");
   const navigate = useNavigate();
@@ -81,6 +100,7 @@ export const IndividualDashboardPage: React.FC = () => {
       setInitiativePage(response.data.page?.number ?? pageNum);
       setInitiativeTotalPages(response.data.page?.totalPages ?? 0);
     } catch (error) {
+      if (isMissingIndividualAccount(error)) { setInitiatives([]); setInitiativeTotal(0); setInitiativeTotalPages(0); return; }
       setInitiativesError(getErrorMessage(error, "Could not load your initiatives."));
     } finally {
       setInitiativesLoading(false);
@@ -101,6 +121,7 @@ export const IndividualDashboardPage: React.FC = () => {
       setDonationPage(response.data.page?.number ?? pageNum);
       setDonationTotalPages(response.data.page?.totalPages ?? 0);
     } catch (error) {
+      if (isMissingIndividualAccount(error)) { setDonations([]); setDonationTotalPages(0); return; }
       setDonationsError(getErrorMessage(error, "Could not load donations to your initiatives."));
     } finally {
       setDonationsLoading(false);
@@ -121,6 +142,7 @@ export const IndividualDashboardPage: React.FC = () => {
       setApplicationPage(response.data.page?.number ?? pageNum);
       setApplicationTotalPages(response.data.page?.totalPages ?? 0);
     } catch (error) {
+      if (isMissingIndividualAccount(error)) { setApplications([]); setApplicationTotalPages(0); return; }
       setApplicationsError(getErrorMessage(error, "Could not load initiative applications."));
     } finally {
       setApplicationsLoading(false);
@@ -137,6 +159,7 @@ export const IndividualDashboardPage: React.FC = () => {
       }
       setParticipants(response.data);
     } catch (error) {
+      if (isMissingIndividualAccount(error)) { setParticipants([]); return; }
       setParticipantsError(getErrorMessage(error, "Could not load initiative participants."));
     } finally {
       setParticipantsLoading(false);
@@ -144,17 +167,35 @@ export const IndividualDashboardPage: React.FC = () => {
   }, [individualApi]);
 
   useEffect(() => {
-    void loadInitiatives();
-    void loadDonations();
     void volunteerApi.get<{ verificationStatus?: string }>("/profile")
       .then((response) => setVerificationStatus(response.data.verificationStatus ?? null))
-      .catch((error: unknown) => setVerificationError(getErrorMessage(error, "Could not check your verification status.")));
-  }, [loadDonations, loadInitiatives, volunteerApi]);
+      .catch((error: unknown) => setVerificationError(getErrorMessage(error, "Could not check your verification status.")))
+      .finally(() => setVerificationLoaded(true));
+  }, [volunteerApi]);
+
+  const identityState = getVerificationState(verificationStatus);
+  // Until the status loads (or if it can't be loaded) don't claim the user is locked out
+  const isLockedOut = verificationLoaded && !verificationError && identityState !== "verified";
+
+  // If the profile check itself failed, still try the lists: the 403 handling keeps that safe
+  const hasIndividualAccess = verificationLoaded && (Boolean(verificationError) || !NOT_YET_INDIVIDUAL.has(verificationStatus));
 
   useEffect(() => {
+    if (!verificationLoaded) return;
+    if (!hasIndividualAccess) {
+      setInitiativesLoading(false);
+      setDonationsLoading(false);
+      return;
+    }
+    void loadInitiatives();
+    void loadDonations();
+  }, [hasIndividualAccess, loadDonations, loadInitiatives, verificationLoaded]);
+
+  useEffect(() => {
+    if (!hasIndividualAccess) return;
     if (activeTab === "Applications") void loadApplications();
     if (activeTab === "Participants") void loadParticipants();
-  }, [activeTab, loadApplications, loadParticipants]);
+  }, [activeTab, hasIndividualAccess, loadApplications, loadParticipants]);
 
   const updateInitiativeStatus = async (initiative: IndividualInitiativeProps, action: "publish" | "completed") => {
     setPendingAction(`initiative-${initiative.id}`);
@@ -164,6 +205,33 @@ export const IndividualDashboardPage: React.FC = () => {
       await loadInitiatives(initiativePage);
     } catch (error) {
       setActionError(getErrorMessage(error, "Could not update the initiative."));
+    } finally {
+      setPendingAction("");
+    }
+  };
+
+  // DRAFT initiatives are removed permanently; OPEN ones are soft-deleted (hidden) by the backend
+  const deleteInitiative = async (initiative: IndividualInitiativeProps) => {
+    if (!DELETABLE_STATUSES.has(initiative.status)) return;
+    const isDraft = initiative.status === "DRAFT";
+    const confirmed = await confirmAsk({
+      question: isDraft
+        ? `Delete the draft "${initiative.title}"? This can't be undone.`
+        : `Delete "${initiative.title}"? It will stop accepting volunteers and disappear from your list.`,
+      trueAnswer: "Delete",
+      falseAnswer: "Cancel",
+    });
+    if (!confirmed) return;
+
+    setPendingAction(`initiative-${initiative.id}`);
+    setActionError("");
+    try {
+      await individualApi.delete(`/initiative/${initiative.id}`);
+      // Step back a page if this was the last item on it
+      const nextPage = initiatives.length === 1 && initiativePage > 0 ? initiativePage - 1 : initiativePage;
+      await loadInitiatives(nextPage);
+    } catch (error) {
+      setActionError(getErrorMessage(error, "Could not delete the initiative."));
     } finally {
       setPendingAction("");
     }
@@ -200,7 +268,7 @@ export const IndividualDashboardPage: React.FC = () => {
     try {
       const endpoint = status === "APPROVED"
         ? `/initiative/applications/${id}/accept`
-        : `/projects/applications/${id}/reject`;
+        : `/initiative/applications/${id}/reject`;
       await individualApi.patch(endpoint, null);
       await loadApplications(applicationPage);
     } catch (error) {
@@ -264,29 +332,78 @@ export const IndividualDashboardPage: React.FC = () => {
             <p className="mt-2 max-w-2xl text-sm leading-6 text-[#676879]">Turn a concern into a community effort. Find people ready to contribute time, skills, or items.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={() => navigate("/individual/create-initiative")} aria-haspopup="dialog" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#1A73E8] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#155FC0]">
-              <Plus size={17} /> Create initiative
-            </button>
-            <button type="button" onClick={() => navigate("/individual/verification")} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#C3C6D4] bg-white px-4 py-2.5 text-sm font-semibold text-[#323338] transition hover:bg-[#F8FAFC]">
-              <LockKeyhole size={17} /> Verification steps
-            </button>
+            {isLockedOut ? (
+              <>
+                {(identityState === "unverified" || identityState === "failed") && (
+                  <button type="button" onClick={() => navigate(VERIFY_IDENTITY_PATH)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#1A73E8] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#155FC0]">
+                    <ShieldCheck size={17} /> {identityState === "failed" ? "Retry verification" : "Verify identity"}
+                  </button>
+                )}
+                {/* Still clickable: the modal explains what's needed instead of failing silently */}
+                <button type="button" onClick={() => navigate("/individual/create-initiative")} aria-haspopup="dialog" aria-describedby="verification-gate-title" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#C3C6D4] bg-white px-4 py-2.5 text-sm font-semibold text-[#676879] transition hover:bg-[#F8FAFC]">
+                  <LockKeyhole size={16} /> Create initiative
+                </button>
+              </>
+            ) : (
+              <button type="button" onClick={() => navigate("/individual/create-initiative")} aria-haspopup="dialog" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#1A73E8] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#155FC0]">
+                <Plus size={17} /> Create initiative
+              </button>
+            )}
           </div>
         </header>
 
-        {verificationStatus && verificationStatus !== "VERIFIED" && (
-          <section className="mt-6 border-l-4 border-[#FBBC05] bg-white px-5 py-4 shadow-sm" aria-labelledby="verification-status-title">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-3">
-                <span className="mt-0.5 rounded-md bg-[#FFF7DF] p-2 text-[#9A6B00]"><CircleHelp size={19} /></span>
+        {isLockedOut && identityState === "in_review" && (
+          <section className="mt-6 flex items-start gap-4 rounded-xl border border-blue-200 bg-blue-50 p-5" aria-labelledby="verification-gate-title">
+            <span className="rounded-lg bg-white p-2 text-[#1A73E8]"><Clock3 size={22} /></span>
+            <div>
+              <h2 id="verification-gate-title" className="font-semibold text-blue-950">Your verification is in review</h2>
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-blue-900">We've received your payment and are checking your details. You'll be able to create initiatives as soon as it's approved. There's nothing else you need to do.</p>
+            </div>
+          </section>
+        )}
+
+        {isLockedOut && (identityState === "unverified" || identityState === "failed") && (
+          <section
+            className={`mt-6 overflow-hidden rounded-xl border bg-white shadow-sm ${identityState === "failed" ? "border-red-200" : "border-[#BFD7FB]"}`}
+            aria-labelledby="verification-gate-title"
+          >
+            <div className="flex flex-col gap-5 p-6 sm:flex-row sm:items-start sm:justify-between sm:p-7">
+              <div className="flex items-start gap-4">
+                <span className={`rounded-xl p-3 ${identityState === "failed" ? "bg-red-50 text-red-600" : "bg-[#EAF2FE] text-[#1A73E8]"}`}>
+                  {identityState === "failed" ? <AlertTriangle size={26} /> : <ShieldCheck size={26} />}
+                </span>
                 <div>
-                  <h2 id="verification-status-title" className="font-semibold">Identity verification required</h2>
-                  <p className="mt-1 max-w-3xl text-sm leading-5 text-[#676879]">You need a verified account to create and publish individual-led initiatives.</p>
+                  <h2 id="verification-gate-title" className="text-lg font-semibold">
+                    {identityState === "failed" ? "We couldn't verify your identity" : "Verify your identity to create initiatives"}
+                  </h2>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-[#676879]">
+                    {identityState === "failed"
+                      ? "Your name or ID number didn't match official records. Check that they're exactly as they appear on your ID, then try again."
+                      : "You can volunteer on projects right away. To start and publish your own initiative, we first confirm who you are, so volunteers and donors know there's a real, accountable person behind it."}
+                  </p>
                 </div>
               </div>
-              <button type="button" onClick={() => navigate("/individual/verification")} className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-[#1A73E8] hover:underline">
-                View verification steps <ArrowRight size={16} />
+              <button type="button" onClick={() => navigate(VERIFY_IDENTITY_PATH)} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-[#1A73E8] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#155FC0]">
+                {identityState === "failed" ? "Try again" : "Verify identity"} <ArrowRight size={16} />
               </button>
             </div>
+            {identityState === "unverified" && (
+              <ol className="grid gap-px border-t border-[#E7EAEE] bg-[#E7EAEE] sm:grid-cols-3" aria-label="How verification works">
+                {[
+                  { icon: Fingerprint, title: "Enter your ID and a photo", detail: "NIN, driver's licence, voter's card or passport" },
+                  { icon: CreditCard, title: "Pay the verification fee", detail: "Securely on Paystack" },
+                  { icon: BadgeCheck, title: "We review your details", detail: "Then you can create initiatives" },
+                ].map(({ icon: Icon, title, detail }, index) => (
+                  <li key={title} className="flex items-start gap-3 bg-[#F8FAFC] px-6 py-4">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-[#1A73E8] ring-1 ring-[#BFD7FB]">{index + 1}</span>
+                    <div>
+                      <p className="flex items-center gap-1.5 text-sm font-medium"><Icon size={15} className="text-[#1A73E8]" /> {title}</p>
+                      <p className="mt-0.5 text-xs text-[#676879]">{detail}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
           </section>
         )}
         {verificationError && <p role="alert" className="mt-4 text-sm text-red-700">{verificationError}</p>}
@@ -352,8 +469,18 @@ export const IndividualDashboardPage: React.FC = () => {
               <div className="border border-dashed border-[#C3C6D4] bg-white px-6 py-12 text-center">
                 <BriefcaseBusiness className="mx-auto text-[#1A73E8]" size={30} />
                 <h3 className="mt-4 text-lg font-semibold">No initiatives yet</h3>
-                <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#676879]">Create an initiative to recruit volunteers and coordinate item or service pledges.</p>
-                <button type="button" onClick={() => navigate("/individual/create-initiative")} className="mt-5 inline-flex items-center gap-2 rounded-md bg-[#1A73E8] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#155FC0]"><Plus size={16} /> Create initiative</button>
+                <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#676879]">
+                  {isLockedOut
+                    ? "Once your identity is verified, initiatives you create will appear here."
+                    : "Create an initiative to recruit volunteers and coordinate item or service pledges."}
+                </p>
+                {isLockedOut ? (
+                  identityState !== "in_review" && (
+                    <button type="button" onClick={() => navigate(VERIFY_IDENTITY_PATH)} className="mt-5 inline-flex items-center gap-2 rounded-md bg-[#1A73E8] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#155FC0]"><ShieldCheck size={16} /> Verify identity</button>
+                  )
+                ) : (
+                  <button type="button" onClick={() => navigate("/individual/create-initiative")} className="mt-5 inline-flex items-center gap-2 rounded-md bg-[#1A73E8] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#155FC0]"><Plus size={16} /> Create initiative</button>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
@@ -369,6 +496,20 @@ export const IndividualDashboardPage: React.FC = () => {
                           {initiative.startDate || "Start date not set"} – {initiative.endDate || "End date not set"}
                           {" · "}{initiative.totalApplicants ?? 0} applicants
                         </p>
+                        {((initiative.services?.length ?? 0) > 0 || (initiative.items?.length ?? 0) > 0) && (
+                          <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="What this initiative needs">
+                            {initiative.services?.map((service) => (
+                              <li key={`s-${service.resourceId ?? service.resource}`} className="rounded-full bg-[#EAF2FE] px-2.5 py-1 text-xs font-medium text-[#1A73E8]">
+                                {service.resource}{service.quantity > 1 ? ` × ${service.quantity}` : ""}
+                              </li>
+                            ))}
+                            {initiative.items?.map((item) => (
+                              <li key={`i-${item.resourceId ?? item.resource}`} className="rounded-full bg-[#E8F5EC] px-2.5 py-1 text-xs font-medium text-[#287D3C]">
+                                {item.resource} × {item.quantity}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {initiative.status === "DRAFT" && (
@@ -379,6 +520,11 @@ export const IndividualDashboardPage: React.FC = () => {
                         {(initiative.status === "OPEN" || initiative.status === "ONGOING") && (
                           <button type="button" onClick={() => void updateInitiativeStatus(initiative, "completed")} disabled={pendingAction === `initiative-${initiative.id}`} className="rounded-md border border-[#C3C6D4] px-3 py-2 text-sm font-semibold hover:bg-[#F8FAFC] disabled:opacity-50">
                             Mark completed
+                          </button>
+                        )}
+                        {DELETABLE_STATUSES.has(initiative.status) && (
+                          <button type="button" onClick={() => void deleteInitiative(initiative)} disabled={pendingAction === `initiative-${initiative.id}`} aria-label={`Delete ${initiative.title}`} className="inline-flex items-center gap-1.5 rounded-md border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50">
+                            <Trash2 size={15} /> Delete
                           </button>
                         )}
                       </div>
@@ -557,9 +703,17 @@ export const IndividualDashboardPage: React.FC = () => {
                 {donations.map((donation) => (
                   <article key={donation.id} className="border border-[#DDE3E8] bg-white p-5">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <h3 className="font-semibold">{donation.itemName} <span className="font-normal text-[#676879]">× {donation.quantityDonated}</span></h3>
-                        <p className="mt-1 text-sm text-[#676879]">{donation.initiative?.title ?? "Initiative"} · {donationStatusLabel[donation.status] ?? donation.status}</p>
+                      <div className="flex items-center gap-3">
+                        {/* Donor photo, so owners can tell pledges apart. Only Cloudinary URLs are rendered */}
+                        {donation.profileUrl?.startsWith("https://res.cloudinary.com/") ? (
+                          <img src={donation.profileUrl} alt="Donor" className="h-10 w-10 shrink-0 rounded-full object-cover" loading="lazy" />
+                        ) : (
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3FAFA] text-[#676879]" aria-hidden="true"><UserRound size={18} /></span>
+                        )}
+                        <div>
+                          <h3 className="font-semibold">{donation.itemName} <span className="font-normal text-[#676879]">× {donation.quantityDonated}</span></h3>
+                          <p className="mt-1 text-sm text-[#676879]">{donation.initiative?.title ?? "Initiative"} · {donationStatusLabel[donation.status] ?? donation.status}</p>
+                        </div>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {donation.status === "Pending_acceptance" && (
@@ -592,7 +746,11 @@ export const IndividualDashboardPage: React.FC = () => {
       </div>
 
       <ConfirmDialog />
-      <Outlet />
+      <Outlet context={{
+        verificationStatus,
+        verificationLoaded,
+        onInitiativeCreated: () => { setActiveTab("My initiatives"); void loadInitiatives(0); },
+      } satisfies InitiativesOutletContext} />
     </main>
   );
 };

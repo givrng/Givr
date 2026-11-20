@@ -16,7 +16,10 @@ import { useAlert } from "../../components/hooks/useAlert";
 import { useSocketConnection } from "../../components/Chat/socketConnection";
 
 export const DashboardPage = () => {
-    const [active, setActive] = useState<NavTypes>("Dashboard");
+    const [searchParams, setSearchParams] = useSearchParams()
+    // Deep link from the Initiatives page: open the profile on the identity verification form
+    const [startVerifying] = useState(() => searchParams.get("verify") === "identity")
+    const [active, setActive] = useState<NavTypes>(startVerifying ? "Profile & Achievements" : "Dashboard");
     const [dashboardIsMounted, setDashboardIsMounted] = useState(false)
     const navigate = useNavigate()
     const [volunteerDashboard, setVolunteerDashboard] = useState<VolunteerDashboardProps>({
@@ -162,8 +165,15 @@ export const DashboardPage = () => {
         }))
     }, [volunteerDashboard])
 
-    const [searchParams, setSearchParams] = useSearchParams()
     const {openModal, ModalComponent} = useGenericModal()
+
+    // Drop the one-off ?verify flag so a refresh or back navigation doesn't reopen the form
+    useEffect(()=>{
+        if(!searchParams.has("verify")) return
+        const next = new URLSearchParams(searchParams)
+        next.delete("verify")
+        setSearchParams(next, { replace: true })
+    }, [])
     const {alertMessage, AlertDialog} = useAlert({isOrg: false})
     useEffect(()=>{
        ( async ()=>{
@@ -193,7 +203,7 @@ export const DashboardPage = () => {
                 {active == "Dashboard" && <Dashboard metrics={metrics} triggerAction={quickAction} hasMounted={()=>setDashboardIsMounted(!dashboardIsMounted)} profileCompleted={volunteerDashboard.profileCompleted}/>}
                 {active == "Find Opportunities" && <ProjectHub />}
                 {active == "My Volunteering" && <MyVolunteering/>}
-                {active == "Profile & Achievements" && <ProfilePage/>}
+                {active == "Profile & Achievements" && <ProfilePage verifying={startVerifying}/>}
             </div>
             <ModalComponent/>
             <AlertDialog/>

@@ -4,7 +4,6 @@ import { Button } from "../ReuseableComponents";
 import LocationSelect from "../form/LocationSelect";
 
 import { useSignup } from "../Volunteer/sign-up/SignupContext";
-import { CloudinaryUpload } from "../CloudinaryWidget";
 import type { FormFields } from "../../pages/Volunteer/volunteerSignup";
 import { GoogleIcon } from "../icons";
 
@@ -220,18 +219,9 @@ const UserDetails:React.FC<{formData:FormFields; setFormData:(d: React.SetStateA
               <span className="text-sm text-gray-600">
                   Profile Photo
               </span>
-              <CloudinaryUpload
-              folder="avatars"
-              buttonText="Change Photo"
-              onUploadSuccess={(url) => {
-                  setFormData(prev => ({
-                  ...prev,
-                  profileUrl: url,
-                  }));
-              }}
-              />
-              <p className="text-xs text-gray-400">
-                JPG, PNG or WEBP. Max 2MB.
+              {/* Uploads are signed by the backend for signed-in users only, so photos are added after sign-up */}
+              <p className="text-xs text-gray-500 max-w-xs">
+                We've created an avatar from your name. You can upload your own photo from your profile once you've signed up.
               </p>
             </div>
           </div>

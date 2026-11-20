@@ -5,16 +5,27 @@ import type { ProfileProps} from "../interface/interfaces"
 import { useEffect, useRef, useState } from "react";
 import { EditProfile } from "./Volunteer/editProfile";
 import useAuthFetch from "./hooks/useAuthFetch";
+import { IdentityVerificationForm } from "./Volunteer/IdentityVerificationForm";
+import { getVerificationState } from "../utils/verification";
 
 
-export const ProfilePage:React.FC<{editing?:boolean}> = ({editing = false})=> {
+type ProfilePageProps = {
+  editing?: boolean;
+  /** Open straight on the identity verification form (from the Initiatives page) */
+  verifying?: boolean;
+};
+
+export const ProfilePage:React.FC<ProfilePageProps> = ({editing = false, verifying = false})=> {
 
   const [isEditing, setIsEditing] = useState(editing)
+  const [isVerifying, setIsVerifying] = useState(verifying)
   const [profile, setProfile] = useState<ProfileProps>({
     skills:[],
     rating: 5
   })
   const [isLoading, setIsLoading] = useState(false)
+  // The verification form pre-fills names and checks status, so it waits for real profile data
+  const [profileLoaded, setProfileLoaded] = useState(false)
   const [profileChanged, setProfileChanged] = useState(false);
 
   const {API} = useAuthFetch("volunteer")
@@ -34,6 +45,7 @@ export const ProfilePage:React.FC<{editing?:boolean}> = ({editing = false})=> {
         const response = await apiRef.current().get(`/profile?t=${Date.now()}`)
         if (!isMounted) return
         setProfile(prev=>({...prev, ...response.data as ProfileProps}))
+        setProfileLoaded(true)
       } catch (error) {
         // Silently ignore polling errors — server may be temporarily unreachable
         if (!silent) console.error("Failed to load volunteer profile", error)
@@ -88,19 +100,27 @@ export const ProfilePage:React.FC<{editing?:boolean}> = ({editing = false})=> {
       window.removeEventListener("givr:certificate-updated", handleProfileRefresh as EventListener)
     }
 
-  }, [profileChanged, isEditing])
+  }, [profileChanged, isEditing, isVerifying])
+
+  // Someone who's already verified or in review has nothing to fill in
+  const identityState = getVerificationState(profile.verificationStatus)
+  const showVerificationForm = isVerifying && profileLoaded && (identityState === "unverified" || identityState === "failed")
 
   return (
     <div className="space-y-6 flex flex-col justify-center items-center">
       {isLoading && <PageLoader message="Loading your profile"/> }
 
-      { isEditing?<EditProfile onClose={()=>{
+      { showVerificationForm ? <IdentityVerificationForm
+        profile={profile}
+        onClose={() => setIsVerifying(false)}
+      /> : isEditing?<EditProfile onClose={()=>{
         setIsEditing(false)
       }}
       profileProps={profile}
       /> : <ProfileAchievements
         profile={profile}
         onEditProfile={() => setIsEditing(true)}
+        onVerifyIdentity={() => setIsVerifying(true)}
         reload={()=>setProfileChanged(!profileChanged)}
       />}
 

@@ -221,13 +221,13 @@ export default function OrganizationProfile({profile, onEditProfile, editOrgInfo
 
              {/* Upload button — shown for any non-locked org */}
                 <CloudinaryUpload
+                  role="organization"
+                  purpose="AVATAR"
                   onUploadSuccess={(url:string, _:string)=>{
                     handleLogoUpdate(url)
                     API().patch("/profile", {profileUrl:url})
                   }}
                   buttonText={org.profileUrl ? "Change logo" : "Add logo"}
-                  folder="organization-logos"
-                  sources={["local", "camera"]}
                   max_size_MB={2}
                   className="!text-xs !px-2 !py-1 w-full text-center"
               />

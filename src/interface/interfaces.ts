@@ -10,6 +10,8 @@ export interface ButtonProps {
   variant: 'primary' | 'secondary' | 'outline'| 'green'|'disabled'|'void'|'danger';
   onClick?: (E?:React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
+  /** Defaults to "button" when onClick is set, otherwise "submit" (see Button) */
+  type?: "button" | "submit" | "reset";
 }
 
 export interface FeatureCardProps {
@@ -100,9 +102,25 @@ export interface ProjectProps{
   rating?:number;
   projectFlierUrl?: string;
   projectCardUrl?: string;
-  // Optional: projects created before item requests were introduced won't have it
-  itemsNeeded?: ItemNeed[];
+  // "Initiative" for individual-led initiatives, which share the project shape
+  type?: ProjectType;
   }
+
+export type ProjectType = "Project" | "Initiative";
+
+/** A service or item an initiative needs (InitiativeResourceDto); quantity is people for services */
+export interface InitiativeResource{
+  resource:string;
+  resourceId:string;
+  quantity:number;
+}
+
+/** GET /volunteer/initiative/{id}/resources */
+export interface InitiativeResources{
+  items:InitiativeResource[];
+  services:InitiativeResource[];
+  media?:{ mediaType:"Video"; mediaUrl:string };
+}
 
 /** A physical item a project or initiative is asking supporters to provide */
 export interface ItemNeed{
@@ -111,11 +129,6 @@ export interface ItemNeed{
   description?:string;
 }
 
-/** An item a volunteer pledges towards one of a project's item needs */
-export interface ItemContribution{
-  name:string;
-  quantity:number;
-}
 
 export interface ProjectFormProps{
   id?:number;
@@ -138,7 +151,6 @@ export interface ProjectFormProps{
   requiredSkills:string[];
   specialRequirements:string;
   projectFlierUrl?: string;
-  itemsNeeded:ItemNeed[];
 }
 
 export interface ProjectComponentProps extends ProjectProps{
@@ -153,6 +165,8 @@ export interface ProjectComponentProps extends ProjectProps{
 }
 export type IdType =  "DL"|"NIN"|"VOTER_CARD"|"PASSPORT"
 export type VerificationStatus =  "VERIFIED" | "UNVERIFIED"| "PENDING";
+// Full set returned for volunteer/individual accounts (VolunteerProfile.verificationStatus); null until started
+export type IndividualVerificationStatus = VerificationStatus | "AUTOMATIC_VERIFICATION_FAILED" | "AUTOMATIC_VERIFICATION_SUCCEEDED" | "AUTOMATIC_VERIFICATION_PENDING";
 export interface OrganizationProps{
   organizationId?:string;
   name?: string;
@@ -237,6 +251,8 @@ export interface ProfileProps {
   email?:string;
   createdAt?:string;
   certificates?: CertificateDto[];
+  /** Identity verification; required to create initiatives */
+  verificationStatus?: IndividualVerificationStatus | null;
 };
 
 export interface BadgeProps {
@@ -347,7 +363,6 @@ export interface VolunteerApplicationProps{
   additionalInfo?:string;
   profileUrl?:string;
   projectApplied: VolunteerProjectApplicationProps
-  itemContributions?: ItemContribution[];
 }
 
 export type ParticipationStatus = "IN_PROGRESS" | "COMPLETED" | "REJECTED"
@@ -361,7 +376,6 @@ export interface ParticipantProps{
   reason:string;
   // Optional: participants who applied before this field was introduced won't have it
   phoneNumber?:string | null;
-  itemContributions?: ItemContribution[];
 }
 
 export type organizationType = "NGO/Non profit" | "Community Group" | "Religious Group"| "Educational Institution" | "Government Agency"|"Corporate Foundation"|""
@@ -421,6 +435,9 @@ export interface IndividualInitiativeProps {
   endDate?: string;
   totalApplicants?: number;
   maxVolunteers?: number;
+  items?: InitiativeResource[];
+  services?: InitiativeResource[];
+  media?: { mediaType: "Video"; mediaUrl: string };
 }
 
 export type IndividualDonationStatus = "Pending_acceptance" | "Promised_Accepted" | "Promise_Fulfilled" | "Promise_Rejected";
@@ -431,6 +448,8 @@ export interface IndividualDonationProps {
   initiative?: Pick<IndividualInitiativeProps, "id" | "title">;
   status: IndividualDonationStatus;
   quantityDonated: number;
+  /** Donor's photo. Announced by the backend; not yet in the dev OpenAPI spec */
+  profileUrl?: string;
 }
 
 export interface IndividualApplicationProps {

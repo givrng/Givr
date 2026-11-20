@@ -8,13 +8,16 @@ import { useAlert } from "./hooks/useAlert";
 import { PageLoader } from "./icons";
 import { downloadFile } from "../utils/fileDownload";
 import { Award, Download, ExternalLink } from "lucide-react";
+import { getVerificationState } from "../utils/verification";
 interface ProfileAchievementsProps {
   profile: ProfileProps;
   onEditProfile: () => void;
+  onVerifyIdentity: () => void;
   reload:()=>void;
 }
 
-export default function ProfileAchievements({profile, onEditProfile,reload}: ProfileAchievementsProps) {
+export default function ProfileAchievements({profile, onEditProfile, onVerifyIdentity, reload}: ProfileAchievementsProps) {
+  const identityState = getVerificationState(profile.verificationStatus)
 
   const [otpIsOpen, setOtpIsOpen] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -200,6 +203,48 @@ export default function ProfileAchievements({profile, onEditProfile,reload}: Pro
                 />
               </div>
     
+              {/* Identity verification: unlocks creating initiatives */}
+              <div className="flex items-center justify-between gap-3 p-4 rounded-xl border border-ui">
+                <div>
+                  <p className="text-sm font-medium text-[#323338]">
+                    Identity Verification
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {identityState === "verified" && "You can create and publish initiatives"}
+                    {identityState === "in_review" && "We're reviewing your details"}
+                    {identityState === "failed" && "Your details didn't match official records"}
+                    {identityState === "unverified" && "Required to create initiatives"}
+                  </p>
+                </div>
+
+                {identityState === "verified" && (
+                  <span className="shrink-0 text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                    Verified
+                  </span>
+                )}
+                {identityState === "in_review" && (
+                  <span className="shrink-0 text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-1 rounded-full">
+                    In review
+                  </span>
+                )}
+                {identityState === "failed" && (
+                  <button
+                    onClick={onVerifyIdentity}
+                    className="shrink-0 text-xs font-semibold text-[red] bg-red-100 px-3 py-1 rounded-full hover:bg-red-200"
+                  >
+                    Try again
+                  </button>
+                )}
+                {identityState === "unverified" && (
+                  <button
+                    onClick={onVerifyIdentity}
+                    className="shrink-0 text-xs font-semibold text-[#1877F2] bg-blue-50 px-3 py-1 rounded-full hover:bg-blue-100"
+                  >
+                    Verify Identity
+                  </button>
+                )}
+              </div>
+
               {/* Password */}
               {
                 profile.emailEditable && <div className="flex flex-col gap-y-2">

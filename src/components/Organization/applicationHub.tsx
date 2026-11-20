@@ -5,7 +5,6 @@ import { Button } from "../ReuseableComponents"
 import useAuthFetch from "../hooks/useAuthFetch"
 import {  ProjectGroupHeader } from "./Participant"
 import { PageLoader } from "../icons"
-import { ItemChips } from "../form/ItemNeedsEditor"
 import {  Filter, Inbox, Search, Users } from "lucide-react"
 import { 
   ChevronDown, 
@@ -159,12 +158,6 @@ const VolunteerCard:React.FC<{applicant:VolunteerApplicationProps, onApprove: (a
                 <div>
                   <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Additional Context</h4>
                   <p className="text-sm text-gray-600">{applicant.additionalInfo}</p>
-                </div>
-              )}
-              {applicant.itemContributions && applicant.itemContributions.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Items Pledged</h4>
-                  <ItemChips items={applicant.itemContributions} />
                 </div>
               )}
             </div>

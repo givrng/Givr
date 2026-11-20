@@ -1,4 +1,4 @@
-import type { ItemContribution, ItemNeed } from "../interface/interfaces";
+import type { ItemNeed } from "../interface/interfaces";
 
 /**
  * Limits for item requests and pledges. Enforced client-side for UX;
@@ -52,17 +52,4 @@ export function validateItemNeeds(
   const names = cleaned.map((item) => item.name.toLowerCase());
   if (new Set(names).size !== names.length) return `Each ${noun} should only be listed once. Combine duplicates into one row.`;
   return undefined;
-}
-
-/**
- * Keeps only pledges that match an item the project still asks for, with quantities
- * clamped to what is needed. Guards against stale drafts after a project's needs change.
- */
-export function sanitizeItemContributions(contributions: ItemContribution[] = [], itemsNeeded: ItemNeed[] = []): ItemContribution[] {
-  return contributions.flatMap((contribution) => {
-    const need = itemsNeeded.find((item) => item.name === contribution.name);
-    if (!need) return [];
-    const quantity = Math.min(Math.trunc(Number(contribution.quantity)) || 0, need.quantity);
-    return quantity >= 1 ? [{ name: need.name, quantity }] : [];
-  });
 }

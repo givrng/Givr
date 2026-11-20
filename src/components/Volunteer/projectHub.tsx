@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import type { OrganizationDashboardProps, OrganizationQuickActions, ProjectProps, VerificationStatus } from "../../interface/interfaces"
+import type { OrganizationDashboardProps, OrganizationQuickActions, PagedResponse, ProjectProps, VerificationStatus } from "../../interface/interfaces"
 import { Button, ProjectCard, RadioButton } from "../ReuseableComponents"
 import { CreateProject } from "../Organization/createProjectForm"
 import useAuthFetch from "../hooks/useAuthFetch"
@@ -55,7 +55,9 @@ export const ProjectHub:React.FC<{ isOrganization?:boolean, orgTriggerAction?:(a
         try{
             setIsloading(true)
             let res = await API().get("/projects")
-            setProjects(res.data as ProjectProps[])
+            // The volunteer endpoint is paged ({content, page}); the organization endpoint returns a plain list
+            const data = res.data as ProjectProps[] | PagedResponse<ProjectProps>
+            setProjects(Array.isArray(data) ? data : Array.isArray(data?.content) ? data.content : [])
         }finally{
             setIsloading(false)
         }

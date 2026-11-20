@@ -5,8 +5,8 @@ import useAuthFetch from '../hooks/useAuthFetch';
 import { useAlert } from '../hooks/useAlert';
 import { LoadingEffect } from '../icons';
 import { isValidPhoneNumber, PHONE_MAX_DIGITS, PHONE_MIN_DIGITS, sanitizePhoneInput } from '../../utils/phone';
-import { parseQuantity, sanitizeItemContributions } from '../../utils/items';
-import type { ItemContribution, ItemNeed } from '../../interface/interfaces';
+import { parseQuantity } from '../../utils/items';
+import type { InitiativeResource, InitiativeResources, ProjectType } from '../../interface/interfaces';
 
 /**
  * Interface for the component props
@@ -15,8 +15,12 @@ interface ApplicationFormProps {
   onCancel: () => void;
   organization?: string;
   projectId: number;
-  itemsNeeded?: ItemNeed[];
+  // Initiatives accept item/service pledges and use their own apply endpoint
+  projectType?: ProjectType;
 }
+
+/** An item pledge, keyed by the initiative resource it answers */
+type ItemPledge = { resourceId: string; resource: string; quantity: number };
 
 /**
  * Interface for the application form state
@@ -29,14 +33,16 @@ interface ApplicationFields {
   isAvailable: boolean | null;
   additionalInfo: string;
   phoneNumber: string;
-  itemContributions: ItemContribution[];
+  itemPledges: ItemPledge[];
+  // resourceIds of the services the volunteer offers to help with
+  serviceIds: string[];
 }
 
 /**
  * Configuration for form fields to ensure type-safe mapping
  */
 interface FieldConfig {
-  id: keyof Omit<ApplicationFields, 'projectId' | 'isAvailable' | 'phoneNumber' | 'itemContributions'>;
+  id: keyof Omit<ApplicationFields, 'projectId' | 'isAvailable' | 'phoneNumber' | 'itemPledges' | 'serviceIds'>;
   label: string;
   placeholder: string;
   required?: boolean;
@@ -50,7 +56,9 @@ export const useApplicationForm = ()=>{
      * Prompts volunteer to provide their reason for applying for a project.
      * Refactored with TypeScript for robust type checking.
      */
-    const ApplicationForm: React.FC<ApplicationFormProps> = ({ onCancel, organization,  projectId, itemsNeeded = [] }) => {
+    const ApplicationForm: React.FC<ApplicationFormProps> = ({ onCancel, organization,  projectId, projectType = "Project" }) => {
+    const isInitiative = projectType === "Initiative"
+
     const [skillInput, setSkillInput] = useState("");
     const sessionId = `project_${projectId}`
     const [applicationForm, setApplicationForm] = useState<ApplicationFields>(()=>{
@@ -62,22 +70,25 @@ export const useApplicationForm = ()=>{
             isAvailable: null,
             additionalInfo: "",
             phoneNumber: "",
-            itemContributions: []
+            itemPledges: [],
+            serviceIds: []
         }
         const data = sessionStorage.getItem(sessionId)
         // Merge over defaults so drafts saved before new fields were added still load correctly
         return data? { ...defaults, ...(JSON.parse(data) as Partial<ApplicationFields>) }: defaults
     });
 
-    const [errors, setErrors] = useState<Partial<Omit<ApplicationFields, 'itemContributions'>>>({})
+    const [errors, setErrors] = useState<Partial<Omit<ApplicationFields, 'itemPledges' | 'serviceIds'>>>({})
     const [itemsError, setItemsError] = useState<string>()
+    const [resources, setResources] = useState<InitiativeResources>()
+    const [resourcesError, setResourcesError] = useState("")
 
     const {confirmAsk, ConfirmDialog} = useConfirmAsk({isOrg: false})
     const {alertMessage, AlertDialog} = useAlert({isOrg: false})
     const [isLoading, setIsLoading] = useState(false)
     const {API} = useAuthFetch("volunteer")
     
-    const maxCharsByField: Record<keyof Omit<ApplicationFields, 'isAvailable'|'projectId'|'phoneNumber'|'itemContributions' >, number> = {
+    const maxCharsByField: Record<keyof Omit<ApplicationFields, 'isAvailable'|'projectId'|'phoneNumber'|'itemPledges'|'serviceIds' >, number> = {
         aboutMe: 300,
         additionalInfo: 200,
         mySkills: 150,
@@ -87,6 +98,18 @@ export const useApplicationForm = ()=>{
     useEffect(()=>{
         sessionStorage.setItem(sessionId, JSON.stringify(applicationForm))
     }, [applicationForm])
+
+    // Initiatives list the items and services they need separately from the initiative itself
+    useEffect(()=>{
+        if(!isInitiative) return
+        API().get(`/initiative/${projectId}/resources`)
+            .then(({data})=>setResources({
+                items: Array.isArray(data?.items) ? data.items : [],
+                services: Array.isArray(data?.services) ? data.services : [],
+                media: data?.media
+            }))
+            .catch(()=>setResourcesError("We couldn't load what this initiative needs. You can still apply with your time."))
+    }, [API, isInitiative, projectId])
     /**
      * Helper to update form state with specific keys
      */
@@ -96,32 +119,61 @@ export const useApplicationForm = ()=>{
     };
 
     /**
-     * Item pledges: volunteers can only pledge items the project asked for, up to the quantity needed
+     * Item pledges: volunteers can only pledge items the initiative asked for, up to the quantity needed
      */
-    const toggleItemContribution = (need: ItemNeed) => {
-        const isSelected = applicationForm.itemContributions.some(item => item.name === need.name)
+    const toggleItemPledge = (need: InitiativeResource) => {
+        const isSelected = applicationForm.itemPledges.some(item => item.resourceId === need.resourceId)
         setApplicationForm(prev => ({
             ...prev,
-            itemContributions: isSelected
-                ? prev.itemContributions.filter(item => item.name !== need.name)
-                : [...prev.itemContributions, { name: need.name, quantity: 1 }]
+            itemPledges: isSelected
+                ? prev.itemPledges.filter(item => item.resourceId !== need.resourceId)
+                : [...prev.itemPledges, { resourceId: need.resourceId, resource: need.resource, quantity: 1 }]
         }))
         setItemsError(undefined)
     }
 
-    const setItemQuantity = (need: ItemNeed, quantity: number) => {
+    const setItemQuantity = (need: InitiativeResource, quantity: number) => {
         setApplicationForm(prev => ({
             ...prev,
-            itemContributions: prev.itemContributions.map(item =>
-                item.name === need.name ? { ...item, quantity: Math.min(Math.max(quantity, 0), need.quantity) } : item)
+            itemPledges: prev.itemPledges.map(item =>
+                item.resourceId === need.resourceId ? { ...item, quantity: Math.min(Math.max(quantity, 0), need.quantity) } : item)
         }))
         setItemsError(undefined)
+    }
+
+    const toggleService = (resourceId: string) => {
+        setApplicationForm(prev => ({
+            ...prev,
+            serviceIds: prev.serviceIds.includes(resourceId)
+                ? prev.serviceIds.filter(id => id !== resourceId)
+                : [...prev.serviceIds, resourceId]
+        }))
+    }
+
+    /**
+     * Builds the initiative-only part of the payload. Pledges are re-checked against the initiative's
+     * current resources so a stale saved draft can't send items it no longer needs.
+     */
+    const buildInitiativeContribution = () => {
+        const itemNeeds = resources?.items ?? []
+        const items = applicationForm.itemPledges.flatMap(pledge => {
+            const need = itemNeeds.find(item => item.resourceId === pledge.resourceId)
+            const quantity = need ? Math.min(pledge.quantity, need.quantity) : 0
+            return need && quantity >= 1 ? [{ resource: need.resource, resourceId: need.resourceId, quantity }] : []
+        })
+        // Each volunteer counts as one person towards a service need
+        const services = (resources?.services ?? [])
+            .filter(service => applicationForm.serviceIds.includes(service.resourceId))
+            .map(service => ({ resource: service.resource, resourceId: service.resourceId, quantity: 1 }))
+        const givesTime = Boolean(applicationForm.isAvailable) || services.length > 0
+        const applicationType = items.length === 0 ? "Time" : givesTime ? "Items_and_time" : "Items_Only"
+        return { applicationType, items, services }
     }
 
     const validateForm = ():boolean=>{
-        const newErrors: Partial<Omit<ApplicationFields, 'itemContributions'>> = {}
+        const newErrors: Partial<Omit<ApplicationFields, 'itemPledges' | 'serviceIds'>> = {}
 
-        const missingQuantity = applicationForm.itemContributions.some(item => item.quantity < 1)
+        const missingQuantity = applicationForm.itemPledges.some(item => item.quantity < 1)
         setItemsError(missingQuantity ? "Enter how many of each selected item you can contribute" : undefined)
 
         const {aboutMe, isAvailable, reason, phoneNumber} = applicationForm
@@ -155,7 +207,7 @@ export const useApplicationForm = ()=>{
             return
     
         const confirmed = await confirmAsk({
-            question: "Are you sure you want to apply for this project?",
+            question: `Are you sure you want to apply for this ${isInitiative ? "initiative" : "project"}?`,
             trueAnswer: "Submit",
             falseAnswer: "Cancel"
         });
@@ -163,11 +215,13 @@ export const useApplicationForm = ()=>{
         if (confirmed) {
             setIsLoading(true)
             try {
-                await API().post("/projects/apply", {
-                    ...applicationForm,
-                    // Drop pledges for items the project no longer needs (e.g. a stale draft)
-                    itemContributions: sanitizeItemContributions(applicationForm.itemContributions, itemsNeeded)
-                });
+                // Allow-list the fields both endpoints accept, rather than sending local form state
+                const { projectId, aboutMe, reason, mySkills, isAvailable, additionalInfo, phoneNumber } = applicationForm
+                const base = { projectId, aboutMe, reason, mySkills, isAvailable, additionalInfo, phoneNumber }
+                if(isInitiative)
+                    await API().post("/initiative/apply", { ...base, ...buildInitiativeContribution() });
+                else
+                    await API().post("/projects/apply", base);
                 sessionStorage.removeItem(sessionId)
                 await alertMessage("Your aplication has been submitted successfully")
                 onCancel();
@@ -175,7 +229,7 @@ export const useApplicationForm = ()=>{
                 let status = err?.response?.status
                 let errMsg = err?.response?.data?.message
                 if(status == 400){
-                    alertMessage(errMsg)
+                    alertMessage(typeof errMsg == "string" ? errMsg : "Some of your details couldn't be accepted. Please review the form and try again.")
                 }else if (status == 409){
                     alertMessage("Your application has been submitted already")
                 }else
@@ -340,54 +394,73 @@ export const useApplicationForm = ()=>{
             </div>
             </div>
 
-            {/* Item Contributions (optional) */}
-            <fieldset className="space-y-2">
-            <legend className="block text-sm font-bold text-gray-700">
-                Items you can contribute <span className="font-normal text-gray-400">(optional)</span>
+            {/* Initiative contributions (optional): services and items the initiative asked for */}
+            {isInitiative && (
+            <fieldset className="space-y-4 rounded-xl border border-gray-100 bg-slate-50/60 p-4">
+            <legend className="px-1 text-sm font-bold text-gray-700">
+                How else can you help? <span className="font-normal text-gray-400">(optional)</span>
             </legend>
-            {itemsNeeded.length === 0 ? (
-                <p className="text-xs text-gray-400 italic">This project isn't requesting any items.</p>
-            ) : (
-                <>
-                <p className="text-xs text-gray-500">Select any items you can bring and how many. You'll still be contributing your time.</p>
+            {resources?.media?.mediaUrl && (
+                <video src={resources.media.mediaUrl} controls preload="metadata" className="aspect-video w-full rounded-lg bg-black" aria-label="Initiative introduction video" />
+            )}
+            {resourcesError && <p className="text-xs text-amber-700">{resourcesError}</p>}
+            {!resources && !resourcesError && <p className="text-xs text-gray-400">Loading what this initiative needs…</p>}
+
+            {resources && (
+                <div className="space-y-2">
+                <p className="text-sm font-semibold text-gray-700">Skills and services</p>
+                {resources.services.length === 0 ? (
+                    <p className="text-xs text-gray-400 italic">This initiative isn't asking for specific services.</p>
+                ) : (
+                    <ul className="flex flex-wrap gap-2">
+                    {resources.services.map(service => {
+                        const selected = applicationForm.serviceIds.includes(service.resourceId)
+                        return (
+                        <li key={service.resourceId}>
+                            <button type="button" aria-pressed={selected} onClick={() => toggleService(service.resourceId)}
+                                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${selected ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300 bg-white text-gray-700 hover:border-blue-400'}`}>
+                                {service.resource} <span className="font-normal opacity-75">· {service.quantity} needed</span>
+                            </button>
+                        </li>
+                        )
+                    })}
+                    </ul>
+                )}
+                </div>
+            )}
+
+            {resources && (
+                <div className="space-y-2">
+                <p className="text-sm font-semibold text-gray-700">Items you can bring</p>
+                {resources.items.length === 0 ? (
+                    <p className="text-xs text-gray-400 italic">This initiative isn't requesting any items.</p>
+                ) : (
                 <ul className="space-y-2">
-                {itemsNeeded.map((need) => {
-                    const pledge = applicationForm.itemContributions.find(item => item.name === need.name)
-                    const inputId = `pledge-${need.name.replace(/\W+/g, '-')}`
+                {resources.items.map((need) => {
+                    const pledge = applicationForm.itemPledges.find(item => item.resourceId === need.resourceId)
+                    const inputId = `pledge-${need.resourceId}`
                     return (
-                    <li key={need.name} className={`rounded-xl border p-3 transition-colors ${pledge ? 'border-blue-300 bg-blue-50/50' : 'border-gray-200'}`}>
+                    <li key={need.resourceId} className={`rounded-xl border bg-white p-3 transition-colors ${pledge ? 'border-blue-300 bg-blue-50/50' : 'border-gray-200'}`}>
                         <div className="flex flex-wrap items-center justify-between gap-3">
                         <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-3">
-                            <input
-                            type="checkbox"
-                            className="mt-1 accent-blue-600"
-                            checked={Boolean(pledge)}
-                            onChange={() => toggleItemContribution(need)}
-                            />
+                            <input type="checkbox" className="mt-1 accent-blue-600" checked={Boolean(pledge)} onChange={() => toggleItemPledge(need)} />
                             <span className="min-w-0">
-                            <span className="block text-sm font-semibold text-gray-800 break-words">{need.name}</span>
-                            <span className="block text-xs text-gray-500">
-                                {need.quantity.toLocaleString()} needed{need.description ? ` · ${need.description}` : ''}
-                            </span>
+                            <span className="block text-sm font-semibold text-gray-800 break-words">{need.resource}</span>
+                            <span className="block text-xs text-gray-500">{need.quantity.toLocaleString()} needed</span>
                             </span>
                         </label>
                         {pledge && (
-                            <div className="flex items-center gap-1" role="group" aria-label={`Quantity of ${need.name}`}>
+                            <div className="flex items-center gap-1" role="group" aria-label={`Quantity of ${need.resource}`}>
                             <button type="button" aria-label="Decrease quantity" disabled={pledge.quantity <= 1}
                                 onClick={() => setItemQuantity(need, pledge.quantity - 1)}
                                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40">
                                 <LucideMinus size={14} />
                             </button>
                             <label htmlFor={inputId} className="sr-only">Quantity</label>
-                            <input
-                                id={inputId}
-                                type="text"
-                                inputMode="numeric"
-                                value={pledge.quantity || ''}
+                            <input id={inputId} type="text" inputMode="numeric" value={pledge.quantity || ''}
                                 onChange={(e) => setItemQuantity(need, parseQuantity(e.target.value, need.quantity))}
                                 aria-invalid={Boolean(itemsError) && pledge.quantity < 1}
-                                className="h-8 w-14 rounded-lg border border-gray-200 bg-white text-center text-sm text-gray-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                            />
+                                className="h-8 w-14 rounded-lg border border-gray-200 bg-white text-center text-sm text-gray-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
                             <button type="button" aria-label="Increase quantity" disabled={pledge.quantity >= need.quantity}
                                 onClick={() => setItemQuantity(need, pledge.quantity + 1)}
                                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40">
@@ -400,10 +473,13 @@ export const useApplicationForm = ()=>{
                     )
                 })}
                 </ul>
-                </>
+                )}
+                <p className="text-xs text-gray-500">The organizer reviews item pledges separately from your application, so they may accept your items even if your time isn't needed. Not available for the whole duration? Answer "No" below and your application will be sent as items only.</p>
+                </div>
             )}
             {itemsError && <p role="alert" className="text-red-500 text-sm">{itemsError}</p>}
             </fieldset>
+            )}
 
             {/* Remaining text field */}
             {textFields.splice(2).map((field) => (
@@ -497,7 +573,7 @@ export const useApplicationForm = ()=>{
     }, [])
 
     const ApplicationModal = ()=>(
-        isOpen &&applicationProps? <ApplicationForm onCancel={applicationProps?.onCancel} projectId={applicationProps?.projectId} organization={applicationProps?.organization} itemsNeeded={applicationProps?.itemsNeeded}/> : null
+        isOpen &&applicationProps? <ApplicationForm onCancel={applicationProps?.onCancel} projectId={applicationProps?.projectId} organization={applicationProps?.organization} projectType={applicationProps?.projectType}/> : null
     )
 
     return {openApplicationForm, ApplicationModal}

@@ -79,8 +79,8 @@ const CACUploadWidget:React.FC<{form: OrganizationProps, setForm: React.Dispatch
           >
             <Upload size={16} />
             <CloudinaryUpload
-                folder="avatars"
-                sources={["google_drive", "local", "camera"]}
+                role="organization"
+                purpose="CAC_PHOTO"
                 buttonText="Select Document"
                 onUploadSuccess={(url) => {
                     setForm(prev => ({

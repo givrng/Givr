@@ -1,7 +1,7 @@
-import { Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes } from "react-router-dom"
 import { PageNotFound } from "./pages/Volunteer/404 Page"
 import { IndividualDashboardPage } from "./pages/Individual/IndividualDashboardPage"
-import { IndividualVerificationPage } from "./pages/Individual/IndividualVerificationPage"
+import { VERIFY_IDENTITY_PATH } from "./utils/verification"
 import { CreateInitiativeModal } from "./pages/Individual/CreateInitiativeModal"
 import { RequireAuth } from "./components/Auth/RequireAuth"
 
@@ -16,7 +16,8 @@ export const IndividualApp: React.FC = function () {
             <Route index element={null} />
             <Route path="create-initiative" element={<CreateInitiativeModal />} />
           </Route>
-          <Route path="verification" element={<IndividualVerificationPage />} />
+          {/* Verification lives on the profile, like organizations; keep old links working */}
+          <Route path="verification" element={<Navigate to={VERIFY_IDENTITY_PATH} replace />} />
           <Route path="*" element={<PageNotFound toDashBoard="/individual" />} />
         </Routes>
       </RequireAuth>

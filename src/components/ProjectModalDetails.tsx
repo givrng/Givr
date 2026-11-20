@@ -91,24 +91,6 @@ const ProjectDetailsModal: React.FC<{ project: ProjectProps }> = ({ project }) =
         </div>
       )}
 
-      {project.itemsNeeded && project.itemsNeeded.length > 0 && (
-        <div className="mt-5">
-          <SectionTitle>Items needed</SectionTitle>
-          <ul className="divide-y divide-gray-100 rounded-lg border border-gray-100">
-            {project.itemsNeeded.map((item) => (
-              <li key={item.name} className="flex items-start justify-between gap-3 px-3 py-2 text-sm">
-                <span className="text-gray-700">
-                  {item.name}
-                  {item.description && <span className="block text-xs text-gray-500">{item.description}</span>}
-                </span>
-                <span className="shrink-0 font-medium text-gray-900">× {item.quantity.toLocaleString()}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-2 text-xs text-gray-500">Volunteers can pledge any of these items when they apply.</p>
-        </div>
-      )}
-
       {project.specialRequirements && (
         <div className="mt-5">
           <SectionTitle>Special requirements</SectionTitle>

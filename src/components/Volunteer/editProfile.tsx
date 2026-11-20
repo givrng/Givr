@@ -196,7 +196,8 @@ export const EditProfile:React.FC<{onClose?:()=>void, profileProps: ProfileProps
                 </span>
 
                 <CloudinaryUpload
-                folder="avatars"
+                role="volunteer"
+                purpose="AVATAR"
                 buttonText="Change Photo"
                 onUploadSuccess={(url) => {
                     setProfile(prev => ({

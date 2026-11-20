@@ -6,6 +6,10 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
 
   server: {
+    // The dev API only allows CORS from http://localhost:5173, so never fall back to another port
+    host: 'localhost',
+    port: 5173,
+    strictPort: true,
     watch: {
       usePolling: true,
       ignored: ['**/node_modules/**']

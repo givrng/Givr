@@ -17,7 +17,12 @@ import { pluralize } from "../utils/pluralize";
 
 // --- Reusable Components ---
 
-export const Button: React.FC<ButtonProps> = ({ children, variant, className = '', onClick }) => {
+/**
+ * A Button with its own onClick (Cancel, Continue with Google…) is a plain button, so it never also
+ * submits the form it sits in. Without onClick it stays a submit button, which every form relies on.
+ * Pass `type` to override.
+ */
+export const Button: React.FC<ButtonProps> = ({ children, variant, className = '', onClick, type = onClick ? "button" : "submit" }) => {
   // Adjusted base classes for a cleaner look matching the image
   const baseClasses = 'px-6 py-3 font-semibold rounded-lg transition duration-200 whitespace-nowrap';
   let disabled = false
@@ -52,7 +57,7 @@ export const Button: React.FC<ButtonProps> = ({ children, variant, className = '
   }
 
   return (
-    <button className={`${baseClasses} ${variantClasses} ${className}`} onClick={onClick} disabled={disabled}>
+    <button type={type} className={`${baseClasses} ${variantClasses} ${className}`} onClick={onClick} disabled={disabled}>
       {children}
     </button>
   );
@@ -279,7 +284,7 @@ export const OrganizationCard: React.FC<OrganizationComponentProps> = (orgCompon
 }
 
 /**Displays details of a project */
-export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organization, specialRequirements,applicationDeadline,description,categories, attendanceHours, location,address,requiredSkills, maxVolunteers, startDate, endDate,status, totalApplicants, superVolunteer, manage=false, applied=false, isOrganization=false, isDraft=false, onEdit, onDelete, onPublish, projectFlierUrl, projectCardUrl, rating, broadcastEnabled, createdAt, updatedAt, itemsNeeded})=>{
+export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organization, specialRequirements,applicationDeadline,description,categories, attendanceHours, location,address,requiredSkills, maxVolunteers, startDate, endDate,status, totalApplicants, superVolunteer, manage=false, applied=false, isOrganization=false, isDraft=false, onEdit, onDelete, onPublish, projectFlierUrl, projectCardUrl, rating, broadcastEnabled, createdAt, updatedAt, type})=>{
 
   const [displayForm, setDisplayForm] = useState(false)
   const {modal, DisplayModal} = useModal()
@@ -296,7 +301,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
     location,address,requiredSkills, maxVolunteers, 
     startDate, endDate,status, totalApplicants, 
     superVolunteer, projectFlierUrl, projectCardUrl,
-    rating, broadcastEnabled, createdAt, updatedAt, itemsNeeded
+    rating, broadcastEnabled, createdAt, updatedAt, type
   }
 
   const {openShare, ShareModalComponent} = useShareModal()
@@ -348,7 +353,6 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
     requiredSkills: requiredSkills,
     specialRequirements: specialRequirements,
     projectFlierUrl: projectFlierUrl,
-    itemsNeeded: itemsNeeded ?? [],
   }
 
   const {openApplicationForm, ApplicationModal} = useApplicationForm()
@@ -360,7 +364,7 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
       onCancel: ()=>setDisplayForm(false),
       projectId: id,
       organization: organization?.name,
-      itemsNeeded
+      projectType: type
     })
   }
   const statusStyles: Record<string, string> = {
@@ -434,6 +438,11 @@ export const ProjectCard:React.FC<ProjectComponentProps> = ({ id, title, organiz
             {!isOrganization && <p className="mt-0.5 truncate text-sm font-medium text-gray-500">{organization?.name || "—"}</p>}
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            {type === "Initiative" && (
+              <span className="rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-violet-700 ring-1 ring-violet-200" title="Led by a verified individual">
+                Initiative
+              </span>
+            )}
             <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${statusStyles[status] || statusStyles.DRAFT}`}>
               {status || "—"}
             </span>

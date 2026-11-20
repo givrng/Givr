@@ -10,6 +10,8 @@ interface ItemNeedsEditorProps {
   error?: string;
   inputClassName?: string;
   accentClassName?: string;
+  /** Hide the optional details field when the destination API can't store it */
+  showDescription?: boolean;
 }
 
 const defaultInputClassName = "w-full rounded-md border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15";
@@ -25,6 +27,7 @@ export const ItemNeedsEditor: React.FC<ItemNeedsEditorProps> = ({
   error,
   inputClassName = defaultInputClassName,
   accentClassName = "text-blue-600",
+  showDescription = true,
 }) => {
   const updateItem = (index: number, patch: Partial<ItemNeed>) =>
     onChange(items.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patch } : item)));
@@ -71,15 +74,19 @@ export const ItemNeedsEditor: React.FC<ItemNeedsEditorProps> = ({
           >
             <Trash2 size={17} />
           </button>
-          <label className="sr-only" htmlFor={`${idPrefix}-description-${index}`}>Item details</label>
-          <input
-            id={`${idPrefix}-description-${index}`}
-            className={`${inputClassName} col-span-2`}
-            placeholder="Optional details, e.g. size, condition or brand"
-            value={item.description ?? ""}
-            maxLength={ITEM_DESCRIPTION_MAX}
-            onChange={(event) => updateItem(index, { description: event.target.value })}
-          />
+          {showDescription && (
+            <>
+              <label className="sr-only" htmlFor={`${idPrefix}-description-${index}`}>Item details</label>
+              <input
+                id={`${idPrefix}-description-${index}`}
+                className={`${inputClassName} col-span-2`}
+                placeholder="Optional details, e.g. size, condition or brand"
+                value={item.description ?? ""}
+                maxLength={ITEM_DESCRIPTION_MAX}
+                onChange={(event) => updateItem(index, { description: event.target.value })}
+              />
+            </>
+          )}
         </div>
       ))}
 
@@ -94,19 +101,5 @@ export const ItemNeedsEditor: React.FC<ItemNeedsEditorProps> = ({
         <Plus size={16} /> {canAddMore ? "Add item" : `Maximum of ${MAX_ITEM_ROWS} items`}
       </button>
     </div>
-  );
-};
-
-/** Read-only chips such as "School bags × 20", for showing requested or pledged items */
-export const ItemChips: React.FC<{ items?: { name: string; quantity: number }[]; className?: string }> = ({ items, className = "bg-amber-50 text-amber-800" }) => {
-  if (!items?.length) return null;
-  return (
-    <ul className="flex flex-wrap gap-2">
-      {items.map((item) => (
-        <li key={item.name} className={`rounded-full px-3 py-1 text-xs font-medium ${className}`}>
-          {item.name} <span className="opacity-70">× {item.quantity.toLocaleString()}</span>
-        </li>
-      ))}
-    </ul>
   );
 };

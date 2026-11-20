@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef } from "react";
-import { ShieldCheck, X } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowRight, Clock3, ShieldCheck, X } from "lucide-react";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { InitiativeForm } from "./InitiativeForm";
+import type { InitiativesOutletContext } from "./IndividualDashboardPage";
+import { getVerificationState, VERIFY_IDENTITY_PATH } from "../../utils/verification";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -14,6 +16,11 @@ export const CreateInitiativeModal: React.FC = () => {
   const navigate = useNavigate();
   const routeLocation = useLocation();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const { verificationStatus, verificationLoaded, onInitiativeCreated } = useOutletContext<InitiativesOutletContext>();
+  const identityState = getVerificationState(verificationStatus);
+  const isVerified = identityState === "verified";
+  // Show the form while the status loads, then swap to the gate if they aren't verified
+  const showGate = verificationLoaded && !isVerified;
 
   const close = useCallback(() => {
     // Opened from within the app: step back so history stays clean. Opened via a direct link: go to the page underneath
@@ -83,13 +90,45 @@ export const CreateInitiativeModal: React.FC = () => {
               <X size={20} />
             </button>
           </div>
-          <div className="mt-3 flex items-start gap-2 rounded-md bg-[#FFF7DF] px-3 py-2 text-xs leading-5 text-[#805B00]">
-            <ShieldCheck size={15} className="mt-0.5 shrink-0" />
-            <p>Identity verification is required before an initiative can be published. Your progress is saved as you go.</p>
-          </div>
         </header>
 
-        <InitiativeForm onCancel={close} />
+        {showGate ? (
+          <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center sm:px-12">
+            <span className={`rounded-2xl p-4 ${identityState === "in_review" ? "bg-blue-50 text-[#1A73E8]" : "bg-[#EAF2FE] text-[#1A73E8]"}`}>
+              {identityState === "in_review" ? <Clock3 size={34} /> : <ShieldCheck size={34} />}
+            </span>
+            <h3 className="mt-5 text-lg font-semibold">
+              {identityState === "in_review" ? "Your verification is in review" : "Verify your identity first"}
+            </h3>
+            <p className="mt-2 max-w-md text-sm leading-6 text-[#676879]">
+              {identityState === "in_review"
+                ? "You'll be able to create initiatives as soon as your verification is approved. There's nothing else you need to do."
+                : identityState === "failed"
+                  ? "Your last verification didn't go through. Check your name and ID number match your ID exactly, then try again. It takes a few minutes."
+                  : "Only verified individuals can create initiatives, so volunteers know who they're supporting. It takes a few minutes: enter your ID and a photo, then pay the verification fee on Paystack."}
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <button type="button" onClick={close} className="rounded-md border border-[#C3C6D4] px-4 py-2.5 text-sm font-semibold hover:bg-[#F8FAFC]">
+                {identityState === "in_review" ? "Close" : "Not now"}
+              </button>
+              {identityState !== "in_review" && (
+                <button type="button" onClick={() => navigate(VERIFY_IDENTITY_PATH)} className="inline-flex items-center gap-2 rounded-md bg-[#1A73E8] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#155FC0]">
+                  {identityState === "failed" ? "Try again" : "Verify identity"} <ArrowRight size={16} />
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <InitiativeForm
+            onCancel={close}
+            canSubmit={isVerified}
+            onVerify={() => navigate(VERIFY_IDENTITY_PATH)}
+            onCreated={() => {
+              onInitiativeCreated();
+              navigate("/individual", { replace: true });
+            }}
+          />
+        )}
       </div>
     </div>
   );

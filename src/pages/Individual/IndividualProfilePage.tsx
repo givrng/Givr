@@ -130,7 +130,8 @@ export const IndividualProfileSignup: React.FC = () => {
                 <p className="text-sm font-semibold text-[#323338]">Profile photo</p>
                 <p className="mb-3 mt-1 text-xs text-[#676879]">Add a photo so people can recognize you.</p>
                 <CloudinaryUpload
-                  folder="individual-profiles"
+                  role="volunteer"
+                  purpose="AVATAR"
                   buttonText={profile.profileUrl ? "Change photo" : "Upload photo"}
                   onUploadSuccess={(url) => setProfile((current) => ({ ...current, profileUrl: url }))}
                   className="border border-[#C3C6D4] bg-white text-[#323338] hover:bg-[#F3FAFA]"

@@ -15,7 +15,6 @@ import { Button } from '../ReuseableComponents';
 import useMessageThread from '../Chat/MessageThread';
 import { ChatNavItem } from '../ChatNavItem';
 import { useSocketConnection } from '../Chat/socketConnection';
-import { ItemChips } from '../form/ItemNeedsEditor';
 
 export interface ParticipantCardComponentProps{
     participant: ParticipantProps;
@@ -162,14 +161,6 @@ export const ParticipantCard: React.FC<ParticipantCardComponentProps> = ({ parti
           )}
         </div>
       </div>
-
-      {/* Pledged Items */}
-      {participant.itemContributions && participant.itemContributions.length > 0 && (
-        <div className="mb-6">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Items Pledged</p>
-          <ItemChips items={participant.itemContributions} />
-        </div>
-      )}
       {/* Review Logic Message */}
       {status === 'IN_PROGRESS' && (
         <div className={`mt-auto mb-4 p-2 rounded-lg flex items-start gap-2 text-[11px] ${participant?.reviewable ? 'bg-amber-50 text-amber-700 border border-amber-100' : 'bg-slate-50 text-slate-500 border border-slate-100'}`}>
